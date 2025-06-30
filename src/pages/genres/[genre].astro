@@ -1,0 +1,37 @@
+
+---
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const genres = new Set(books.flatMap(book => book.data.genres));
+
+  return Array.from(genres).map(genre => ({
+    params: { genre },
+    props: { 
+      books: books.filter(book => book.data.genres.includes(genre)),
+    },
+  }));
+}
+
+const { genre } = Astro.params;
+const { books } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Books in genre: {genre}</title>
+</head>
+<body>
+  <h1>Books in genre: {genre}</h1>
+  <ul>
+    {books.map(book => (
+      <li>
+        <a href={`/books/${book.slug}`}>{book.data.title}</a>
+      </li>
+    ))}
+  </ul>
+</body>
+</html>
