@@ -7,7 +7,7 @@ const booksCollection = defineCollection({
     author: z.string(),
     original_publication_year: z.number(),
     description: z.string(),
-    genres: z.array(z.enum(["Adventure", "Fiction", "Classic", "Whaling"])),
+    genres: z.array(z.enum(["Adventure", "Fiction", "Classic", "Whaling", "History", "Political Science"])),
     tags: z.array(z.string()).optional(),
   }),
 });
