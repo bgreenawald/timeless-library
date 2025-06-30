@@ -21,7 +21,9 @@ const { book } = Astro.props;
 <body>
   <h1>{book.data.title}</h1>
   <p>by {book.data.author}</p>
-  <p>Published in {book.data.publication_year}</p>
-  <p><a href={book.data.gutenberg_url} target="_blank">Original on Project Gutenberg</a></p>
+  <p>Published in {book.data.original_publication_year}</p>
+  <p>{book.data.description}</p>
+  <p>Genres: {book.data.genres.join(', ')}</p>
+  {book.data.tags && <p>Tags: {book.data.tags.join(', ')}</p>}
 </body>
 </html>
