@@ -1,15 +1,21 @@
 ---
 import { getCollection } from 'astro:content';
+import { fetchTags, type GithubTag } from '../../lib/github';
 
 export async function getStaticPaths() {
   const books = await getCollection('books');
-  return books.map(book => ({
-    params: { book: book.slug },
-    props: { book },
-  }));
+  const tags = await fetchTags();
+
+  return books.map(book => {
+    const versions = tags.filter(tag => tag.name.startsWith(book.slug));
+    return {
+      params: { book: book.slug },
+      props: { book, versions },
+    };
+  });
 }
 
-const { book } = Astro.props;
+const { book, versions } = Astro.props;
 ---
 
 <html lang="en">
@@ -25,5 +31,14 @@ const { book } = Astro.props;
   <p>{book.data.description}</p>
   <p>Genres: {book.data.genres.join(', ')}</p>
   {book.data.tags && <p>Tags: {book.data.tags.join(', ')}</p>}
+
+  <h2>Versions</h2>
+  <ul>
+    {versions.map((version: GithubTag) => (
+      <li>
+        <a href={`/books/${book.slug}/${version.name}`}>{version.name}</a>
+      </li>
+    ))}
+  </ul>
 </body>
 </html>
