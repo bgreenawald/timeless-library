@@ -1,0 +1,61 @@
+---
+import { fetchTags, fetchRelease } from '../../../lib/github';
+
+export async function getStaticPaths() {
+  const tags = await fetchTags();
+  console.log('Fetched tags:', tags.map(t => t.name));
+
+  const paths = await Promise.all(tags.map(async (tag) => {
+    // Extract book slug: find the last occurrence of '-v' to separate book from version
+    const versionIndex = tag.name.lastIndexOf('-v');
+    if (versionIndex === -1) {
+      console.log(`Invalid tag format (no version found): ${tag.name}`);
+      return null;
+    }
+    const bookSlug = tag.name.substring(0, versionIndex);
+    console.log(`Processing tag: ${tag.name}, bookSlug: ${bookSlug}`);
+    
+    const release = await fetchRelease(tag.name);
+    
+    if (!release) {
+      console.log(`No release found for tag: ${tag.name}`);
+      return null;
+    }
+
+    return {
+      params: { book: bookSlug, version: tag.name },
+      props: { 
+        release
+      },
+    };
+  }));
+
+  const validPaths = paths.filter(path => path !== null);
+  console.log('Valid static paths:', validPaths);
+  return validPaths;
+}
+
+const { release } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Version Details</title>
+</head>
+<body>
+  <h1>Version Details</h1>
+
+  <h2>Downloads</h2>
+  <ul>
+    {release.assets.map(asset => (
+      <li>
+        <a href={asset.browser_download_url} download>{asset.name}</a>
+      </li>
+    ))}
+  </ul>
+
+  <!-- Modernized Text and Transparency Report will be added back later -->
+</body>
+</html>

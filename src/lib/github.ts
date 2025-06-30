@@ -1,4 +1,3 @@
-
 import { z } from 'astro/zod';
 
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
@@ -15,6 +14,7 @@ const tagSchema = z.object({
 
 const releaseSchema = z.object({
   assets: z.array(z.object({ name: z.string(), browser_download_url: z.string() })),
+  tag_name: z.string(),
 });
 
 export type GithubTag = z.infer<typeof tagSchema>;
@@ -48,4 +48,20 @@ export async function fetchTags(): Promise<GithubTag[]> {
 export async function fetchRelease(tagName: string): Promise<GithubRelease | null> {
   const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/tags/${tagName}`;
   return fetchFromGithub(url, releaseSchema);
+}
+
+export async function fetchRawFile(commitSha: string, filePath: string): Promise<string | null> {
+  const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${commitSha}/${filePath}`;
+  
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Failed to fetch raw file from ${url}: ${response.statusText}`);
+      return null;
+    }
+    return await response.text();
+  } catch (error) {
+    console.error(`Error fetching raw file from ${url}:`, error);
+    return null;
+  }
 }

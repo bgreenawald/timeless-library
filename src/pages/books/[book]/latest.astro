@@ -1,0 +1,38 @@
+
+---
+import { getCollection } from 'astro:content';
+import { fetchTags } from '../../../lib/github';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const tags = await fetchTags();
+
+  return books.map(book => {
+    const versions = tags
+      .filter(tag => tag.name.startsWith(book.slug))
+      .map(tag => tag.name)
+      .sort();
+    const latestVersion = versions[versions.length - 1];
+
+    return {
+      params: { book: book.slug },
+      props: { latestVersion },
+    };
+  });
+}
+
+const { latestVersion } = Astro.props;
+const { book } = Astro.params;
+const redirectUrl = `/books/${book}/${latestVersion}`;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
+  <title>Redirecting...</title>
+</head>
+<body>
+  <p>Redirecting to the <a href={redirectUrl}>latest version</a>...</p>
+</body>
+</html>
