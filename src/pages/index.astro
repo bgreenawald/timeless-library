@@ -1,0 +1,23 @@
+---
+import { getCollection } from 'astro:content';
+
+const books = await getCollection('books');
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Modern Library</title>
+</head>
+<body>
+  <h1>Modern Library</h1>
+  <ul>
+    {books.map(book => (
+      <li>
+        <a href={`/books/${book.slug}`}>{book.data.title}</a> by {book.data.author}
+      </li>
+    ))}
+  </ul>
+</body>
+</html>

@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  return books.map(book => ({
+    params: { book: book.slug },
+    props: { book },
+  }));
+}
+
+const { book } = Astro.props;
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>{book.data.title}</title>
+</head>
+<body>
+  <h1>{book.data.title}</h1>
+  <p>by {book.data.author}</p>
+  <p>Published in {book.data.publication_year}</p>
+  <p><a href={book.data.gutenberg_url} target="_blank">Original on Project Gutenberg</a></p>
+</body>
+</html>
