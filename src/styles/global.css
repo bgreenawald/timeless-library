@@ -173,6 +173,7 @@
         .book-summary {
           font-size: 0.95rem;
           margin-top: 0.75rem;
+          color: var(--text-ink);
         }
 
         /* 4. Pane Styling for Readability */
