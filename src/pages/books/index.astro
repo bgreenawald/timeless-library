@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { getThemeColor } from '../../lib/colors';
 
 const books = await getCollection('books');
 ---
@@ -17,9 +18,9 @@ const books = await getCollection('books');
     </section>
     <section>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-        {books.map(book => (
+        {books.map((book, index) => (
           <a href={`/books/${book.slug}`} class="book-card">
-            <div class="book-cover" style={`background-color: rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.75);`}>
+            <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
               <div class="book-title">{book.data.title}</div>
               <div class="book-author">by {book.data.author}</div>
             </div>
