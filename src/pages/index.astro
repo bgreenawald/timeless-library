@@ -1,20 +1,87 @@
 ---
-import { getCollection } from 'astro:content';
-
-const books = await getCollection('books');
+import Layout from '../layouts/Layout.astro';
 ---
 
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width" />
-  <title>Modern Library</title>
-</head>
-<body>
-  <h1>Modern Library</h1>
-  <ul>
-    <li><a href="/about">About</a></li>
-    <li><a href="/books">Books</a></li>
-  </ul>
-</body>
-</html>
+<Layout title="The Modern Library">
+  <!-- Header & Navigation -->
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/books" class="nav-link">Catalogue</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="#" class="nav-link">Submissions</a>
+      </nav>
+      <a href="/books" class="hidden md:block cta-button">Browse</a>
+      <button class="md:hidden text-2xl">
+        <!-- Mobile Menu Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <!-- Hero Section -->
+    <section class="text-center max-w-3xl mx-auto mb-24">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Timeless Stories, Retold for Today.</h1>
+        <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">           We take the classics of world literature and breathe new life into them, adapting the language and           context for a contemporary audience while preserving the original's soul.         </p>
+        <div class="mt-10">
+          <a href="/books" class="cta-button">Explore the Collection</a>
+        </div>
+      </div>
+    </section>
+    <!-- Featured Books Section -->
+    <section>
+      <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto">Featured Modernizations </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        <!-- Book Card 1 -->
+        <div class="book-card">
+          <div class="book-cover" style="background-color: rgb(58, 58, 58, 0.75)">
+            <div class="book-title">The Odyssey</div>
+            <div class="book-author">by Homer</div>
+          </div>
+          <div class="book-info">
+            <div class="book-modernizer">Modernized by A. K. Summers</div>
+            <p class="book-summary">An exiled tech CEO's grueling ten-year journey home after a hostile takeover, facing rivals, temptations, and the challenge of reconnecting with a family who thought he was gone forever.</p>
+          </div>
+        </div>
+        <!-- Book Card 2 -->
+        <div class="book-card">
+          <div class="book-cover" style="background-color: rgb(180, 140, 79, 0.85);">
+            <div class="book-title">Pride & Prejudice</div>
+            <div class="book-author">by Jane Austen</div>
+          </div>
+          <div class="book-info">
+            <div class="book-modernizer">Modernized by E. Chen</div>
+            <p class="book-summary">Two rival startup founders, one brilliant but aloof, the other witty and underestimated, navigate venture capital, social media drama, and their own stubborn pride to find love.</p>
+          </div>
+        </div>
+        <!-- Book Card 3 -->
+        <div class="book-card">
+          <div class="book-cover" style="background-color: rgb(106, 122, 131, 0.85);">
+            <div class="book-title">Moby Dick</div>
+            <div class="book-author">by Herman Melville</div>
+          </div>
+          <div class="book-info">
+            <div class="book-modernizer">Modernized by R. Santiago</div>
+            <p class="book-summary">A driven journalist becomes obsessed with exposing a reclusive and destructive corporate raider, a chase that drags her deep into the world of high-stakes financial crime.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Footer -->
+  <footer>
+    <div class="container mx-auto text-center text-sm">
+      <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
+      <p class="mt-2 font-poppins text-xs opacity-70">
+        <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
+      </p>
+    </div>
+  </footer>
+</Layout>

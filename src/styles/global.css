@@ -1,0 +1,240 @@
+/* * Custom CSS for the "Modern Library" theme.
+    * We use a base of Tailwind CSS for structure and responsiveness,
+    * and then apply our custom theme on top for the unique look and feel.
+    */
+      /* 1. Base Theme & Color Palette */
+      :root {
+        /* * COLOR ADJUSTMENT:
+      * To make the page color warmer or cooler, change the hex code for --background-paper.
+      * A warmer color would be #FAF3E8. A cooler, more neutral paper would be #F8F8F8.
+      */
+        --background-paper: rgb(250, 243, 232);
+        /* A warmer, creamy off-white */
+        --text-ink: rgb(58, 58, 58);
+        /* A soft, dark gray instead of harsh black */
+        --accent-gold: rgb(180, 140, 79);
+        /* A muted, elegant gold for highlights */
+        --accent-gold-hover: rgb(156, 120, 66);
+        /* A slightly darker gold for hover states */
+        --border-color: rgb(229, 224, 215);
+        /* A subtle, light gray for borders */
+      }
+
+      body {
+        background-color: var(--background-paper);
+        /* This SVG data URI creates a subtle, repeating noise texture for a worn paper effect.
+       You can adjust the 'slope' value (e.g., from 0.1 to 0.5) to increase/decrease texture intensity. */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.35'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        color: var(--text-ink);
+        font-family: 'Lora', serif;
+        /* A beautiful serif for body text, evoking classic literature */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* 2. Typography System */
+        /* Using a modern sans-serif for headings and UI elements creates a clean contrast */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .nav-link,
+        .cta-button {
+          font-family: 'Poppins', sans-serif;
+        }
+
+        h1 {
+          font-size: 3rem;
+          /* Responsive sizing handled by Tailwind classes */
+          font-weight: 600;
+          letter-spacing: -0.025em;
+        }
+
+        h2 {
+          font-size: 2.25rem;
+          /* Responsive sizing handled by Tailwind classes */
+          font-weight: 600;
+        }
+
+        p {
+          line-height: 1.75;
+          /* Generous line spacing for readability */
+        }
+
+        a {
+          color: var(--accent-gold);
+          transition: color 0.3s ease;
+          text-decoration: none;
+        }
+
+        a:hover {
+          color: var(--accent-gold-hover);
+        }
+
+        /* 3. Component Styling */
+        .nav-link {
+          position: relative;
+          padding: 0.5rem 0;
+          font-weight: 400;
+          color: var(--text-ink);
+        }
+
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 1px;
+          background-color: var(--accent-gold);
+          transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+          width: 100%;
+        }
+
+        .cta-button {
+          background-color: var(--accent-gold);
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 9999px;
+          /* pill shape */
+          font-weight: 600;
+          transition: background-color 0.3s ease, transform 0.3s ease;
+          display: inline-block;
+          position: relative;
+          z-index: 1;
+        }
+
+        .cta-button:hover {
+          background-color: var(--accent-gold-hover);
+          color: white;
+          /* Ensure text color remains white on hover */
+          transform: translateY(-2px);
+        }
+
+        /* Book Card Styling */
+        .book-card {
+          border: 1px solid rgba(229, 224, 215, 0.5);
+          border-radius: 0.75rem;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .book-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
+        }
+
+        .book-cover {
+          background-color: rgb(58, 58, 58, 0.65);
+          color: var(--background-paper);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 2rem;
+          min-height: 280px;
+        }
+
+        .book-title {
+          font-family: 'Poppins', sans-serif;
+          font-weight: 600;
+          font-size: 1.5rem;
+          line-height: 1.2;
+        }
+
+        .book-author {
+          font-family: 'Lora', serif;
+          font-style: italic;
+          margin-top: 0.5rem;
+        }
+
+        .book-info {
+          position: relative;
+          background-color: rgba(250, 243, 232, 0.65);
+          padding: 1.5rem;
+          flex-grow: 1;
+        }
+
+        .book-modernizer {
+          font-family: 'Poppins', sans-serif;
+          font-size: 0.875rem;
+          font-weight: 300;
+          color: var(--accent-gold);
+        }
+
+        .book-summary {
+          font-size: 0.95rem;
+          margin-top: 0.75rem;
+        }
+
+        /* 4. Pane Styling for Readability */
+        .text-pane,
+        header,
+        footer {
+          position: relative;
+          /* Establishes a stacking context */
+          background-color: rgba(250, 243, 232, 0.55);
+          /* The 'tint' color */
+          border: 1px solid rgba(229, 224, 215, 0.5);
+          border-radius: 0.75rem;
+          padding: 2rem 1.5rem;
+          overflow: hidden;
+          /* Clips the pseudo-element to the border-radius */
+        }
+
+        /* This pseudo-element creates the blurred texture layer BEHIND the pane's content. */
+        .text-pane::before,
+        .book-info::before,
+        header::before,
+        footer::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          background-image: inherit;
+          /* Inherits the texture from the body */
+          filter: blur(2px) brightness(1.1);
+          /* Blurs and slightly brightens the texture */
+          transform: scale(1.1);
+          /* Prevents hard edges from the blur */
+          z-index: -1;
+          /* Places it behind the content */
+        }
+
+        @media (min-width: 768px) {
+
+          .text-pane,
+          header,
+          footer {
+            padding: 3rem;
+          }
+        }
+
+        h2.text-pane {
+          border-bottom: 1px solid var(--border-color);
+          padding-top: 1.5rem;
+          padding-bottom: 1.5rem;
+        }
+
+        header,
+        footer {
+          border-radius: 0;
+        }
+
+        header {
+          padding: 1rem 1.5rem;
+        }
+
+        footer {
+          padding: 2rem 1.5rem;
+        }

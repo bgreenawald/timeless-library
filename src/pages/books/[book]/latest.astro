@@ -1,5 +1,5 @@
-
 ---
+import Layout from '../../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { fetchTags } from '../../../lib/github';
 
@@ -26,13 +26,9 @@ const { book } = Astro.params;
 const redirectUrl = `/books/${book}/${latestVersion}`;
 ---
 
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
+<Layout title="Redirecting...">
   <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
-  <title>Redirecting...</title>
-</head>
-<body>
-  <p>Redirecting to the <a href={redirectUrl}>latest version</a>...</p>
-</body>
-</html>
+  <div class="container mx-auto px-6 py-16 md:py-24 text-center">
+    <p class="text-lg">Redirecting to the <a href={redirectUrl} class="text-accent-gold hover:text-accent-gold-hover">latest version</a>...</p>
+  </div>
+</Layout>

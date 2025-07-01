@@ -1,15 +1,55 @@
 ---
+import Layout from '../layouts/Layout.astro';
 ---
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>About</title>
-	</head>
-	<body>
-		<h1>About</h1>
-        <p>A more detailed description of the books</p>
-	</body>
-</html>
+
+<Layout title="About The Modern Library">
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/books" class="nav-link">Catalogue</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="#" class="nav-link">Submissions</a>
+      </nav>
+      <a href="/books" class="hidden md:block cta-button">Browse</a>
+      <button class="md:hidden text-2xl">
+        <!-- Mobile Menu Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <section class="text-center max-w-3xl mx-auto mb-24">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">About The Modern Library</h1>
+        <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">
+          The Modern Library is a project dedicated to bringing classic literature to contemporary readers.
+          We utilize advanced Large Language Models (LLMs) to modernize the language and context of timeless stories,
+          making them accessible and engaging for a new generation, while meticulously preserving the original's essence and artistic integrity.
+        </p>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+          Our process emphasizes transparency, providing detailed insights into the LLM prompts and metadata used for each modernization.
+          We also support multiple versions of each book, allowing readers to explore different interpretations and evolutions of the modernized texts.
+        </p>
+        <p class="mt-4 text-lg md:text-xl max-w-2xl mx-auto">
+          All content on this site is dynamically generated from a source GitHub repository at build time,
+          ensuring that our collection is always up-to-date and reflective of the latest modernizations.
+          We believe in the power of technology to bridge the gap between classic literature and modern audiences,
+          fostering a deeper appreciation for the enduring narratives that have shaped our world.
+        </p>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container mx-auto text-center text-sm">
+      <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
+      <p class="mt-2 font-poppins text-xs opacity-70">
+        <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
+      </p>
+    </div>
+  </footer>
+</Layout>

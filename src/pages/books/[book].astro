@@ -1,4 +1,5 @@
 ---
+import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { fetchTags, type GithubTag } from '../../lib/github';
 
@@ -16,29 +17,69 @@ export async function getStaticPaths() {
 }
 
 const { book, versions } = Astro.props;
+
+const randomColor = () => {
+  const r = Math.floor(Math.random() * 255);
+  const g = Math.floor(Math.random() * 255);
+  const b = Math.floor(Math.random() * 255);
+  return `rgba(${r}, ${g}, ${b}, 0.75)`;
+};
 ---
 
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width" />
-  <title>{book.data.title}</title>
-</head>
-<body>
-  <h1>{book.data.title}</h1>
-  <p>by {book.data.author}</p>
-  <p>Published in {book.data.original_publication_year}</p>
-  <p>{book.data.description}</p>
-  <p>Genres: {book.data.genres.join(', ')}</p>
-  {book.data.tags && <p>Tags: {book.data.tags.join(', ')}</p>}
+<Layout title={book.data.title}>
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/books" class="nav-link">Catalogue</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="#" class="nav-link">Submissions</a>
+      </nav>
+      <a href="/books" class="hidden md:block cta-button">Browse</a>
+      <button class="md:hidden text-2xl">
+        <!-- Mobile Menu Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <section class="text-center max-w-3xl mx-auto mb-24">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">{book.data.title}</h1>
+        <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">by {book.data.author}</p>
+        <p class="mt-2 text-lg md:text-xl max-w-2xl mx-auto">Published in {book.data.original_publication_year}</p>
+        <p class="mt-4 text-base md:text-lg max-w-2xl mx-auto">{book.data.description}</p>
+        <p class="mt-4 text-sm md:text-base max-w-2xl mx-auto">Genres: {book.data.genres.join(', ')}</p>
+        {book.data.tags && <p class="mt-2 text-sm md:text-base max-w-2xl mx-auto">Tags: {book.data.tags.join(', ')}</p>}
+      </div>
+    </section>
 
-  <h2>Versions</h2>
-  <ul>
-    {versions.map((version: GithubTag) => (
-      <li>
-        <a href={`/books/${book.slug}/${version.name}`}>{version.name}</a>
-      </li>
-    ))}
-  </ul>
-</body>
-</html>
+    <section>
+      <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto">Available Versions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        {versions.map((version: GithubTag) => (
+          <a href={`/books/${book.slug}/${version.name}`} class="book-card">
+            <div class="book-cover" style={`background-color: ${randomColor()}`}>
+              <div class="book-title">{version.name}</div>
+            </div>
+            <div class="book-info">
+              <p class="book-summary">View details for version {version.name}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container mx-auto text-center text-sm">
+      <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
+      <p class="mt-2 font-poppins text-xs opacity-70">
+        <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
+      </p>
+    </div>
+  </footer>
+</Layout>

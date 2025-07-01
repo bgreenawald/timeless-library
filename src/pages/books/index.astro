@@ -1,23 +1,61 @@
 ---
+import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
 const books = await getCollection('books');
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Books</title>
-	</head>
-	<body>
-		<h1>Books</h1>
-		<ul>
-			{books.map(book => (
-				<li><a href={`/books/${book.slug}`}>{book.data.title}</a></li>
-			))}
-		</ul>
-	</body>
-</html>
+<Layout title="Book Catalogue">
+  <header>
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="/books" class="nav-link">Catalogue</a>
+        <a href="/about" class="nav-link">About</a>
+        <a href="#" class="nav-link">Submissions</a>
+      </nav>
+      <a href="/books" class="hidden md:block cta-button">Browse</a>
+      <button class="md:hidden text-2xl">
+        <!-- Mobile Menu Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <section class="text-center max-w-3xl mx-auto mb-24">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Our Catalogue</h1>
+        <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">
+          Explore our collection of modernized classic texts.
+        </p>
+      </div>
+    </section>
+    <section>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+        {books.map(book => (
+          <a href={`/books/${book.slug}`} class="book-card">
+            <div class="book-cover" style={`background-color: rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.75);`}>
+              <div class="book-title">{book.data.title}</div>
+              <div class="book-author">by {book.data.author}</div>
+            </div>
+            <div class="book-info">
+              <p class="book-summary">{book.data.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container mx-auto text-center text-sm">
+      <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
+      <p class="mt-2 font-poppins text-xs opacity-70">
+        <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
+      </p>
+    </div>
+  </footer>
+</Layout>
