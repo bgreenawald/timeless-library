@@ -1,0 +1,94 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Astro description" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <ViewTransitions />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="antialiased">
+    <!-- Header & Navigation -->
+    <header class="relative">
+      <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+        
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <a href="/books" class="nav-link">Catalogue</a>
+          <a href="/about" class="nav-link">About</a>
+          <a href="#" class="nav-link">FAQ</a>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button 
+          id="mobile-menu-button"
+          class="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500"
+          aria-label="Toggle mobile menu"
+          aria-expanded="false"
+        >
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Navigation Menu -->
+      <div id="mobile-menu" class="md:hidden fixed inset-0 bg-black bg-opacity-50" style="display: none; z-index: 9999;">
+        <nav class="fixed top-0 left-0 right-0 bg-white shadow-lg" style="z-index: 10000;">
+          <div class="container mx-auto px-4 py-4 space-y-4 mt-16">
+            <a href="/books" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">Catalogue</a>
+            <a href="/about" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">About</a>
+            <a href="#" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">FAQ</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <!-- Footer -->
+    <footer>
+      <div class="container mx-auto text-center text-sm">
+        <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
+        <p class="mt-2 font-poppins text-xs opacity-70">
+          <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Mobile Menu JavaScript -->
+    <script>
+      import { initMobileMenu } from '../scripts/mobile-menu';
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileMenu);
+      } else {
+        initMobileMenu();
+      }
+      
+      document.addEventListener('astro:page-load', function() {
+        if (window.cleanupMobileMenu) {
+          window.cleanupMobileMenu();
+        }
+        initMobileMenu();
+      });
+    </script>
+  </body>
+</html>

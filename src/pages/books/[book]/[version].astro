@@ -1,0 +1,59 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { fetchTags, fetchRelease } from '../../../lib/github';
+
+export async function getStaticPaths() {
+  const tags = await fetchTags();
+
+  const paths = await Promise.all(tags.map(async (tag) => {
+    // Extract book slug: find the last occurrence of '-v' to separate book from version
+    const versionIndex = tag.name.lastIndexOf('-v');
+    if (versionIndex === -1 || versionIndex === 0) {
+      return null;
+    }
+    const bookSlug = tag.name.substring(0, versionIndex);
+    const versionPart = tag.name.substring(versionIndex + 2);
+    
+    // Validate that we have both a book slug and version
+    if (!bookSlug.trim() || !versionPart.trim()) {
+      return null;
+    }
+    
+    const release = await fetchRelease(tag.name);
+    
+    if (!release) {
+      return null;
+    }
+
+    return {
+      params: { book: bookSlug, version: tag.name },
+      props: { 
+        release
+      },
+    };
+  }));
+
+  const validPaths = paths.filter(path => path !== null);
+  return validPaths;
+}
+
+const { release } = Astro.props;
+---
+
+<Layout title={`Version ${release.tag_name}`}>
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <section class="text-center max-w-3xl mx-auto mb-24">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Version {release.tag_name}</h1>
+        <h2 class="text-2xl md:text-3xl mt-8">Downloads</h2>
+        <ul class="list-disc list-inside mt-4">
+          {release.assets.map(asset => (
+            <li>
+              <a href={asset.browser_download_url} download class="text-accent-gold hover:text-accent-gold-hover">{asset.name}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  </main>
+</Layout>

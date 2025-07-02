@@ -1,0 +1,45 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { fetchTags } from '../../../lib/github';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const tags = await fetchTags();
+
+  return books.map(book => {
+    const versions = tags
+      .filter(tag => tag.name.startsWith(book.slug))
+      .map(tag => tag.name)
+      .sort((a, b) => {
+        // Add semantic version sorting logic here
+        // or use a library like semver
+        return a.localeCompare(b, undefined, { numeric: true });
+      });
+    
+    // Check if versions array is empty
+    if (versions.length === 0) {
+      console.warn(`No versions found for book: ${book.slug}`);
+      return null; // Skip this book
+    }
+    
+    const latestVersion = versions[versions.length - 1];
+
+    return {
+      params: { book: book.slug },
+      props: { latestVersion, hasVersions: true },
+    };
+  }).filter(path => path !== null); // Remove null entries
+}
+
+const { latestVersion, hasVersions } = Astro.props;
+const { book } = Astro.params;
+
+// Defensive check - this shouldn't happen with the validation above, but good to be safe
+if (!hasVersions || !latestVersion) {
+  return Astro.redirect('/books'); // Redirect to books index if no versions
+}
+
+// Perform server-side redirect to the latest version
+return Astro.redirect(`/books/${book}/${latestVersion}`);
+---
