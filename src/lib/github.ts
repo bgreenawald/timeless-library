@@ -51,10 +51,15 @@ export async function fetchRelease(tagName: string): Promise<GithubRelease | nul
 }
 
 export async function fetchRawFile(commitSha: string, filePath: string): Promise<string | null> {
-  const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${commitSha}/${filePath}`;
+  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${filePath}?ref=${commitSha}`;
   
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        Accept: 'application/vnd.github.v3.raw',
+      },
+    });
     if (!response.ok) {
       console.error(`Failed to fetch raw file from ${url}: ${response.statusText}`);
       return null;
