@@ -21,15 +21,16 @@ const { books } = Astro.props;
 
 <Layout title={`Books with Tag: ${tag}`}>
   <main class="container mx-auto px-6 py-16 md:py-24">
-    <section class="text-center max-w-3xl mx-auto mb-24">
+    <section class="text-center max-w-3xl mx-auto mb-24" aria-labelledby="page-title">
       <div class="text-pane">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Books with Tag: {tag}</h1>
+        <h1 id="page-title" class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Books with Tag: {tag}</h1>
         <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">
           Explore books associated with the tag: {tag}.
         </p>
       </div>
     </section>
-    <section>
+    <section aria-labelledby="books-heading">
+      <h2 id="books-heading" class="sr-only">Book Results</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
         {books.map((book, index) => (
           <a href={`/books/${book.slug}`} class="book-card">

@@ -4,22 +4,24 @@ import { fetchTags, fetchRelease } from '../../../lib/github';
 
 export async function getStaticPaths() {
   const tags = await fetchTags();
-  console.log('Fetched tags:', tags.map(t => t.name));
 
   const paths = await Promise.all(tags.map(async (tag) => {
     // Extract book slug: find the last occurrence of '-v' to separate book from version
     const versionIndex = tag.name.lastIndexOf('-v');
-    if (versionIndex === -1) {
-      console.log(`Invalid tag format (no version found): ${tag.name}`);
+    if (versionIndex === -1 || versionIndex === 0) {
       return null;
     }
     const bookSlug = tag.name.substring(0, versionIndex);
-    console.log(`Processing tag: ${tag.name}, bookSlug: ${bookSlug}`);
+    const versionPart = tag.name.substring(versionIndex + 2);
+    
+    // Validate that we have both a book slug and version
+    if (!bookSlug.trim() || !versionPart.trim()) {
+      return null;
+    }
     
     const release = await fetchRelease(tag.name);
     
     if (!release) {
-      console.log(`No release found for tag: ${tag.name}`);
       return null;
     }
 
@@ -32,7 +34,6 @@ export async function getStaticPaths() {
   }));
 
   const validPaths = paths.filter(path => path !== null);
-  console.log('Valid static paths:', validPaths);
   return validPaths;
 }
 

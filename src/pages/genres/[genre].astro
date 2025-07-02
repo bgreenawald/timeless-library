@@ -34,11 +34,11 @@ const { books } = Astro.props;
         {books.map((book, index) => (
           <a href={`/books/${book.slug}`} class="book-card">
             <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
-              <div class="book-title">{book.data.title}</div>
-              <div class="book-author">by {book.data.author}</div>
+              <div class="book-title">{book.data.title || 'Untitled'}</div>
+              <div class="book-author">by {book.data.author || 'Unknown Author'}</div>
             </div>
             <div class="book-info">
-              <p class="book-summary">{book.data.description}</p>
+              <p class="book-summary">{book.data.description || 'No description available'}</p>
             </div>
           </a>
         ))}

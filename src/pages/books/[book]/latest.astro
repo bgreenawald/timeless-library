@@ -11,24 +11,35 @@ export async function getStaticPaths() {
     const versions = tags
       .filter(tag => tag.name.startsWith(book.slug))
       .map(tag => tag.name)
-      .sort();
+      .sort((a, b) => {
+        // Add semantic version sorting logic here
+        // or use a library like semver
+        return a.localeCompare(b, undefined, { numeric: true });
+      });
+    
+    // Check if versions array is empty
+    if (versions.length === 0) {
+      console.warn(`No versions found for book: ${book.slug}`);
+      return null; // Skip this book
+    }
+    
     const latestVersion = versions[versions.length - 1];
 
     return {
       params: { book: book.slug },
-      props: { latestVersion },
+      props: { latestVersion, hasVersions: true },
     };
-  });
+  }).filter(path => path !== null); // Remove null entries
 }
 
-const { latestVersion } = Astro.props;
+const { latestVersion, hasVersions } = Astro.props;
 const { book } = Astro.params;
-const redirectUrl = `/books/${book}/${latestVersion}`;
----
 
-<Layout title="Redirecting...">
-  <meta http-equiv="refresh" content={`0;url=${redirectUrl}`} />
-  <div class="container mx-auto px-6 py-16 md:py-24 text-center">
-    <p class="text-lg">Redirecting to the <a href={redirectUrl} class="text-accent-gold hover:text-accent-gold-hover">latest version</a>...</p>
-  </div>
-</Layout>
+// Defensive check - this shouldn't happen with the validation above, but good to be safe
+if (!hasVersions || !latestVersion) {
+  return Astro.redirect('/books'); // Redirect to books index if no versions
+}
+
+// Perform server-side redirect to the latest version
+return Astro.redirect(`/books/${book}/${latestVersion}`);
+---
