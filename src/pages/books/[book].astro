@@ -9,7 +9,16 @@ export async function getStaticPaths() {
   const tags = await fetchTags();
 
   return books.map(book => {
-    const versions = tags.filter(tag => tag.name.startsWith(book.slug));
+    let versions = tags.filter(tag => tag.name.startsWith(book.slug));
+    
+    // Filter out alpha and beta tags in non-development environments
+    if (!import.meta.env.DEV) {
+      versions = versions.filter(tag => 
+        !tag.name.toLowerCase().includes('alpha') && 
+        !tag.name.toLowerCase().includes('beta')
+      );
+    }
+    
     return {
       params: { book: book.slug },
       props: { book, versions, hasVersions: versions.length > 0 },
