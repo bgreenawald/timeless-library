@@ -4,11 +4,15 @@ import { getCollection } from 'astro:content';
 import { getThemeColor } from '../../lib/colors';
 
 const books = await getCollection('books');
+
+// Get unique genres and tags for filtering
+const allGenres = [...new Set(books.flatMap(book => book.data.genres))].sort();
+const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort();
 ---
 
 <Layout title="Book Catalogue">
   <main class="container mx-auto px-6 py-16 md:py-24">
-    <section class="text-center max-w-3xl mx-auto mb-24">
+    <section class="text-center max-w-3xl mx-auto mb-16">
       <div class="text-pane">
         <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">Our Catalogue</h1>
         <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">
@@ -16,10 +20,83 @@ const books = await getCollection('books');
         </p>
       </div>
     </section>
+
+    <!-- Search and Filter Controls -->
+    <section class="max-w-4xl mx-auto mb-12">
+      <div class="text-pane">
+        <!-- Search Input -->
+        <div class="mb-6">
+          <label for="search-input" class="block font-medium text-text-ink mb-2 font-poppins">
+            Search Books
+          </label>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search by title, author, or description..."
+            class="search-input"
+          />
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Genre Filter -->
+          <div>
+            <label for="genre-filter" class="block font-medium text-text-ink mb-2 font-poppins">
+              Filter by Genre
+            </label>
+            <select
+              id="genre-filter"
+              class="search-select"
+            >
+              <option value="">All Genres</option>
+              {allGenres.map(genre => (
+                <option value={genre}>{genre}</option>
+              ))}
+            </select>
+          </div>
+
+          <!-- Tag Filter -->
+          <div>
+            <label for="tag-filter" class="block font-medium text-text-ink mb-2 font-poppins">
+              Filter by Tag
+            </label>
+            <select
+              id="tag-filter"
+              class="search-select"
+            >
+              <option value="">All Tags</option>
+              {allTags.map(tag => (
+                <option value={tag}>{tag}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <!-- Clear Filters Button -->
+        <div class="mt-6 text-right">
+          <button
+            id="clear-filters"
+            class="nav-link"
+          >
+            Clear all filters
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
     <section>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+      <!-- Results Count -->
+      <div class="max-w-4xl mx-auto mb-8">
+        <p id="results-count" class="text-text-ink/70" aria-live="polite" role="status">
+          Showing {books.length} book{books.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+
+      <!-- Books Grid -->
+      <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
         {books.map((book, index) => (
-          <a href={`/books/${book.slug}`}>
+          <a href={`/books/${book.slug}`} class="book-item" data-genres={book.data.genres.join(',')} data-tags={book.data.tags?.join(',') || ''}>
             <div class="book-card">
               <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
                 <div class="book-title">{book.data.title}</div>
@@ -27,11 +104,45 @@ const books = await getCollection('books');
               </div>
               <div class="book-info">
                 <p class="book-summary">{book.data.short_description}</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  {book.data.genres.map(genre => (
+                    <span class="text-xs bg-accent-gold/10 text-accent-gold px-2 py-1 rounded-full">
+                      {genre}
+                    </span>
+                  ))}
+                  {book.data.tags?.map(tag => (
+                    <span class="text-xs bg-text-ink/10 text-text-ink px-2 py-1 rounded-full">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </a>
         ))}
       </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden text-center py-16" aria-live="polite" role="alert">
+        <div class="max-w-md mx-auto">
+          <div class="text-6xl mb-4" aria-hidden="true">📚</div>
+          <h3 class="text-xl font-semibold mb-2">No books found</h3>
+          <p class="text-text-ink/70 mb-6">
+            Try adjusting your search terms or filters to find what you're looking for.
+          </p>
+          <button
+            id="reset-search"
+            class="cta-button"
+          >
+            Reset Search
+          </button>
+        </div>
+      </div>
     </section>
   </main>
+
+  <script>
+    import { initializeBookSearch } from '../../scripts/book-search';
+    document.addEventListener('DOMContentLoaded', initializeBookSearch);
+  </script>
 </Layout>
