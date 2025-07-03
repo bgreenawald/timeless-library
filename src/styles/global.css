@@ -271,3 +271,80 @@
         footer {
           padding: 2rem 1.5rem;
         }
+
+        /* FAQ Component Styling */
+        .faq-item {
+          border: 1px solid rgba(229, 224, 215, 0.5);
+          border-radius: 0.75rem;
+          overflow: hidden;
+          background-color: rgba(250, 243, 232, 0.65);
+          transition: box-shadow 0.3s ease;
+        }
+
+        .faq-item:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .faq-question {
+          width: 100%;
+          padding: 1.5rem;
+          background: none;
+          border: none;
+          text-align: left;
+          cursor: pointer;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-family: 'Poppins', sans-serif;
+          font-weight: 500;
+          font-size: 1.1rem;
+          color: var(--text-ink);
+          transition: background-color 0.3s ease, color 0.3s ease;
+          position: relative;
+          z-index: 1;
+        }
+
+        .faq-question:hover {
+          background-color: rgba(180, 140, 79, 0.05);
+          color: var(--accent-gold);
+        }
+
+        .faq-question:focus {
+          outline: none;
+          background-color: rgba(180, 140, 79, 0.1);
+          color: var(--accent-gold);
+        }
+
+        .faq-question-text {
+          flex: 1;
+          margin-right: 1rem;
+          line-height: 1.4;
+          pointer-events: none;
+        }
+
+        .faq-icon {
+          flex-shrink: 0;
+          transition: transform 0.3s ease;
+          color: var(--accent-gold);
+        }
+
+        .faq-answer {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+          background-color: rgba(250, 243, 232, 0.8);
+          border-top: 1px solid rgba(229, 224, 215, 0.3);
+          /* Temporary: disable transition for debugging */
+          /* transition: none; */
+        }
+
+        .faq-answer-content {
+          padding: 1.5rem;
+          font-family: 'Lora', serif;
+          line-height: 1.75;
+          color: var(--text-ink);
+        }
+
+        .faq-answer-content p {
+          margin: 0;
+        }
