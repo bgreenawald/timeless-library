@@ -347,4 +347,38 @@
 
         .faq-answer-content p {
           margin: 0;
+
+        /* Search Input Styling */
+        .search-input,
+        .search-select {
+          width: 100%;
+          padding: 0.75rem 1rem;
+          border: 1px solid var(--border-color);
+          border-radius: 0.5rem;
+          background-color: rgba(250, 243, 232, 0.8);
+          color: var(--text-ink);
+          font-family: 'Lora', serif;
+          font-size: 0.95rem;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-input:focus,
+        .search-select:focus {
+          outline: none;
+          border-color: var(--accent-gold);
+          box-shadow: 0 0 0 3px rgba(180, 140, 79, 0.1);
+        }
+
+        .search-input::placeholder {
+          color: var(--text-ink);
+          opacity: 0.6;
+        }
+
+        .search-select {
+          cursor: pointer;
+        }
+
+        .search-select option {
+          background-color: var(--background-paper);
+          color: var(--text-ink);
         }
