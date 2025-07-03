@@ -1,0 +1,158 @@
+---
+import Layout from '../layouts/Layout.astro';
+import faqData from '../data/faq.json';
+
+const { sections } = faqData;
+---
+
+<Layout title="FAQ - The Modern Library">
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <!-- Header Section -->
+    <section class="text-center max-w-4xl mx-auto mb-16">
+      <div class="text-pane">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight mb-6">Frequently Asked Questions</h1>
+        <p class="text-lg md:text-xl max-w-3xl mx-auto">
+          Find answers to common questions about our modernizations, reading experience, and how we bring classic literature to contemporary audiences.
+        </p>
+      </div>
+    </section>
+
+    <!-- FAQ Sections -->
+    <div class="max-w-4xl mx-auto space-y-12">
+      {sections.map((section, sectionIndex) => (
+        <section>
+          <h2 class="text-pane text-2xl md:text-3xl mb-8 text-center">{section.title}</h2>
+          <div class="space-y-4">
+            {section.questions.map((item, questionIndex) => (
+              <div class="faq-item">
+                <button 
+                  class="faq-question"
+                  data-section={sectionIndex}
+                  data-question={questionIndex}
+                  aria-expanded="false"
+                  aria-controls={`faq-answer-${sectionIndex}-${questionIndex}`}
+                >
+                  <span class="faq-question-text">{item.question}</span>
+                  <svg class="faq-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </button>
+                <div 
+                  id={`faq-answer-${sectionIndex}-${questionIndex}`}
+                  class="faq-answer"
+                  aria-hidden="true"
+                >
+                  <div class="faq-answer-content">
+                    <p>{item.answer}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <!-- Contact Section -->
+    <section class="text-center max-w-2xl mx-auto mt-16">
+      <div class="text-pane">
+        <h2 class="text-2xl md:text-3xl mb-4">Still Have Questions?</h2>
+        <p class="mb-6">
+          Can't find what you're looking for? We'd love to hear from you and help answer any additional questions you might have.
+        </p>
+        <a href="/about" class="cta-button">Contact Us</a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<script is:inline>
+  // Track if FAQ is already initialized to prevent double initialization
+  let faqInitialized = false;
+  let isProcessing = false; // Prevent rapid successive clicks
+  
+  function initFAQ() {
+    if (faqInitialized) {
+      return;
+    }
+    
+    const faqQuestions = document.querySelectorAll('.faq-question');
+    
+    faqQuestions.forEach((button, index) => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Prevent rapid successive clicks
+        if (isProcessing) {
+          return;
+        }
+        
+        isProcessing = true;
+        
+        const currentExpanded = this.getAttribute('aria-expanded');
+        const isExpanded = currentExpanded === 'true';
+        const answerId = this.getAttribute('aria-controls');
+        const answer = document.getElementById(answerId);
+        const icon = this.querySelector('.faq-icon');
+        
+        if (!answer || !icon) {
+          isProcessing = false;
+          return;
+        }
+        
+        // Simple toggle logic
+        if (isExpanded) {
+          this.setAttribute('aria-expanded', 'false');
+          answer.setAttribute('aria-hidden', 'true');
+          answer.style.maxHeight = '0px';
+          icon.style.transform = 'rotate(0deg)';
+        } else {
+          // Close all other items first
+          document.querySelectorAll('.faq-question').forEach(otherButton => {
+            if (otherButton !== this) {
+              otherButton.setAttribute('aria-expanded', 'false');
+              const otherAnswerId = otherButton.getAttribute('aria-controls');
+              const otherAnswer = document.getElementById(otherAnswerId);
+              if (otherAnswer) {
+                otherAnswer.setAttribute('aria-hidden', 'true');
+                otherAnswer.style.maxHeight = '0px';
+              }
+              const otherIcon = otherButton.querySelector('.faq-icon');
+              if (otherIcon) {
+                otherIcon.style.transform = 'rotate(0deg)';
+              }
+            }
+          });
+          
+          // Open current item
+          this.setAttribute('aria-expanded', 'true');
+          answer.setAttribute('aria-hidden', 'false');
+          const scrollHeight = answer.scrollHeight;
+          answer.style.maxHeight = scrollHeight + 'px';
+          icon.style.transform = 'rotate(180deg)';
+        }
+        
+        // Reset processing flag after a short delay
+        setTimeout(() => {
+          isProcessing = false;
+        }, 100);
+      });
+    });
+    
+    faqInitialized = true;
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFAQ);
+  } else {
+    initFAQ();
+  }
+  
+  // Re-initialize on Astro view transitions
+  document.addEventListener('astro:page-load', function() {
+    faqInitialized = false;
+    initFAQ();
+  });
+</script> 

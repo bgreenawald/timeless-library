@@ -33,7 +33,7 @@ const { title } = Astro.props;
         <nav class="hidden md:flex items-center space-x-8">
           <a href="/books" class="nav-link">Catalogue</a>
           <a href="/about" class="nav-link">About</a>
-          <a href="#" class="nav-link">FAQ</a>
+          <a href="/faq" class="nav-link">FAQ</a>
         </nav>
 
         <!-- Mobile Menu Button -->
@@ -55,7 +55,7 @@ const { title } = Astro.props;
           <div class="container mx-auto px-4 py-4 space-y-4 mt-16">
             <a href="/books" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">Catalogue</a>
             <a href="/about" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">About</a>
-            <a href="#" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">FAQ</a>
+            <a href="/faq" class="block py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-[var(--accent-gold)] rounded-md transition-colors duration-200 font-medium">FAQ</a>
           </div>
         </nav>
       </div>
@@ -74,15 +74,89 @@ const { title } = Astro.props;
     </footer>
 
     <!-- Mobile Menu JavaScript -->
-    <script>
-      import { initMobileMenu } from '../scripts/mobile-menu';
-      
+    <script is:inline>
+      function initMobileMenu() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+          // Remove any existing event listeners by cloning the button
+          const newButton = mobileMenuButton.cloneNode(true);
+          mobileMenuButton.parentNode.replaceChild(newButton, mobileMenuButton);
+          
+          // Get the new button reference
+          const button = document.getElementById('mobile-menu-button');
+          
+          button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isExpanded = button.getAttribute('aria-expanded') === 'true';
+            
+            // Toggle menu visibility
+            if (isExpanded) {
+              // Close menu
+              mobileMenu.style.display = 'none';
+              mobileMenu.setAttribute('aria-hidden', 'true');
+              button.setAttribute('aria-expanded', 'false');
+              document.body.style.overflow = '';
+            } else {
+              // Open menu
+              mobileMenu.style.display = 'block';
+              mobileMenu.setAttribute('aria-hidden', 'false');
+              button.setAttribute('aria-expanded', 'true');
+              document.body.style.overflow = 'hidden';
+            }
+          });
+
+          // Close menu when clicking outside
+          const outsideClickHandler = function(event) {
+            // Check if click is on the overlay background (not the nav menu)
+            const isClickOnOverlay = event.target === mobileMenu || 
+                                   (event.target.classList && event.target.classList.contains('bg-black'));
+            
+            // Check if click is on the actual navigation menu
+            const isClickOnNav = event.target.closest('nav');
+            
+            if (!button.contains(event.target) && !isClickOnNav && isClickOnOverlay) {
+              mobileMenu.style.display = 'none';
+              mobileMenu.setAttribute('aria-hidden', 'true');
+              button.setAttribute('aria-expanded', 'false');
+              document.body.style.overflow = '';
+            }
+          };
+          
+          // Use capture phase to ensure this runs before other handlers
+          document.addEventListener('click', outsideClickHandler, true);
+
+          // Close menu on escape key
+          const escapeKeyHandler = function(event) {
+            if (event.key === 'Escape') {
+              mobileMenu.style.display = 'none';
+              mobileMenu.setAttribute('aria-hidden', 'true');
+              button.setAttribute('aria-expanded', 'false');
+              document.body.style.overflow = '';
+            }
+          };
+          
+          document.addEventListener('keydown', escapeKeyHandler);
+          
+          // Clean up function for Astro view transitions
+          window.cleanupMobileMenu = function() {
+            document.removeEventListener('click', outsideClickHandler, true);
+            document.removeEventListener('keydown', escapeKeyHandler);
+          };
+        }
+      }
+
+      // Initialize on every page load/navigation
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initMobileMenu);
       } else {
         initMobileMenu();
       }
       
+      // Re-initialize on Astro view transitions
       document.addEventListener('astro:page-load', function() {
         if (window.cleanupMobileMenu) {
           window.cleanupMobileMenu();
