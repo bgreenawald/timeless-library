@@ -88,7 +88,7 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
     <section>
       <!-- Results Count -->
       <div class="max-w-4xl mx-auto mb-8">
-        <p id="results-count" class="text-text-ink/70">
+        <p id="results-count" class="text-text-ink/70" aria-live="polite" role="status">
           Showing {books.length} book{books.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -123,9 +123,9 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
       </div>
 
       <!-- Empty State -->
-      <div id="empty-state" class="hidden text-center py-16">
+      <div id="empty-state" class="hidden text-center py-16" aria-live="polite" role="alert">
         <div class="max-w-md mx-auto">
-          <div class="text-6xl mb-4">📚</div>
+          <div class="text-6xl mb-4" aria-hidden="true">📚</div>
           <h3 class="text-xl font-semibold mb-2">No books found</h3>
           <p class="text-text-ink/70 mb-6">
             Try adjusting your search terms or filters to find what you're looking for.
@@ -142,83 +142,7 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
   </main>
 
   <script>
-    // Search and filter functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      const searchInput = document.getElementById('search-input') as HTMLInputElement;
-      const genreFilter = document.getElementById('genre-filter') as HTMLSelectElement;
-      const tagFilter = document.getElementById('tag-filter') as HTMLSelectElement;
-      const clearFiltersBtn = document.getElementById('clear-filters') as HTMLButtonElement;
-      const resetSearchBtn = document.getElementById('reset-search') as HTMLButtonElement;
-      const booksGrid = document.getElementById('books-grid') as HTMLElement;
-      const emptyState = document.getElementById('empty-state') as HTMLElement;
-      const resultsCount = document.getElementById('results-count') as HTMLElement;
-      const bookItems = document.querySelectorAll('.book-item') as NodeListOf<HTMLElement>;
-
-      function filterBooks() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedGenre = genreFilter.value;
-        const selectedTag = tagFilter.value;
-
-        let visibleCount = 0;
-
-        bookItems.forEach(bookItem => {
-          const title = bookItem.querySelector('.book-title')?.textContent?.toLowerCase() || '';
-          const author = bookItem.querySelector('.book-author')?.textContent?.toLowerCase() || '';
-          const description = bookItem.querySelector('.book-summary')?.textContent?.toLowerCase() || '';
-          const genres = bookItem.dataset.genres?.split(',') || [];
-          const tags = bookItem.dataset.tags ? bookItem.dataset.tags.split(',') : [];
-
-          // Check search term
-          const matchesSearch = !searchTerm || 
-            title.includes(searchTerm) || 
-            author.includes(searchTerm) || 
-            description.includes(searchTerm);
-
-          // Check genre filter
-          const matchesGenre = !selectedGenre || genres.includes(selectedGenre);
-
-          // Check tag filter
-          const matchesTag = !selectedTag || tags.includes(selectedTag);
-
-          if (matchesSearch && matchesGenre && matchesTag) {
-            bookItem.style.display = 'block';
-            visibleCount++;
-          } else {
-            bookItem.style.display = 'none';
-          }
-        });
-
-        // Update results count
-        resultsCount.textContent = `Showing ${visibleCount} book${visibleCount !== 1 ? 's' : ''}`;
-
-        // Show/hide empty state
-        if (visibleCount === 0) {
-          booksGrid.style.display = 'none';
-          emptyState.classList.remove('hidden');
-        } else {
-          booksGrid.style.display = 'grid';
-          emptyState.classList.add('hidden');
-        }
-      }
-
-      // Event listeners
-      searchInput.addEventListener('input', filterBooks);
-      genreFilter.addEventListener('change', filterBooks);
-      tagFilter.addEventListener('change', filterBooks);
-
-      clearFiltersBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        genreFilter.value = '';
-        tagFilter.value = '';
-        filterBooks();
-      });
-
-      resetSearchBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        genreFilter.value = '';
-        tagFilter.value = '';
-        filterBooks();
-      });
-    });
+    import { initializeBookSearch } from '../../scripts/book-search';
+    document.addEventListener('DOMContentLoaded', initializeBookSearch);
   </script>
 </Layout>
