@@ -121,14 +121,13 @@
           border: 1px solid rgba(229, 224, 215, 0.5);
           border-radius: 0.75rem;
           transition: transform 0.3s ease, box-shadow 0.3s ease;
-          will-change: transform;
           overflow: hidden;
           display: flex;
           flex-direction: column;
         }
 
         .book-card:hover {
-          transform: translate3d(0, -5px, 0);
+          transform: translateY(-5px);
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
         }
 
@@ -142,6 +141,38 @@
           text-align: center;
           padding: 2rem;
           min-height: 280px;
+        }
+
+        .book-cover-image {
+          min-height: 280px;
+          overflow: hidden;
+        }
+
+        /* Book Detail Page Cover Styling */
+        .book-detail-cover {
+          max-width: 300px;
+          margin: 0 auto;
+        }
+
+        .book-detail-cover img {
+          width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .book-detail-cover-placeholder {
+          background-color: rgb(58, 58, 58, 0.65);
+          color: var(--background-paper);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 2rem;
+          min-height: 400px;
+          border-radius: 0.5rem;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
         .book-title {

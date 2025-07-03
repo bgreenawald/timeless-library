@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { getThemeColor } from '../lib/colors';
 
 const books = await getCollection('books', ({ data }) => data.is_featured);
 ---
@@ -23,15 +22,15 @@ const books = await getCollection('books', ({ data }) => data.is_featured);
     <section>
       <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto">Featured Modernizations </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-        {books.map((book, index) => (
+        {books.map((book) => (
           <a href={`/books/${book.slug}`}>
           <div class="book-card">
-            <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
+            <div class="book-cover" style="background-color: rgb(58, 58, 58, 0.75)">
               <div class="book-title">{book.data.title}</div>
               <div class="book-author">by {book.data.author}</div>
             </div>
             <div class="book-info">
-              <p class="book-summary">{book.data.description}</p>
+              <p class="book-summary">{book.data.short_description}</p>
             </div>
           </div>
           </a>
