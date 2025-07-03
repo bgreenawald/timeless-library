@@ -30,7 +30,12 @@ export async function getStaticPaths() {
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
       
       latestVersion = sortedVersions[sortedVersions.length - 1];
-      latestRelease = await fetchRelease(latestVersion);
+      try {
+        latestRelease = await fetchRelease(latestVersion);
+      } catch (error) {
+        console.error(`Failed to fetch release for ${latestVersion}:`, error);
+        latestRelease = null;
+      }
     }
     
     return {
