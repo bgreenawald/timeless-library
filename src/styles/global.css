@@ -383,3 +383,22 @@
           background-color: var(--background-paper);
           color: var(--text-ink);
         }
+
+        /* Download Button Styling */
+        .download-button {
+          background-color: var(--accent-gold);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          font-weight: 500;
+          font-size: 0.875rem;
+          transition: background-color 0.3s ease, transform 0.2s ease;
+          display: inline-block;
+          text-decoration: none;
+        }
+
+        .download-button:hover {
+          background-color: var(--accent-gold-hover);
+          color: white;
+          transform: translateY(-1px);
+        }
