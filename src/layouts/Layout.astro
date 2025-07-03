@@ -75,15 +75,9 @@ const { title } = Astro.props;
 
     <!-- Mobile Menu JavaScript -->
     <script is:inline>
-      console.log('Script loaded');
-      
       function initMobileMenu() {
-        console.log('Initializing mobile menu');
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const mobileMenu = document.getElementById('mobile-menu');
-        
-        console.log('Button found:', mobileMenuButton);
-        console.log('Menu found:', mobileMenu);
         
         if (mobileMenuButton && mobileMenu) {
           // Remove any existing event listeners by cloning the button
@@ -94,24 +88,20 @@ const { title } = Astro.props;
           const button = document.getElementById('mobile-menu-button');
           
           button.addEventListener('click', function(e) {
-            console.log('Button clicked!');
             e.preventDefault();
             e.stopPropagation();
             
             const isExpanded = button.getAttribute('aria-expanded') === 'true';
-            console.log('Is expanded:', isExpanded);
             
             // Toggle menu visibility
             if (isExpanded) {
               // Close menu
-              console.log('Closing menu');
               mobileMenu.style.display = 'none';
               mobileMenu.setAttribute('aria-hidden', 'true');
               button.setAttribute('aria-expanded', 'false');
               document.body.style.overflow = '';
             } else {
               // Open menu
-              console.log('Opening menu');
               mobileMenu.style.display = 'block';
               mobileMenu.setAttribute('aria-hidden', 'false');
               button.setAttribute('aria-expanded', 'true');
@@ -121,12 +111,6 @@ const { title } = Astro.props;
 
           // Close menu when clicking outside
           const outsideClickHandler = function(event) {
-            console.log('Outside click detected');
-            console.log('Button contains target:', button.contains(event.target));
-            console.log('Menu contains target:', mobileMenu.contains(event.target));
-            console.log('Clicked element:', event.target);
-            console.log('Clicked element class:', event.target.className);
-            
             // Check if click is on the overlay background (not the nav menu)
             const isClickOnOverlay = event.target === mobileMenu || 
                                    (event.target.classList && event.target.classList.contains('bg-black'));
@@ -135,7 +119,6 @@ const { title } = Astro.props;
             const isClickOnNav = event.target.closest('nav');
             
             if (!button.contains(event.target) && !isClickOnNav && isClickOnOverlay) {
-              console.log('Closing menu from overlay click');
               mobileMenu.style.display = 'none';
               mobileMenu.setAttribute('aria-hidden', 'true');
               button.setAttribute('aria-expanded', 'false');
@@ -175,7 +158,6 @@ const { title } = Astro.props;
       
       // Re-initialize on Astro view transitions
       document.addEventListener('astro:page-load', function() {
-        console.log('Astro page load detected, re-initializing mobile menu');
         if (window.cleanupMobileMenu) {
           window.cleanupMobileMenu();
         }

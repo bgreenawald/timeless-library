@@ -63,46 +63,28 @@ const { sections } = faqData;
         <a href="/about" class="cta-button">Contact Us</a>
       </div>
     </section>
-
-    <!-- Debug Section (remove this later) -->
-    <div id="debug-info" class="text-center mt-8 text-sm text-gray-500"></div>
   </main>
 </Layout>
 
 <script is:inline>
-  console.log('FAQ script loaded');
-  
   // Track if FAQ is already initialized to prevent double initialization
   let faqInitialized = false;
   let isProcessing = false; // Prevent rapid successive clicks
   
   function initFAQ() {
     if (faqInitialized) {
-      console.log('FAQ already initialized, skipping...');
       return;
     }
     
-    console.log('Initializing FAQ functionality...');
     const faqQuestions = document.querySelectorAll('.faq-question');
-    console.log('Found FAQ questions:', faqQuestions.length);
-    
-    // Update debug info
-    const debugInfo = document.getElementById('debug-info');
-    if (debugInfo) {
-      debugInfo.textContent = `FAQ initialized with ${faqQuestions.length} questions`;
-    }
     
     faqQuestions.forEach((button, index) => {
-      console.log(`Setting up FAQ question ${index + 1}, initial aria-expanded:`, button.getAttribute('aria-expanded'));
-      
       button.addEventListener('click', function(e) {
-        console.log('FAQ question clicked!', e.target);
         e.preventDefault();
         e.stopPropagation();
         
         // Prevent rapid successive clicks
         if (isProcessing) {
-          console.log('Already processing, ignoring click');
           return;
         }
         
@@ -114,29 +96,18 @@ const { sections } = faqData;
         const answer = document.getElementById(answerId);
         const icon = this.querySelector('.faq-icon');
         
-        console.log('FAQ state:', { 
-          currentExpanded, 
-          isExpanded, 
-          answerId, 
-          answer: !!answer, 
-          icon: !!icon 
-        });
-        
         if (!answer || !icon) {
-          console.error('FAQ answer or icon not found');
           isProcessing = false;
           return;
         }
         
         // Simple toggle logic
         if (isExpanded) {
-          console.log('Closing FAQ item');
           this.setAttribute('aria-expanded', 'false');
           answer.setAttribute('aria-hidden', 'true');
           answer.style.maxHeight = '0px';
           icon.style.transform = 'rotate(0deg)';
         } else {
-          console.log('Opening FAQ item');
           // Close all other items first
           document.querySelectorAll('.faq-question').forEach(otherButton => {
             if (otherButton !== this) {
@@ -158,13 +129,9 @@ const { sections } = faqData;
           this.setAttribute('aria-expanded', 'true');
           answer.setAttribute('aria-hidden', 'false');
           const scrollHeight = answer.scrollHeight;
-          console.log('Answer scrollHeight:', scrollHeight);
           answer.style.maxHeight = scrollHeight + 'px';
           icon.style.transform = 'rotate(180deg)';
         }
-        
-        // Verify the state change
-        console.log('After toggle - aria-expanded:', this.getAttribute('aria-expanded'), 'aria-hidden:', answer.getAttribute('aria-hidden'));
         
         // Reset processing flag after a short delay
         setTimeout(() => {
@@ -185,7 +152,6 @@ const { sections } = faqData;
   
   // Re-initialize on Astro view transitions
   document.addEventListener('astro:page-load', function() {
-    console.log('Astro page load detected, re-initializing FAQ');
     faqInitialized = false;
     initFAQ();
   });
