@@ -76,13 +76,13 @@ if (originalText && modernizedText) {
                 </div>
                 <div class="bg-green-100 p-4 rounded-lg">
                   <div class="text-2xl font-bold text-green-800">
-                    {diffResult?.diff.split('\n').filter(line => line.startsWith('+')).length || 0}
+                    {diffResult?.diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++')).length || 0}
                   </div>
                   <div class="text-sm text-green-600">Additions</div>
                 </div>
                 <div class="bg-red-100 p-4 rounded-lg">
                   <div class="text-2xl font-bold text-red-800">
-                    {diffResult?.diff.split('\n').filter(line => line.startsWith('-')).length || 0}
+                    {diffResult?.diff.split('\n').filter(line => line.startsWith('-') && !line.startsWith('---')).length || 0}
                   </div>
                   <div class="text-sm text-red-600">Removals</div>
                 </div>

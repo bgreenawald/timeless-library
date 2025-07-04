@@ -47,10 +47,68 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
   console.log(`  Original URL: ${originalAsset.browser_download_url}`);
   console.log(`  Modernized URL: ${modernizedAsset.browser_download_url}`);
   
-  // Download the files directly from the release assets
+  // Download the files directly from the release assets with proper error handling
   const [originalText, modernizedText] = await Promise.all([
-    fetch(originalAsset.browser_download_url).then(response => response.ok ? response.text() : null),
-    fetch(modernizedAsset.browser_download_url).then(response => response.ok ? response.text() : null)
+    fetch(originalAsset.browser_download_url)
+      .then(async response => {
+        if (!response.ok) {
+          console.error(`Diff Debug - Original file fetch failed:`, {
+            url: originalAsset.browser_download_url,
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+          return null;
+        }
+        try {
+          const text = await response.text();
+          console.log(`Diff Debug - Original file downloaded successfully, length: ${text.length}`);
+          return text;
+        } catch (error) {
+          console.error(`Diff Debug - Original file text parsing failed:`, {
+            url: originalAsset.browser_download_url,
+            error: error instanceof Error ? error.message : String(error)
+          });
+          return null;
+        }
+      })
+      .catch(error => {
+        console.error(`Diff Debug - Original file network error:`, {
+          url: originalAsset.browser_download_url,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        return null;
+      }),
+    fetch(modernizedAsset.browser_download_url)
+      .then(async response => {
+        if (!response.ok) {
+          console.error(`Diff Debug - Modernized file fetch failed:`, {
+            url: modernizedAsset.browser_download_url,
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+          return null;
+        }
+        try {
+          const text = await response.text();
+          console.log(`Diff Debug - Modernized file downloaded successfully, length: ${text.length}`);
+          return text;
+        } catch (error) {
+          console.error(`Diff Debug - Modernized file text parsing failed:`, {
+            url: modernizedAsset.browser_download_url,
+            error: error instanceof Error ? error.message : String(error)
+          });
+          return null;
+        }
+      })
+      .catch(error => {
+        console.error(`Diff Debug - Modernized file network error:`, {
+          url: modernizedAsset.browser_download_url,
+          error: error instanceof Error ? error.message : String(error)
+        });
+        return null;
+      })
   ]);
   
   console.log('Diff Debug - Download results:');
@@ -78,9 +136,10 @@ export function generateDiff(originalText: string, modernizedText: string): Diff
     { context: 3 }
   );
   
-  // Count changes (lines starting with + or -)
+  // Count changes (lines starting with + or -), excluding diff headers
   const changeCount = diff.split('\n').filter(line => 
-    line.startsWith('+') || line.startsWith('-')
+    (line.startsWith('+') && !line.startsWith('+++')) || 
+    (line.startsWith('-') && !line.startsWith('---'))
   ).length;
   
   return {
@@ -92,83 +151,7 @@ export function generateDiff(originalText: string, modernizedText: string): Diff
   };
 }
 
-/**
- * Formats diff output for HTML display with syntax highlighting and a table layout.
- * 
- * @param diffText - The raw diff text
- * @returns HTML-formatted diff with appropriate classes
- */
-export function formatDiffForHtml(diffText: string): string {
-  // Split diff into lines and process for table layout
-  const lines = diffText.split('\n');
-  let oldLine = 0;
-  let newLine = 0;
-  let html = '<table class="diff-table"><tbody>';
 
-  for (const line of lines) {
-    let type = 'context';
-    let displayLine = line;
-    let oldLineNum = '';
-    let newLineNum = '';
-    if (line.startsWith('@@')) {
-      type = 'hunk';
-      // Parse hunk header for line numbers
-      const match = /@@ -(\d+),?\d* \+(\d+),?\d* @@/.exec(line);
-      if (match) {
-        oldLine = parseInt(match[1], 10) - 1;
-        newLine = parseInt(match[2], 10) - 1;
-      }
-      html += `<tr class="diff-hunk"><td colspan="4">${escapeHtml(line)}</td></tr>`;
-      continue;
-    } else if (line.startsWith('+')) {
-      type = 'added';
-      newLine++;
-      newLineNum = newLine.toString();
-      oldLineNum = '';
-      displayLine = line.slice(1);
-    } else if (line.startsWith('-')) {
-      type = 'removed';
-      oldLine++;
-      oldLineNum = oldLine.toString();
-      newLineNum = '';
-      displayLine = line.slice(1);
-    } else if (line.startsWith('---') || line.startsWith('+++')) {
-      type = 'header';
-      html += `<tr class="diff-header"><td colspan="4">${escapeHtml(line)}</td></tr>`;
-      continue;
-    } else {
-      type = 'context';
-      oldLine++;
-      newLine++;
-      oldLineNum = oldLine.toString();
-      newLineNum = newLine.toString();
-      displayLine = line.startsWith(' ') ? line.slice(1) : line;
-    }
-    html += `<tr class="diff-line diff-${type}">
-      <td class="diff-gutter old">${oldLineNum}</td>
-      <td class="diff-gutter new">${newLineNum}</td>
-      <td class="diff-bar ${type}"></td>
-      <td class="diff-content">${escapeHtml(displayLine)}</td>
-    </tr>`;
-  }
-  html += '</tbody></table>';
-  return html;
-}
-
-/**
- * Escapes HTML special characters to prevent XSS.
- * 
- * @param text - The text to escape
- * @returns Escaped HTML string
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 /**
  * Parses diff text into structured data for template rendering.
