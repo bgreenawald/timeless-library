@@ -402,3 +402,22 @@
           color: white;
           transform: translateY(-1px);
         }
+
+        /* Diff Button Styling */
+        .diff-button {
+          background-color: #8b5cf6;
+          color: white;
+          padding: 0.75rem 1.5rem;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-size: 1rem;
+          transition: background-color 0.3s ease, transform 0.3s ease;
+          display: inline-block;
+          text-decoration: none;
+        }
+
+        .diff-button:hover {
+          background-color: #7c3aed;
+          color: white;
+          transform: translateY(-2px);
+        }

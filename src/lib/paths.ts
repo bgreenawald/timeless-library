@@ -108,4 +108,48 @@ export async function generateVersionPaths() {
 
   // Flatten the array of arrays
   return paths.flat();
+}
+
+/**
+ * Generates static paths for diff pages
+ */
+export async function generateDiffPaths() {
+  const books = await getCollection('books');
+  
+  const paths = await Promise.all(books.map(async (book) => {
+    const versions = await getBookVersions(book.slug);
+    
+    // Generate paths for each version that has modernized content
+    const diffPaths = await Promise.all(versions.map(async (version) => {
+      const release = await getReleaseForVersion(version.name);
+      
+      if (!release) {
+        return null;
+      }
+
+      // Check if this version has modernized content
+      const hasModernized = release.assets.some(asset => 
+        asset.name.endsWith('-modernized.md')
+      );
+
+      if (!hasModernized) {
+        return null;
+      }
+
+      return {
+        params: { book: book.slug, version: version.name },
+        props: { 
+          book,
+          release,
+          version: version.name,
+          versionTag: version
+        },
+      };
+    }));
+
+    return diffPaths.filter(path => path !== null);
+  }));
+
+  // Flatten the array of arrays
+  return paths.flat();
 } 

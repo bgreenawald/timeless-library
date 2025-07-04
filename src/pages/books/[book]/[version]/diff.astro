@@ -1,0 +1,251 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+import BookDetail from '../../../../components/BookDetail.astro';
+import { generateDiffPaths } from '../../../../lib/paths';
+import { fetchVersionTexts, generateDiff, parseDiffToLines } from '../../../../lib/diff';
+
+export async function getStaticPaths() {
+  return generateDiffPaths();
+}
+
+const { book, release, version, versionTag } = Astro.props;
+
+// Fetch the original and modernized texts
+const { originalText, modernizedText } = await fetchVersionTexts(versionTag, book.slug, release);
+
+// Generate the diff if both texts are available
+let diffResult = null;
+let diffLines: Array<{
+  type: 'added' | 'removed' | 'context' | 'hunk' | 'header';
+  oldLineNum: string;
+  newLineNum: string;
+  content: string;
+  isHunk?: boolean;
+  isHeader?: boolean;
+}> = [];
+let hasChanges = false;
+let changeCount = 0;
+
+if (originalText && modernizedText) {
+  diffResult = generateDiff(originalText, modernizedText);
+  diffLines = parseDiffToLines(diffResult.diff);
+  hasChanges = diffResult.hasChanges;
+  changeCount = diffResult.changeCount;
+  
+  // Debug logging
+  console.log('Diff Debug - Generated diff:', {
+    hasChanges,
+    changeCount,
+    diffLength: diffResult.diff.length,
+    diffLinesCount: diffLines.length
+  });
+}
+---
+
+<Layout title={`${book.data.title} - Version ${version} - Diff`}>
+  <main class="container mx-auto px-6 py-16 md:py-24">
+    <BookDetail book={book} />
+
+    <!-- Diff Header -->
+    <section class="max-w-6xl mx-auto mb-12">
+      <div class="text-pane text-center">
+        <h1 class="text-3xl md:text-4xl mb-4">Text Comparison</h1>
+        <p class="text-lg mb-2">Version: <strong>{version}</strong></p>
+        <p class="text-base text-text-ink/70">
+          Comparing original text with modernized version
+        </p>
+        {hasChanges && (
+          <p class="text-sm text-text-ink/60 mt-2">
+            {changeCount} changes detected
+          </p>
+        )}
+      </div>
+    </section>
+
+    <!-- Diff Content -->
+    {originalText && modernizedText ? (
+      <section class="max-w-6xl mx-auto">
+        {hasChanges ? (
+          <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+            <div class="mb-6">
+              <h2 class="text-2xl font-semibold mb-4">Changes Summary</h2>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-blue-800">{changeCount}</div>
+                  <div class="text-sm text-blue-600">Total Changes</div>
+                </div>
+                <div class="bg-green-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-green-800">
+                    {diffResult?.diff.split('\n').filter(line => line.startsWith('+')).length || 0}
+                  </div>
+                  <div class="text-sm text-green-600">Additions</div>
+                </div>
+                <div class="bg-red-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-red-800">
+                    {diffResult?.diff.split('\n').filter(line => line.startsWith('-')).length || 0}
+                  </div>
+                  <div class="text-sm text-red-600">Removals</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <h2 class="text-2xl font-semibold mb-4">Detailed Changes</h2>
+              <div class="bg-white rounded-lg p-4 overflow-x-auto shadow-lg">
+                <div class="diff-table-wrapper">
+                  <table class="diff-table">
+                    <tbody>
+                      {diffLines.map(line => (
+                        line.isHunk || line.isHeader ? (
+                          <tr class="diff-hunk">
+                            <td colspan="4">{line.content}</td>
+                          </tr>
+                        ) : (
+                          <tr class={`diff-line diff-${line.type}`}>
+                            <td class="diff-gutter old">{line.oldLineNum}</td>
+                            <td class="diff-gutter new">{line.newLineNum}</td>
+                            <td class={`diff-bar ${line.type}`}></td>
+                            <td class="diff-content">{line.content}</td>
+                          </tr>
+                        )
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div class="text-pane text-center">
+            <h2 class="text-2xl font-semibold mb-4">No Changes Detected</h2>
+            <p class="text-lg">
+              The original and modernized versions appear to be identical.
+            </p>
+          </div>
+        )}
+      </section>
+    ) : (
+      <section class="max-w-6xl mx-auto">
+        <div class="text-pane text-center">
+          <h2 class="text-2xl font-semibold mb-4">Unable to Load Comparison</h2>
+          <p class="text-lg">
+            {!originalText && !modernizedText 
+              ? "Both original and modernized text files are not available for this version."
+              : !originalText 
+                ? "Original text file is not available for this version."
+                : "Modernized text file is not available for this version."
+            }
+          </p>
+          <!-- Debug: List all asset names for troubleshooting -->
+          <details style="margin-top:2em;">
+            <summary style="cursor:pointer;">Show release asset names (debug)</summary>
+            <ul style="text-align:left;display:inline-block;">
+              {release.assets.map(asset => (
+                <li>{asset.name}</li>
+              ))}
+            </ul>
+          </details>
+        </div>
+      </section>
+    )}
+
+    <!-- Navigation -->
+    <section class="text-center mt-12">
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href={`/books/${book.slug}/${version}`} class="cta-button">
+          Back to Version {version}
+        </a>
+        <a href={`/books/${book.slug}`} class="cta-button">
+          Back to {book.data.title}
+        </a>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .diff-table-wrapper {
+    background: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .diff-table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-family: 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace !important;
+    font-size: 0.95rem !important;
+    background: #f8fafc !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
+    margin-bottom: 2rem !important;
+  }
+  .diff-table td {
+    padding: 0.15rem 0.5rem !important;
+    vertical-align: top !important;
+    white-space: pre-wrap !important;
+  }
+  .diff-gutter {
+    width: 2.5em !important;
+    text-align: right !important;
+    color: #94a3b8 !important;
+    background: #f1f5f9 !important;
+    user-select: none !important;
+    border-right: 1px solid #e5e7eb !important;
+  }
+  .diff-gutter.old {
+    border-left: 4px solid transparent !important;
+    border-radius: 0.25rem 0 0 0.25rem !important;
+  }
+  .diff-gutter.new {
+    border-radius: 0 0.25rem 0.25rem 0 !important;
+  }
+  .diff-bar {
+    width: 0.5em !important;
+    min-width: 0.5em !important;
+    border-radius: 0.25rem !important;
+  }
+  .diff-bar.added {
+    background: #bbf7d0 !important;
+  }
+  .diff-bar.removed {
+    background: #fecaca !important;
+  }
+  .diff-bar.context {
+    background: #e5e7eb !important;
+  }
+  .diff-bar.hunk, .diff-bar.header {
+    background: #fef9c3 !important;
+  }
+  .diff-content {
+    width: 100% !important;
+    font-family: inherit !important;
+    background: transparent !important;
+  }
+  .diff-line.diff-added .diff-content {
+    background: #f0fdf4 !important;
+    color: #166534 !important;
+  }
+  .diff-line.diff-removed .diff-content {
+    background: #fef2f2 !important;
+    color: #991b1b !important;
+  }
+  .diff-line.diff-context .diff-content {
+    background: #f8fafc !important;
+    color: #334155 !important;
+  }
+  .diff-line.diff-hunk .diff-content,
+  .diff-line.diff-header .diff-content {
+    background: #fef9c3 !important;
+    color: #a16207 !important;
+    font-weight: bold !important;
+  }
+  .diff-hunk td, .diff-header td {
+    font-weight: bold !important;
+    background: #fef9c3 !important;
+    color: #a16207 !important;
+    font-family: inherit !important;
+    border-bottom: 1px solid #fde68a !important;
+  }
+</style> 
