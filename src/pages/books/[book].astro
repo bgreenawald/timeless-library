@@ -1,225 +1,32 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { fetchTags, fetchRelease, type GithubTag } from '../../lib/github';
-import { getThemeColor } from '../../lib/colors';
+import BookDetail from '../../components/BookDetail.astro';
+import DownloadsTable from '../../components/DownloadsTable.astro';
+import VersionsGrid from '../../components/VersionsGrid.astro';
+import { generateBookPaths } from '../../lib/paths';
 
 export async function getStaticPaths() {
-  const books = await getCollection('books');
-  const tags = await fetchTags();
-
-  const paths = await Promise.all(books.map(async (book) => {
-    let versions = tags.filter(tag => tag.name.startsWith(book.slug));
-    
-    // Filter out alpha and beta tags in non-development environments
-    if (!import.meta.env.DEV) {
-      versions = versions.filter(tag => 
-        !tag.name.toLowerCase().includes('alpha') && 
-        !tag.name.toLowerCase().includes('beta')
-      );
-    }
-    
-    // Find the latest version
-    let latestVersion = null;
-    let latestRelease = null;
-    
-    if (versions.length > 0) {
-      // Sort versions to find the latest
-      const sortedVersions = versions
-        .map(tag => tag.name)
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-      
-      latestVersion = sortedVersions[sortedVersions.length - 1];
-      try {
-        latestRelease = await fetchRelease(latestVersion);
-      } catch (error) {
-        console.error(`Failed to fetch release for ${latestVersion}:`, error);
-        latestRelease = null;
-      }
-    }
-    
-    return {
-      params: { book: book.slug },
-      props: { 
-        book, 
-        versions, 
-        hasVersions: versions.length > 0,
-        latestVersion,
-        latestRelease
-      },
-    };
-  }));
-
-  return paths;
+  return generateBookPaths();
 }
 
 const { book, versions, hasVersions, latestVersion, latestRelease } = Astro.props;
-
-// Helper function to categorize download assets
-function categorizeAssets(assets: any[]) {
-  const categories = {
-    annotated: assets.filter(asset => asset.name.includes('annotated')),
-    modernized: assets.filter(asset => asset.name.includes('modernized')),
-    original: assets.filter(asset => asset.name.includes('original'))
-  };
-  
-  return categories;
-}
-
-const downloadCategories = latestRelease ? categorizeAssets(latestRelease.assets) : null;
 ---
 
 <Layout title={book.data.title}>
   <main class="container mx-auto px-6 py-16 md:py-24">
-    <section class="text-center max-w-4xl mx-auto mb-24">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-        <!-- Book Cover -->
-        <div class="md:col-span-1">
-          {book.data.cover_image ? (
-            <div class="book-detail-cover">
-              <img 
-                src={book.data.cover_image} 
-                alt={`Cover for ${book.data.title}`}
-                class="w-full h-auto rounded-lg shadow-lg"
-              />
-            </div>
-          ) : (
-            <div class="book-detail-cover-placeholder" style={`background-color: ${getThemeColor(0)}`}>
-              <div class="book-title">{book.data.title}</div>
-              <div class="book-author">by {book.data.author}</div>
-            </div>
-          )}
-        </div>
-        
-        <!-- Book Details -->
-        <div class="md:col-span-2 text-pane">
-          <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">{book.data.title}</h1>
-          <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">by {book.data.author}</p>
-          <p class="mt-2 text-lg md:text-xl max-w-2xl mx-auto">Published in {book.data.original_publication_year}</p>
-          <p class="mt-4 text-base md:text-lg max-w-2xl mx-auto">{book.data.description}</p>
-          <p class="mt-4 text-sm md:text-base max-w-2xl mx-auto">Genres: {book.data.genres.join(', ')}</p>
-          {book.data.tags && <p class="mt-2 text-sm md:text-base max-w-2xl mx-auto">Tags: {book.data.tags.join(', ')}</p>}
-        </div>
-      </div>
-    </section>
+    <BookDetail book={book} />
 
     <!-- Latest Version Downloads -->
-    {latestRelease && downloadCategories && (
-      <section class="max-w-6xl mx-auto mb-24">
-        <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto mb-12">
-          Latest Version Downloads
-        </h2>
-        <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
-          <div class="text-center mb-6">
-            <p class="text-lg font-medium">Version: {latestVersion}</p>
-          </div>
-          
-          <!-- Downloads Table -->
-          <div class="overflow-x-auto">
-            <table class="w-full border-collapse">
-              <thead>
-                <tr class="border-b-2 border-gray-300">
-                  <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
-                  <th class="text-left py-3 px-4 font-semibold text-gray-700">Format</th>
-                  <th class="text-center py-3 px-4 font-semibold text-gray-700">Download</th>
-                </tr>
-              </thead>
-              <tbody>
-
-                {/* Annotated Versions */}
-                {downloadCategories.annotated.map(asset => {
-                  const fileType = asset.name.split('.').pop()?.toUpperCase() || 'Unknown';
-                  return (
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                      <td class="py-3 px-4">
-                        <span class="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-                          Annotated
-                        </span>
-                      </td>
-                      <td class="py-3 px-4 font-medium">{fileType}</td>
-                      <td class="py-3 px-4 text-center">
-                        <a 
-                          href={asset.browser_download_url} 
-                          download
-                          class="download-button"
-                        >
-                          Download
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-                
-                {/* Modernized Versions */}
-                {downloadCategories.modernized.map(asset => {
-                  const fileType = asset.name.split('.').pop()?.toUpperCase() || 'Unknown';
-                  return (
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                      <td class="py-3 px-4">
-                        <span class="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
-                          Modernized
-                        </span>
-                      </td>
-                      <td class="py-3 px-4 font-medium">{fileType}</td>
-                      <td class="py-3 px-4 text-center">
-                        <a 
-                          href={asset.browser_download_url} 
-                          download
-                          class="download-button"
-                        >
-                          Download
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-                
-                {/* Original Text */}
-                {downloadCategories.original.map(asset => {
-                  const fileType = asset.name.split('.').pop()?.toUpperCase() || 'Unknown';
-                  return (
-                    <tr class="border-b border-gray-200 hover:bg-gray-50">
-                      <td class="py-3 px-4">
-                        <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-                          Original
-                        </span>
-                      </td>
-                      <td class="py-3 px-4 font-medium">{fileType}</td>
-                      <td class="py-3 px-4 text-center">
-                        <a 
-                          href={asset.browser_download_url} 
-                          download
-                          class="download-button"
-                        >
-                          Download
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+    {latestRelease && (
+      <DownloadsTable 
+        release={latestRelease} 
+        version={latestVersion} 
+        title="Latest Version Downloads" 
+      />
     )}
 
     {hasVersions ? (
-      <section>
-        <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto">All Available Versions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-          {versions.map((version: GithubTag, index: number) => (
-            <a href={`/books/${book.slug}/${version.name}`} class="book-card">
-              <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
-                <div class="book-title">{version.name}</div>
-              </div>
-              <div class="book-info">
-                <p class="book-summary">View details for version {version.name}</p>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
+      <VersionsGrid versions={versions} bookSlug={book.slug} />
     ) : (
       <section class="text-center">
         <p class="text-lg">No versions available for this book yet.</p>

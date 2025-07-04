@@ -1,0 +1,123 @@
+---
+import type { GithubRelease } from '../lib/github';
+
+/**
+ * Interface representing a GitHub release asset from the API response.
+ */
+interface GithubReleaseAsset {
+  name: string;
+  browser_download_url: string;
+  size?: number;
+  content_type?: string;
+  download_count?: number;
+}
+
+/**
+ * Interface representing a GitHub release from the API response.
+ * Extends the existing GithubRelease type with additional properties.
+ */
+interface GitHubRelease {
+  assets: GithubReleaseAsset[];
+  tag_name: string;
+  name?: string;
+  body?: string;
+  created_at?: string;
+  published_at?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+}
+
+interface Props {
+  release: GitHubRelease;
+  version: string | null;
+  title: string;
+}
+
+const { release, version, title } = Astro.props;
+
+/**
+ * Helper function to categorize download assets by their type.
+ * 
+ * @param assets - Array of GitHub release assets to categorize
+ * @returns Object with categorized assets
+ */
+function categorizeAssets(assets: GithubReleaseAsset[]) {
+  const categories = {
+    annotated: assets.filter(asset => asset.name.includes('annotated')),
+    modernized: assets.filter(asset => asset.name.includes('modernized')),
+    original: assets.filter(asset => asset.name.includes('original'))
+  };
+  
+  return categories;
+}
+
+// Category configuration for consistent styling and labels
+const categoryConfig = [
+  {
+    key: 'annotated',
+    label: 'Annotated',
+    colorClasses: 'bg-green-100 text-green-800'
+  },
+  {
+    key: 'modernized',
+    label: 'Modernized', 
+    colorClasses: 'bg-purple-100 text-purple-800'
+  },
+  {
+    key: 'original',
+    label: 'Original',
+    colorClasses: 'bg-blue-100 text-blue-800'
+  }
+];
+
+const downloadCategories = categorizeAssets(release.assets);
+---
+
+<section class="max-w-6xl mx-auto mb-24">
+  <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto mb-12" set:html={title}>
+  </h2>
+  <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+    <div class="text-center mb-6">
+      <p class="text-lg font-medium">Version: {version || 'Unknown'}</p>
+    </div>
+    
+    <!-- Downloads Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="border-b-2 border-gray-300">
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Format</th>
+            <th class="text-center py-3 px-4 font-semibold text-gray-700">Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categoryConfig.map(category => 
+            downloadCategories[category.key as keyof typeof downloadCategories].map(asset => {
+              const fileType = asset.name.split('.').pop()?.toUpperCase() || 'Unknown';
+              return (
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="py-3 px-4">
+                    <span class={`inline-block ${category.colorClasses} px-2 py-1 rounded text-sm font-medium`}>
+                      {category.label}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 font-medium">{fileType}</td>
+                  <td class="py-3 px-4 text-center">
+                    <a 
+                      href={asset.browser_download_url} 
+                      download
+                      class="download-button"
+                    >
+                      Download
+                    </a>
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section> 

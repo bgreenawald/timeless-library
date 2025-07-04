@@ -1,0 +1,69 @@
+---
+import { getThemeColor } from '../lib/colors';
+
+/**
+ * Interface representing the data structure of a book from the content collection.
+ */
+interface BookData {
+  title: string;
+  author: string;
+  original_publication_year: number;
+  short_description: string;
+  description: string;
+  genres: ("Adventure" | "Fiction" | "Classic" | "Whaling" | "History" | "Political Science")[];
+  tags?: string[];
+  is_featured?: boolean;
+  cover_image?: string;
+}
+
+/**
+ * Interface representing a book collection entry from Astro.
+ */
+interface Book {
+  id: string;
+  slug: string;
+  body: string;
+  collection: string;
+  data: BookData;
+}
+
+interface Props {
+  book: Book;
+}
+
+const { book } = Astro.props;
+---
+
+<section class="text-center max-w-4xl mx-auto mb-24">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+    <!-- Book Cover -->
+    <div class="md:col-span-1">
+      {book.data.cover_image ? (
+        <div class="book-detail-cover">
+          <img 
+            src={book.data.cover_image} 
+            alt={`Cover for ${book.data.title}`}
+            class="w-full h-auto rounded-lg shadow-lg"
+            loading="lazy"
+            onerror={`this.style.display='none'; this.parentElement.innerHTML='<div class="book-detail-cover-placeholder" style="background-color: ${getThemeColor(0)}"><div class="book-title">${book.data.title}</div><div class="book-author">by ${book.data.author}</div></div>';`}
+          />
+        </div>
+      ) : (
+        <div class="book-detail-cover-placeholder" style={`background-color: ${getThemeColor(0)}`} role="img" aria-label={`Cover placeholder for ${book.data.title}`}>
+          <div class="book-title">{book.data.title}</div>
+          <div class="book-author">by {book.data.author}</div>
+        </div>
+      )}
+    </div>
+    
+    <!-- Book Details -->
+    <div class="md:col-span-2 text-pane">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">{book.data.title}</h1>
+      <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">by {book.data.author}</p>
+      <p class="mt-2 text-lg md:text-xl max-w-2xl mx-auto">Published in {book.data.original_publication_year}</p>
+      <p class="mt-4 text-base md:text-lg max-w-2xl mx-auto">{book.data.description}</p>
+      <p class="mt-4 text-sm md:text-base max-w-2xl mx-auto">Genres: {book.data.genres.join(', ')}</p>
+      {book.data.tags && <p class="mt-2 text-sm md:text-base max-w-2xl mx-auto">Tags: {book.data.tags.join(', ')}</p>}
+    </div>
+  </div>
+</section> 
