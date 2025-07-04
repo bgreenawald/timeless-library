@@ -1,8 +1,34 @@
 ---
 import { getThemeColor } from '../lib/colors';
 
+/**
+ * Interface representing the data structure of a book from the content collection.
+ */
+interface BookData {
+  title: string;
+  author: string;
+  original_publication_year: number;
+  short_description: string;
+  description: string;
+  genres: ("Adventure" | "Fiction" | "Classic" | "Whaling" | "History" | "Political Science")[];
+  tags?: string[];
+  is_featured?: boolean;
+  cover_image?: string;
+}
+
+/**
+ * Interface representing a book collection entry from Astro.
+ */
+interface Book {
+  id: string;
+  slug: string;
+  body: string;
+  collection: string;
+  data: BookData;
+}
+
 interface Props {
-  book: any;
+  book: Book;
 }
 
 const { book } = Astro.props;
