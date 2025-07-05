@@ -1,5 +1,6 @@
 import { getCollection } from 'astro:content';
-import { fetchTags, fetchRelease, type GithubTag } from './github';
+import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
+import { logger } from './logger';
 
 /**
  * Filters versions to exclude alpha and beta tags in non-development environments
@@ -39,13 +40,13 @@ export function findLatestVersion(versions: GithubTag[]): string | null {
 }
 
 /**
- * Fetches the release data for a specific version
+ * Gets the release for a specific version
  */
-export async function getReleaseForVersion(versionName: string) {
+export async function getReleaseForVersion(versionName: string): Promise<GithubRelease | null> {
   try {
     return await fetchRelease(versionName);
   } catch (error) {
-    console.error(`Failed to fetch release for ${versionName}:`, error);
+    logger.error(`Failed to fetch release for ${versionName}:`, error);
     return null;
   }
 }

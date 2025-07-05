@@ -1,6 +1,6 @@
 import { createPatch } from 'diff';
-import { fetchRawFile } from './github';
 import type { GithubTag, GithubRelease } from './github';
+import { logger } from './logger';
 
 /**
  * Interface representing a diff result with metadata.
@@ -30,29 +30,29 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
   const modernizedAsset = release.assets.find(asset => asset.name.endsWith('-modernized.md'));
   
   // Debug logging
-  console.log('Diff Debug - Available assets:');
+  logger.debug('Diff Debug - Available assets:');
   release.assets.forEach(asset => {
-    console.log(`  - ${asset.name}`);
+    logger.debug(`  - ${asset.name}`);
   });
-  console.log('Diff Debug - Found assets:');
-  console.log(`  Original: ${originalAsset?.name || 'NOT FOUND'}`);
-  console.log(`  Modernized: ${modernizedAsset?.name || 'NOT FOUND'}`);
+  logger.debug('Diff Debug - Found assets:');
+  logger.debug(`  Original: ${originalAsset?.name || 'NOT FOUND'}`);
+  logger.debug(`  Modernized: ${modernizedAsset?.name || 'NOT FOUND'}`);
   
   if (!originalAsset || !modernizedAsset) {
-    console.log('Diff Debug - Missing assets, returning null');
+    logger.debug('Diff Debug - Missing assets, returning null');
     return { originalText: null, modernizedText: null };
   }
   
-  console.log('Diff Debug - Downloading files:');
-  console.log(`  Original URL: ${originalAsset.browser_download_url}`);
-  console.log(`  Modernized URL: ${modernizedAsset.browser_download_url}`);
+  logger.debug('Diff Debug - Downloading files:');
+  logger.debug(`  Original URL: ${originalAsset.browser_download_url}`);
+  logger.debug(`  Modernized URL: ${modernizedAsset.browser_download_url}`);
   
   // Download the files directly from the release assets with proper error handling
   const [originalText, modernizedText] = await Promise.all([
     fetch(originalAsset.browser_download_url)
       .then(async response => {
         if (!response.ok) {
-          console.error(`Diff Debug - Original file fetch failed:`, {
+          logger.error(`Diff Debug - Original file fetch failed:`, {
             url: originalAsset.browser_download_url,
             status: response.status,
             statusText: response.statusText,
@@ -62,10 +62,10 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
         }
         try {
           const text = await response.text();
-          console.log(`Diff Debug - Original file downloaded successfully, length: ${text.length}`);
+          logger.debug(`Diff Debug - Original file downloaded successfully, length: ${text.length}`);
           return text;
         } catch (error) {
-          console.error(`Diff Debug - Original file text parsing failed:`, {
+          logger.error(`Diff Debug - Original file text parsing failed:`, {
             url: originalAsset.browser_download_url,
             error: error instanceof Error ? error.message : String(error)
           });
@@ -73,7 +73,7 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
         }
       })
       .catch(error => {
-        console.error(`Diff Debug - Original file network error:`, {
+        logger.error(`Diff Debug - Original file network error:`, {
           url: originalAsset.browser_download_url,
           error: error instanceof Error ? error.message : String(error)
         });
@@ -82,7 +82,7 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
     fetch(modernizedAsset.browser_download_url)
       .then(async response => {
         if (!response.ok) {
-          console.error(`Diff Debug - Modernized file fetch failed:`, {
+          logger.error(`Diff Debug - Modernized file fetch failed:`, {
             url: modernizedAsset.browser_download_url,
             status: response.status,
             statusText: response.statusText,
@@ -92,10 +92,10 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
         }
         try {
           const text = await response.text();
-          console.log(`Diff Debug - Modernized file downloaded successfully, length: ${text.length}`);
+          logger.debug(`Diff Debug - Modernized file downloaded successfully, length: ${text.length}`);
           return text;
         } catch (error) {
-          console.error(`Diff Debug - Modernized file text parsing failed:`, {
+          logger.error(`Diff Debug - Modernized file text parsing failed:`, {
             url: modernizedAsset.browser_download_url,
             error: error instanceof Error ? error.message : String(error)
           });
@@ -103,7 +103,7 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
         }
       })
       .catch(error => {
-        console.error(`Diff Debug - Modernized file network error:`, {
+        logger.error(`Diff Debug - Modernized file network error:`, {
           url: modernizedAsset.browser_download_url,
           error: error instanceof Error ? error.message : String(error)
         });
@@ -111,9 +111,9 @@ export async function fetchVersionTexts(version: GithubTag, bookSlug: string, re
       })
   ]);
   
-  console.log('Diff Debug - Download results:');
-  console.log(`  Original text length: ${originalText?.length || 0}`);
-  console.log(`  Modernized text length: ${modernizedText?.length || 0}`);
+  logger.debug('Diff Debug - Download results:');
+  logger.debug(`  Original text length: ${originalText?.length || 0}`);
+  logger.debug(`  Modernized text length: ${modernizedText?.length || 0}`);
   
   return { originalText, modernizedText };
 }
@@ -151,7 +151,22 @@ export function generateDiff(originalText: string, modernizedText: string): Diff
   };
 }
 
-
+/**
+ * Parses a hunk header line to extract old and new line numbers.
+ * 
+ * @param line - The hunk header line starting with @@
+ * @returns Object with oldLine and newLine numbers, or null if no match
+ */
+function parseHunkHeader(line: string): { oldLine: number; newLine: number } | null {
+  const match = /@@ -(\d+),?\d* \+(\d+),?\d* @@/.exec(line);
+  if (match) {
+    return {
+      oldLine: parseInt(match[1], 10) - 1,
+      newLine: parseInt(match[2], 10) - 1
+    };
+  }
+  return null;
+}
 
 /**
  * Parses diff text into structured data for template rendering.
@@ -184,10 +199,10 @@ export function parseDiffToLines(diffText: string): Array<{
       type = 'hunk';
       isHunk = true;
       // Parse hunk header for line numbers
-      const match = /@@ -(\d+),?\d* \+(\d+),?\d* @@/.exec(line);
-      if (match) {
-        oldLine = parseInt(match[1], 10) - 1;
-        newLine = parseInt(match[2], 10) - 1;
+      const hunkInfo = parseHunkHeader(line);
+      if (hunkInfo) {
+        oldLine = hunkInfo.oldLine;
+        newLine = hunkInfo.newLine;
       }
       result.push({
         type,
