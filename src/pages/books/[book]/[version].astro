@@ -22,6 +22,18 @@ const { book, release, version } = Astro.props;
       title={`Version <em>${version}</em> Downloads`} 
     />
 
+    <!-- Show Diff Link -->
+    {release.assets.some(asset => asset.name.endsWith('-modernized.md')) && (
+      <section class="text-center mb-12">
+        <a 
+          href={`/books/${book.slug}/${version}/diff`}
+          class="diff-button"
+        >
+          Show Diff for This Version
+        </a>
+      </section>
+    )}
+
     <!-- Back to Book Link -->
     <section class="text-center">
       <a href={`/books/${book.slug}`} class="cta-button">
