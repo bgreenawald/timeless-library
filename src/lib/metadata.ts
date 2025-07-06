@@ -52,14 +52,147 @@ interface BookMetadata {
 }
 
 /**
+ * Validates a processing phase object against the expected structure.
+ * 
+ * @param phase - The phase object to validate
+ * @param phaseIndex - The index of the phase for error reporting
+ * @throws Error if the phase structure is invalid
+ */
+function validateProcessingPhase(phase: any, phaseIndex: number): void {
+  if (!phase || typeof phase !== 'object') {
+    throw new Error(`Phase ${phaseIndex}: must be an object`);
+  }
+
+  const requiredStringFields = [
+    'phase_name', 'phase_type', 'book_name', 'author_name', 
+    'model_type', 'input_file', 'output_file', 'system_prompt_path', 
+    'user_prompt_path', 'fully_rendered_system_prompt'
+  ];
+
+  const requiredNumberFields = [
+    'phase_index', 'temperature', 'post_processor_count', 'max_workers'
+  ];
+
+  const requiredBooleanFields = [
+    'enabled', 'completed', 'output_exists'
+  ];
+
+  const requiredArrayFields = [
+    'post_processors', 'length_reduction_parameter'
+  ];
+
+  // Validate string fields
+  for (const field of requiredStringFields) {
+    if (!phase[field] || typeof phase[field] !== 'string') {
+      throw new Error(`Phase ${phaseIndex}: missing or invalid string field '${field}'`);
+    }
+  }
+
+  // Validate number fields
+  for (const field of requiredNumberFields) {
+    if (typeof phase[field] !== 'number' || isNaN(phase[field])) {
+      throw new Error(`Phase ${phaseIndex}: missing or invalid number field '${field}'`);
+    }
+  }
+
+  // Validate boolean fields
+  for (const field of requiredBooleanFields) {
+    if (typeof phase[field] !== 'boolean') {
+      throw new Error(`Phase ${phaseIndex}: missing or invalid boolean field '${field}'`);
+    }
+  }
+
+  // Validate array fields
+  for (const field of requiredArrayFields) {
+    if (!Array.isArray(phase[field])) {
+      throw new Error(`Phase ${phaseIndex}: missing or invalid array field '${field}'`);
+    }
+  }
+
+  // Validate post_processors array contains only strings
+  if (!phase.post_processors.every((item: any) => typeof item === 'string')) {
+    throw new Error(`Phase ${phaseIndex}: 'post_processors' array must contain only strings`);
+  }
+
+  // Validate length_reduction_parameter array contains only numbers
+  if (!phase.length_reduction_parameter.every((item: any) => typeof item === 'number' && !isNaN(item))) {
+    throw new Error(`Phase ${phaseIndex}: 'length_reduction_parameter' array must contain only numbers`);
+  }
+
+  // Validate model object
+  if (!phase.model || typeof phase.model !== 'object') {
+    throw new Error(`Phase ${phaseIndex}: missing or invalid 'model' object`);
+  }
+
+  if (!phase.model.id || typeof phase.model.id !== 'string') {
+    throw new Error(`Phase ${phaseIndex}: model missing or invalid 'id' field`);
+  }
+
+  if (!phase.model.name || typeof phase.model.name !== 'string') {
+    throw new Error(`Phase ${phaseIndex}: model missing or invalid 'name' field`);
+  }
+
+  // Validate phase_index matches the array index
+  if (phase.phase_index !== phaseIndex) {
+    throw new Error(`Phase ${phaseIndex}: 'phase_index' (${phase.phase_index}) does not match array index (${phaseIndex})`);
+  }
+}
+
+/**
+ * Validates the complete metadata structure for version 0.0.0-alpha.
+ * 
+ * @param data - The metadata object to validate
+ * @throws Error if the metadata structure is invalid
+ */
+function validateMetadataV0_0_0_alpha(data: any): void {
+  if (!data || typeof data !== 'object') {
+    throw new Error('Metadata must be an object');
+  }
+
+  // Validate required top-level string fields
+  const requiredStringFields = [
+    'metadata_version', 'run_timestamp', 'book_name', 'author_name',
+    'input_file', 'original_file', 'output_directory', 'book_version'
+  ];
+
+  for (const field of requiredStringFields) {
+    if (!data[field] || typeof data[field] !== 'string') {
+      throw new Error(`Missing or invalid string field '${field}'`);
+    }
+  }
+
+  // Validate required top-level array fields
+  if (!data.length_reduction || !Array.isArray(data.length_reduction)) {
+    throw new Error('Missing or invalid array field \'length_reduction\'');
+  }
+
+  if (!data.phases || !Array.isArray(data.phases)) {
+    throw new Error('Missing or invalid array field \'phases\'');
+  }
+
+  // Validate length_reduction array contains only numbers
+  if (!data.length_reduction.every((item: any) => typeof item === 'number' && !isNaN(item))) {
+    throw new Error('\'length_reduction\' array must contain only numbers');
+  }
+
+  // Validate phases array is not empty
+  if (data.phases.length === 0) {
+    throw new Error('\'phases\' array cannot be empty');
+  }
+
+  // Validate each phase object
+  data.phases.forEach((phase: any, index: number) => {
+    validateProcessingPhase(phase, index);
+  });
+}
+
+/**
  * Supported metadata versions and their parsing functions.
  */
 const METADATA_PARSERS: Record<string, (data: any) => BookMetadata> = {
   '0.0.0-alpha': (data: any): BookMetadata => {
-    // Validate required fields for version 0.0.0-alpha
-    if (!data.metadata_version || !data.phases || !Array.isArray(data.phases)) {
-      throw new Error('Invalid metadata format: missing required fields');
-    }
+    // Validate the complete metadata structure
+    validateMetadataV0_0_0_alpha(data);
     
     return data as BookMetadata;
   }
@@ -112,14 +245,24 @@ export function parseMetadata(metadataContent: string): BookMetadata {
  */
 export async function loadBookMetadataFromRelease(bookSlug: string, release: GithubRelease): Promise<BookMetadata | null> {
   try {
-    // Look for metadata file in release assets - there should be exactly one
-    const metadataAsset = release.assets.find(asset => 
+    // Find all metadata files in release assets - there should be exactly one
+    const metadataAssets = release.assets.filter(asset => 
       asset.name.endsWith('-metadata.json')
     );
     
-    if (!metadataAsset) {
+    if (metadataAssets.length === 0) {
+      console.warn(`No metadata file found for ${bookSlug} in release ${release.tag_name}`);
       return null; // No metadata file found in this release
     }
+    
+    if (metadataAssets.length > 1) {
+      const assetNames = metadataAssets.map(asset => asset.name).join(', ');
+      console.error(`Multiple metadata files found for ${bookSlug} in release ${release.tag_name}: ${assetNames}`);
+      throw new Error(`Multiple metadata files found in release ${release.tag_name}: ${assetNames}. Expected exactly one file ending with '-metadata.json'`);
+    }
+    
+    // We now have exactly one metadata asset
+    const metadataAsset = metadataAssets[0];
     
     // Fetch the metadata file from the release asset
     const response = await fetch(metadataAsset.browser_download_url);

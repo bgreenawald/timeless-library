@@ -83,7 +83,8 @@ const getPhaseTypeDisplay = (phaseType: string) => {
           <h3 class="text-lg font-semibold text-gray-800">Processing Phases</h3>
           <button 
             class="text-blue-600 hover:text-blue-800 font-medium text-sm"
-            onclick={`showRawMetadata(${JSON.stringify(metadata).replace(/'/g, "\\'")})`}
+            data-metadata={JSON.stringify(metadata)}
+            onclick="showRawMetadataFromData(this)"
           >
             Show Raw Metadata
           </button>
@@ -118,7 +119,9 @@ const getPhaseTypeDisplay = (phaseType: string) => {
                 <td class="py-3 px-4 text-center">
                   <button 
                     class="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                    onclick={`showPrompt('${phase.phase_name}', ${JSON.stringify(phase.fully_rendered_system_prompt).replace(/'/g, "\\'")})`}
+                    data-phase-name={phase.phase_name}
+                    data-prompt={JSON.stringify(phase.fully_rendered_system_prompt)}
+                    onclick="showPromptFromData(this)"
                   >
                     View Prompt
                   </button>
@@ -223,6 +226,26 @@ const getPhaseTypeDisplay = (phaseType: string) => {
         if (icon) icon.classList.remove('rotate-180');
       }
     }
+  };
+  
+  window.showPromptFromData = function(button) {
+    const phaseName = button.getAttribute('data-phase-name');
+    const promptData = button.getAttribute('data-prompt');
+    
+    if (!phaseName || !promptData) {
+      console.error('Missing required data attributes for showPromptFromData');
+      return;
+    }
+    
+    let prompt;
+    try {
+      prompt = JSON.parse(promptData);
+    } catch (error) {
+      console.error('Failed to parse prompt data:', error);
+      return;
+    }
+    
+    window.showPrompt(phaseName, prompt);
   };
   
   window.showPrompt = function(phaseName, prompt) {
@@ -431,6 +454,25 @@ const getPhaseTypeDisplay = (phaseType: string) => {
         }
       });
     }
+  };
+  
+  window.showRawMetadataFromData = function(button) {
+    const metadataData = button.getAttribute('data-metadata');
+    
+    if (!metadataData) {
+      console.error('Missing metadata data attribute for showRawMetadataFromData');
+      return;
+    }
+    
+    let metadata;
+    try {
+      metadata = JSON.parse(metadataData);
+    } catch (error) {
+      console.error('Failed to parse metadata data:', error);
+      return;
+    }
+    
+    window.showRawMetadata(metadata);
   };
   
   window.showRawMetadata = function(metadata) {
