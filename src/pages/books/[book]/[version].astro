@@ -28,7 +28,12 @@ const metadata = release ? await loadBookMetadataFromRelease(book.slug, release)
     />
 
     <!-- Book Metadata -->
-    <BookMetadata metadata={metadata} bookSlug={book.slug} version={version} />
+    <BookMetadata 
+      metadata={metadata} 
+      bookSlug={book.slug} 
+      version={version}
+      title={`How This Version Was Made`}
+    />
 
     <!-- Back to Book Link -->
     <section class="text-center">

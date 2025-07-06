@@ -31,7 +31,12 @@ const metadata = latestRelease ? await loadBookMetadataFromRelease(book.slug, la
     )}
 
     <!-- Book Metadata -->
-    <BookMetadata metadata={metadata} bookSlug={book.slug} version={latestVersion || undefined} />
+    <BookMetadata 
+      metadata={metadata} 
+      bookSlug={book.slug} 
+      version={latestVersion || undefined}
+      title="How This Book Was Made"
+    />
     
     {hasVersions ? (
       <VersionsGrid versions={versions} bookSlug={book.slug} />

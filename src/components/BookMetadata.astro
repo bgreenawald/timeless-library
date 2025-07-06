@@ -5,9 +5,10 @@ interface Props {
   metadata: BookMetadata | null;
   bookSlug: string;
   version?: string;
+  title?: string;
 }
 
-const { metadata, bookSlug, version } = Astro.props;
+const { metadata, bookSlug, version, title = "Processing Metadata" } = Astro.props;
 
 // Only show the component if metadata exists
 if (!metadata) {
@@ -38,6 +39,8 @@ const getPhaseTypeDisplay = (phaseType: string) => {
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
+  <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto mb-12" set:html={title}>
+  </h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <!-- Collapsible Header -->
     <button 
