@@ -531,8 +531,13 @@ const getPhaseTypeDisplay = (phaseType: string) => {
   });
 </script>
 
-<!-- Include markdown-it for markdown rendering -->
-<script src="https://unpkg.com/markdown-it@14.0.0/dist/markdown-it.min.js"></script>
+<!-- Import markdown-it locally -->
+<script>
+  import MarkdownIt from 'markdown-it';
+  
+  // Initialize markdown-it globally
+  window.markdownit = MarkdownIt;
+</script>
 
 
 
