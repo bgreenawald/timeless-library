@@ -36,41 +36,39 @@ interface Props {
 const { release, version, title } = Astro.props;
 
 /**
- * Helper function to categorize download assets by their type.
- * 
- * @param assets - Array of GitHub release assets to categorize
- * @returns Object with categorized assets
+ * Helper function to get the content type and color for an asset.
  */
-function categorizeAssets(assets: GithubReleaseAsset[]) {
-  const categories = {
-    annotated: assets.filter(asset => asset.name.includes('annotated')),
-    modernized: assets.filter(asset => asset.name.includes('modernized')),
-    original: assets.filter(asset => asset.name.includes('original'))
-  };
+function getAssetLabelAndColor(assetName: string) {
+  // Extract content type from filename (before the file extension)
+  if (assetName.includes('-annotated.')) {
+    return { label: 'Annotated', colorClasses: 'bg-green-100 text-green-800' };
+  }
+  if (assetName.includes('-modernized.')) {
+    return { label: 'Modernized', colorClasses: 'bg-purple-100 text-purple-800' };
+  }
+  if (assetName.includes('-original.')) {
+    return { label: 'Original', colorClasses: 'bg-blue-100 text-blue-800' };
+  }
+  if (assetName.endsWith('-metadata.json')) {
+    return { label: 'Metadata', colorClasses: 'bg-yellow-100 text-yellow-800' };
+  }
   
-  return categories;
+  // Fallback for files that don't follow the naming convention
+  return { label: 'Other', colorClasses: 'bg-gray-100 text-gray-600' };
 }
 
-// Category configuration for consistent styling and labels
-const categoryConfig = [
-  {
-    key: 'annotated',
-    label: 'Annotated',
-    colorClasses: 'bg-green-100 text-green-800'
-  },
-  {
-    key: 'modernized',
-    label: 'Modernized', 
-    colorClasses: 'bg-purple-100 text-purple-800'
-  },
-  {
-    key: 'original',
-    label: 'Original',
-    colorClasses: 'bg-blue-100 text-blue-800'
-  }
-];
+/**
+ * Helper function to get sort priority for assets (lower numbers appear first).
+ */
+function getAssetSortPriority(assetName: string) {
+  if (assetName.includes('-annotated.')) return 1;
+  if (assetName.includes('-modernized.')) return 2;
+  if (assetName.includes('-original.')) return 3;
+  if (assetName.endsWith('-metadata.json')) return 4;
+  return 5; // Other files
+}
 
-const downloadCategories = categorizeAssets(release.assets);
+
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
@@ -92,30 +90,30 @@ const downloadCategories = categorizeAssets(release.assets);
           </tr>
         </thead>
         <tbody>
-          {categoryConfig.map(category => 
-            downloadCategories[category.key as keyof typeof downloadCategories].map(asset => {
-              const fileType = asset.name.split('.').pop()?.toUpperCase() || 'Unknown';
-              return (
-                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                  <td class="py-3 px-4">
-                    <span class={`inline-block ${category.colorClasses} px-2 py-1 rounded text-sm font-medium`}>
-                      {category.label}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 font-medium">{fileType}</td>
-                  <td class="py-3 px-4 text-center">
-                    <a 
-                      href={asset.browser_download_url} 
-                      download
-                      class="download-button"
-                    >
-                      Download
-                    </a>
-                  </td>
-                </tr>
-              );
-            })
-          )}
+          {release.assets
+            .sort((a, b) => getAssetSortPriority(a.name) - getAssetSortPriority(b.name))
+            .map(asset => {
+            const { label, colorClasses } = getAssetLabelAndColor(asset.name);
+            return (
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-4">
+                  <span class={`inline-block ${colorClasses} px-2 py-1 rounded text-sm font-medium`}>
+                    {label}
+                  </span>
+                </td>
+                <td class="py-3 px-4 font-medium">{asset.name.split('.').pop()?.toUpperCase() || 'Unknown'}</td>
+                <td class="py-3 px-4 text-center">
+                  <a 
+                    href={asset.browser_download_url} 
+                    download
+                    class="download-button"
+                  >
+                    Download
+                  </a>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

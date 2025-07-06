@@ -1,5 +1,6 @@
 import { getCollection } from 'astro:content';
-import { fetchTags, fetchRelease, type GithubTag } from './github';
+import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
+import { logger } from './logger';
 
 /**
  * Filters versions to exclude alpha and beta tags in non-development environments
@@ -39,13 +40,13 @@ export function findLatestVersion(versions: GithubTag[]): string | null {
 }
 
 /**
- * Fetches the release data for a specific version
+ * Gets the release for a specific version
  */
-export async function getReleaseForVersion(versionName: string) {
+export async function getReleaseForVersion(versionName: string): Promise<GithubRelease | null> {
   try {
     return await fetchRelease(versionName);
   } catch (error) {
-    console.error(`Failed to fetch release for ${versionName}:`, error);
+    logger.error(`Failed to fetch release for ${versionName}:`, error);
     return null;
   }
 }
@@ -104,6 +105,50 @@ export async function generateVersionPaths() {
     }));
 
     return versionPaths.filter(path => path !== null);
+  }));
+
+  // Flatten the array of arrays
+  return paths.flat();
+}
+
+/**
+ * Generates static paths for diff pages
+ */
+export async function generateDiffPaths() {
+  const books = await getCollection('books');
+  
+  const paths = await Promise.all(books.map(async (book) => {
+    const versions = await getBookVersions(book.slug);
+    
+    // Generate paths for each version that has modernized content
+    const diffPaths = await Promise.all(versions.map(async (version) => {
+      const release = await getReleaseForVersion(version.name);
+      
+      if (!release) {
+        return null;
+      }
+
+      // Check if this version has modernized content
+      const hasModernized = release.assets.some(asset => 
+        asset.name.endsWith('-modernized.md')
+      );
+
+      if (!hasModernized) {
+        return null;
+      }
+
+      return {
+        params: { book: book.slug, version: version.name },
+        props: { 
+          book,
+          release,
+          version: version.name,
+          versionTag: version
+        },
+      };
+    }));
+
+    return diffPaths.filter(path => path !== null);
   }));
 
   // Flatten the array of arrays

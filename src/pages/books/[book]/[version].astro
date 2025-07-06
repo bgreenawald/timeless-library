@@ -34,6 +34,17 @@ const metadata = release ? await loadBookMetadataFromRelease(book.slug, release)
       version={version}
       title={`How This Version Was Made`}
     />
+    <!-- Show Diff Link -->
+    {release.assets.some(asset => asset.name.endsWith('-modernized.md')) && (
+      <section class="text-center mb-12">
+        <a 
+          href={`/books/${book.slug}/${version}/diff`}
+          class="diff-button"
+        >
+          Show Diff for This Version
+        </a>
+      </section>
+    )}
 
     <!-- Back to Book Link -->
     <section class="text-center">
