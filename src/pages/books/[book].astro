@@ -3,13 +3,18 @@ import Layout from '../../layouts/Layout.astro';
 import BookDetail from '../../components/BookDetail.astro';
 import DownloadsTable from '../../components/DownloadsTable.astro';
 import VersionsGrid from '../../components/VersionsGrid.astro';
+import BookMetadata from '../../components/BookMetadata.astro';
 import { generateBookPaths } from '../../lib/paths';
+import { loadBookMetadataFromRelease } from '../../lib/metadata';
 
 export async function getStaticPaths() {
   return generateBookPaths();
 }
 
 const { book, versions, hasVersions, latestVersion, latestRelease } = Astro.props;
+
+// Load metadata for the latest version if available
+const metadata = latestRelease ? await loadBookMetadataFromRelease(book.slug, latestRelease) : null;
 ---
 
 <Layout title={book.data.title}>
@@ -25,6 +30,9 @@ const { book, versions, hasVersions, latestVersion, latestRelease } = Astro.prop
       />
     )}
 
+    <!-- Book Metadata -->
+    <BookMetadata metadata={metadata} bookSlug={book.slug} version={latestVersion || undefined} />
+    
     {hasVersions ? (
       <VersionsGrid versions={versions} bookSlug={book.slug} />
     ) : (

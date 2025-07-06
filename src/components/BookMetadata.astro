@@ -1,0 +1,285 @@
+---
+import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
+
+interface Props {
+  metadata: BookMetadata | null;
+  bookSlug: string;
+  version?: string;
+}
+
+const { metadata, bookSlug, version } = Astro.props;
+
+// Only show the component if metadata exists
+if (!metadata) {
+  return null;
+}
+
+// Format timestamp for display
+const formatTimestamp = (timestamp: string) => {
+  try {
+    return new Date(timestamp).toLocaleString();
+  } catch {
+    return timestamp;
+  }
+};
+
+// Get phase type display name
+const getPhaseTypeDisplay = (phaseType: string) => {
+  const typeMap: Record<string, string> = {
+    'MODERNIZE': 'Modernize',
+    'EDIT': 'Edit',
+    'FINAL': 'Final',
+    'INTRODUCTION': 'Introduction',
+    'SUMMARY': 'Summary',
+    'ANNOTATE': 'Annotate'
+  };
+  return typeMap[phaseType] || phaseType;
+};
+---
+
+<section class="max-w-6xl mx-auto mb-24">
+  <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+    <!-- Collapsible Header -->
+    <button 
+      class="w-full text-left flex items-center justify-between text-xl font-semibold text-gray-800 mb-4"
+      onclick="toggleMetadata(this)"
+      aria-expanded="false"
+      aria-controls="metadata-content"
+    >
+      <span>Processing Metadata</span>
+      <svg class="w-6 h-6 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+    
+    <!-- Collapsible Content -->
+    <div id="metadata-content" class="hidden">
+      <!-- Metadata Summary -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Version</p>
+          <p class="text-lg">{metadata.book_version}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Processed</p>
+          <p class="text-lg">{formatTimestamp(metadata.run_timestamp)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Phases</p>
+          <p class="text-lg">{metadata.phases.length}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Length Reduction</p>
+          <p class="text-lg">{metadata.length_reduction.join('%, ')}%</p>
+        </div>
+      </div>
+      
+      <!-- Phases Table -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">Processing Phases</h3>
+          <button 
+            class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            onclick={`showRawMetadata(${JSON.stringify(metadata).replace(/'/g, "\\'")})`}
+          >
+            Show Raw Metadata
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+                  <thead>
+          <tr class="border-b-2 border-gray-300">
+            <th class="text-center py-3 px-4 font-semibold text-gray-700">Phase</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Model</th>
+            <th class="text-center py-3 px-4 font-semibold text-gray-700">Prompt</th>
+          </tr>
+        </thead>
+          <tbody>
+            {metadata.phases.map((phase: ProcessingPhase) => (
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-4 text-center">
+                  <span class="font-medium">#{phase.phase_index}</span>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                    {getPhaseTypeDisplay(phase.phase_type)}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div>
+                    <p class="font-medium">{phase.model.name}</p>
+                    <p class="text-sm text-gray-500">{phase.model.id}</p>
+                  </div>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button 
+                    class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    onclick={`showPrompt('${phase.phase_name}', ${JSON.stringify(phase.fully_rendered_system_prompt).replace(/'/g, "\\'")})`}
+                  >
+                    View Prompt
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Prompt Modal -->
+<div id="prompt-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 id="modal-title" class="text-xl font-semibold text-gray-800">System Prompt</h3>
+        <button 
+          onclick="closePromptModal()"
+          class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[60vh]">
+        <div id="modal-content" class="prose prose-sm max-w-none">
+          <!-- Content will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Raw Metadata Modal -->
+<div id="raw-metadata-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 class="text-xl font-semibold text-gray-800">Raw Metadata</h3>
+        <button 
+          onclick="closeRawMetadataModal()"
+          class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+        >
+          &times;
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <pre id="raw-metadata-content" class="text-sm bg-gray-50 p-4 rounded overflow-x-auto">
+          <!-- Content will be populated by JavaScript -->
+        </pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Make functions globally available
+  window.toggleMetadata = function(button) {
+    const content = document.getElementById('metadata-content');
+    const icon = button.querySelector('svg');
+    
+    if (content) {
+      const isHidden = content.classList.contains('hidden');
+      
+      if (isHidden) {
+        content.classList.remove('hidden');
+        button.setAttribute('aria-expanded', 'true');
+        if (icon) icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        button.setAttribute('aria-expanded', 'false');
+        if (icon) icon.classList.remove('rotate-180');
+      }
+    }
+  };
+  
+  window.showPrompt = function(phaseName, prompt) {
+    const modal = document.getElementById('prompt-modal');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    
+    if (modal && title && content) {
+      title.textContent = `${phaseName} - System Prompt`;
+      // Use marked if available, otherwise just display as plain text
+      if (typeof window.marked !== 'undefined') {
+        content.innerHTML = window.marked.parse(prompt);
+      } else {
+        content.innerHTML = `<pre>${prompt}</pre>`;
+      }
+      modal.classList.remove('hidden');
+      
+      // Add click listener directly to this modal
+      modal.onclick = function(event) {
+        if (event.target === modal) {
+          window.closePromptModal();
+        }
+      };
+    }
+  };
+  
+  window.closePromptModal = function() {
+    const modal = document.getElementById('prompt-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  };
+  
+  window.showRawMetadata = function(metadata) {
+    const modal = document.getElementById('raw-metadata-modal');
+    const content = document.getElementById('raw-metadata-content');
+    
+    if (modal && content) {
+      content.textContent = JSON.stringify(metadata, null, 2);
+      modal.classList.remove('hidden');
+      
+      // Add click listener directly to this modal
+      modal.onclick = function(event) {
+        if (event.target === modal) {
+          window.closeRawMetadataModal();
+        }
+      };
+    }
+  };
+  
+  window.closeRawMetadataModal = function() {
+    const modal = document.getElementById('raw-metadata-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  };
+  
+  // Event delegation for modal closing
+  document.addEventListener('click', function(event) {
+    // Check if click is on or within a modal backdrop
+    const promptModal = document.getElementById('prompt-modal');
+    const rawModal = document.getElementById('raw-metadata-modal');
+    
+    // Check if click is within prompt modal but not on the content
+    if (promptModal && !promptModal.classList.contains('hidden')) {
+      if (promptModal.contains(event.target) && !event.target.closest('.bg-white')) {
+        window.closePromptModal();
+        return;
+      }
+    }
+    
+    // Check if click is within raw metadata modal but not on the content
+    if (rawModal && !rawModal.classList.contains('hidden')) {
+      if (rawModal.contains(event.target) && !event.target.closest('.bg-white')) {
+        window.closeRawMetadataModal();
+        return;
+      }
+    }
+  });
+  
+  // Close modals with Escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      window.closePromptModal();
+      window.closeRawMetadataModal();
+    }
+  });
+</script>
+
+<!-- Include marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 

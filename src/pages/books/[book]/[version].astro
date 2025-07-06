@@ -2,13 +2,18 @@
 import Layout from '../../../layouts/Layout.astro';
 import BookDetail from '../../../components/BookDetail.astro';
 import DownloadsTable from '../../../components/DownloadsTable.astro';
+import BookMetadata from '../../../components/BookMetadata.astro';
 import { generateVersionPaths } from '../../../lib/paths';
+import { loadBookMetadataFromRelease } from '../../../lib/metadata';
 
 export async function getStaticPaths() {
   return generateVersionPaths();
 }
 
 const { book, release, version } = Astro.props;
+
+// Load metadata for this specific version
+const metadata = release ? await loadBookMetadataFromRelease(book.slug, release) : null;
 ---
 
 <Layout title={`${book.data.title} - Version ${version}`}>
@@ -21,6 +26,9 @@ const { book, release, version } = Astro.props;
       version={version} 
       title={`Version <em>${version}</em> Downloads`} 
     />
+
+    <!-- Book Metadata -->
+    <BookMetadata metadata={metadata} bookSlug={book.slug} version={version} />
 
     <!-- Back to Book Link -->
     <section class="text-center">
