@@ -1,0 +1,746 @@
+---
+import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
+
+interface Props {
+  metadata: BookMetadata | null;
+  bookSlug: string;
+  version?: string;
+  title?: string;
+}
+
+const { metadata, bookSlug, version, title = "Processing Metadata" } = Astro.props;
+
+// Only show the component if metadata exists
+if (!metadata) {
+  return null;
+}
+
+// Format timestamp for display
+const formatTimestamp = (timestamp: string) => {
+  try {
+    return new Date(timestamp).toLocaleString();
+  } catch {
+    return timestamp;
+  }
+};
+
+// Get phase type display name
+const getPhaseTypeDisplay = (phaseType: string) => {
+  const typeMap: Record<string, string> = {
+    'MODERNIZE': 'Modernize',
+    'EDIT': 'Edit',
+    'FINAL': 'Final',
+    'INTRODUCTION': 'Introduction',
+    'SUMMARY': 'Summary',
+    'ANNOTATE': 'Annotate'
+  };
+  return typeMap[phaseType] || phaseType;
+};
+---
+
+<section class="max-w-6xl mx-auto mb-24">
+  <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto mb-12" set:html={title}>
+  </h2>
+  <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+    <!-- Collapsible Header -->
+    <button 
+      class="w-full text-left flex items-center justify-between text-xl font-semibold text-gray-800 mb-4"
+      onclick="toggleMetadata(this)"
+      aria-expanded="false"
+      aria-controls="metadata-content"
+    >
+      <span>Processing Metadata</span>
+      <svg class="w-6 h-6 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+      </svg>
+    </button>
+    
+    <!-- Collapsible Content -->
+    <div id="metadata-content" class="hidden">
+      <!-- Metadata Summary -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Version</p>
+          <p class="text-lg">{metadata.book_version}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Processed</p>
+          <p class="text-lg">{formatTimestamp(metadata.run_timestamp)}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Phases</p>
+          <p class="text-lg">{metadata.phases.length}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600">Length Reduction</p>
+          <p class="text-lg">{metadata.length_reduction.join('%, ')}%</p>
+        </div>
+      </div>
+      
+      <!-- Phases Table -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">Processing Phases</h3>
+          <button 
+            class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+            data-metadata={JSON.stringify(metadata)}
+            onclick="showRawMetadataFromData(this)"
+          >
+            Show Raw Metadata
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+                  <thead>
+          <tr class="border-b-2 border-gray-300">
+            <th class="text-center py-3 px-4 font-semibold text-gray-700">Phase</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
+            <th class="text-left py-3 px-4 font-semibold text-gray-700">Model</th>
+            <th class="text-center py-3 px-4 font-semibold text-gray-700">Prompt</th>
+          </tr>
+        </thead>
+          <tbody>
+            {metadata.phases.map((phase: ProcessingPhase) => (
+              <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="py-3 px-4 text-center">
+                  <span class="font-medium">#{phase.phase_index}</span>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                    {getPhaseTypeDisplay(phase.phase_type)}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div>
+                    <p class="font-medium">{phase.model.name}</p>
+                    <p class="text-sm text-gray-500">{phase.model.id}</p>
+                  </div>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button 
+                    class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    data-phase-name={phase.phase_name}
+                    data-prompt={JSON.stringify(phase.fully_rendered_system_prompt)}
+                    onclick="showPromptFromData(this)"
+                  >
+                    View Prompt
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Prompt Modal -->
+<div id="prompt-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 id="modal-title" class="text-xl font-semibold text-gray-800">System Prompt</h3>
+        <div class="flex items-center space-x-4">
+          <button 
+            id="toggle-raw-btn"
+            onclick="toggleRawPrompt()"
+            class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+          >
+            Show Raw
+          </button>
+          <button 
+            id="copy-btn"
+            onclick="copyPromptToClipboard()"
+            class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+          >
+            Copy to Clipboard
+          </button>
+          <button 
+            onclick="closePromptModal()"
+            class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[60vh]">
+        <div id="modal-content" class="text-gray-700 markdown-content" style="color: #374151 !important; line-height: 1.6 !important;">
+          <!-- Content will be populated by JavaScript -->
+        </div>
+        <pre id="modal-raw-content" class="text-sm bg-gray-50 p-4 rounded overflow-x-auto hidden whitespace-pre-wrap">
+          <!-- Raw content will be populated by JavaScript -->
+        </pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Raw Metadata Modal -->
+<div id="raw-metadata-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 class="text-xl font-semibold text-gray-800">Raw Metadata</h3>
+        <div class="flex items-center space-x-4">
+          <button 
+            id="copy-metadata-btn"
+            onclick="copyMetadataToClipboard()"
+            class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+          >
+            Copy to Clipboard
+          </button>
+          <button 
+            onclick="closeRawMetadataModal()"
+            class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+          >
+            &times;
+          </button>
+        </div>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[70vh]">
+        <pre id="raw-metadata-content" class="text-sm bg-gray-50 p-4 rounded overflow-x-auto whitespace-pre-wrap">
+          <!-- Content will be populated by JavaScript -->
+        </pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Make functions globally available
+  window.toggleMetadata = function(button) {
+    const content = document.getElementById('metadata-content');
+    const icon = button.querySelector('svg');
+    
+    if (content) {
+      const isHidden = content.classList.contains('hidden');
+      
+      if (isHidden) {
+        content.classList.remove('hidden');
+        button.setAttribute('aria-expanded', 'true');
+        if (icon) icon.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        button.setAttribute('aria-expanded', 'false');
+        if (icon) icon.classList.remove('rotate-180');
+      }
+    }
+  };
+  
+  window.showPromptFromData = function(button) {
+    const phaseName = button.getAttribute('data-phase-name');
+    const promptData = button.getAttribute('data-prompt');
+    
+    if (!phaseName || !promptData) {
+      console.error('Missing required data attributes for showPromptFromData');
+      return;
+    }
+    
+    let prompt;
+    try {
+      prompt = JSON.parse(promptData);
+    } catch (error) {
+      console.error('Failed to parse prompt data:', error);
+      return;
+    }
+    
+    window.showPrompt(phaseName, prompt);
+  };
+  
+  window.showPrompt = function(phaseName, prompt) {
+    const modal = document.getElementById('prompt-modal');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const rawContent = document.getElementById('modal-raw-content');
+    
+    if (modal && title && content && rawContent) {
+      title.textContent = `${phaseName} - System Prompt`;
+      
+      // Store the raw prompt for later use
+      window.currentRawPrompt = prompt;
+      rawContent.textContent = prompt;
+      
+      // Use markdown-it if available, otherwise fallback to simple formatting
+      if (typeof window.markdownit !== 'undefined') {
+        const md = window.markdownit();
+        const rendered = md.render(prompt);
+        content.innerHTML = rendered;
+        
+        // Force apply styles to list elements
+        const lists = content.querySelectorAll('ul, ol');
+        lists.forEach(list => {
+          list.style.marginBottom = '1em';
+          list.style.marginTop = '1em';
+          list.style.paddingLeft = '2em';
+          list.style.display = 'block';
+          if (list.tagName === 'UL') {
+            list.style.listStyleType = 'disc';
+          } else {
+            list.style.listStyleType = 'decimal';
+          }
+        });
+        
+        const listItems = content.querySelectorAll('li');
+        listItems.forEach(li => {
+          li.style.marginBottom = '0.5em';
+          li.style.display = 'list-item';
+          li.style.lineHeight = '1.6';
+          li.style.paddingLeft = '0.5em';
+        });
+        
+        // Force apply styles to blockquotes
+        const blockquotes = content.querySelectorAll('blockquote');
+        console.log('Found blockquotes:', blockquotes.length);
+        blockquotes.forEach(blockquote => {
+          console.log('Styling blockquote:', blockquote.outerHTML);
+          blockquote.style.borderLeft = '4px solid #e5e7eb';
+          blockquote.style.paddingLeft = '1rem';
+          blockquote.style.margin = '1em 0';
+          blockquote.style.display = 'block';
+          blockquote.style.color = '#6b7280';
+          blockquote.style.fontStyle = 'italic';
+        });
+        
+        // Style pre elements that contain blockquote content
+        const preElements = content.querySelectorAll('pre');
+        console.log('Found pre elements:', preElements.length);
+        preElements.forEach(pre => {
+          const preText = pre.textContent || '';
+          // Check if this pre element contains blockquote content (starts with >)
+          if (preText.trim().startsWith('>')) {
+            console.log('Styling pre as blockquote:', pre.outerHTML);
+            pre.style.borderLeft = '4px solid #e5e7eb';
+            pre.style.paddingLeft = '1rem';
+            pre.style.margin = '1em 0';
+            pre.style.display = 'block';
+            pre.style.color = '#6b7280';
+            pre.style.fontStyle = 'italic';
+            pre.style.backgroundColor = 'transparent';
+            pre.style.border = 'none';
+            pre.style.borderRadius = '0';
+            pre.style.fontFamily = 'inherit';
+            pre.style.fontSize = 'inherit';
+            pre.style.lineHeight = '1.6';
+            pre.style.whiteSpace = 'pre-wrap';
+          }
+        });
+        
+        // Force apply styles to horizontal rules
+        const horizontalRules = content.querySelectorAll('hr');
+        horizontalRules.forEach(hr => {
+          hr.style.border = 'none';
+          hr.style.borderTop = '1px solid #e5e7eb';
+          hr.style.margin = '2em 0';
+          hr.style.display = 'block';
+          hr.style.height = '1px';
+        });
+      } else {
+
+        // Fallback to simple formatting
+        let formattedPrompt = prompt
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/`(.*?)`/g, '<code>$1</code>')
+          .replace(/^\* (.*$)/gim, '<li>$1</li>')
+          .replace(/^- (.*$)/gim, '<li>$1</li>')
+          .replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+        
+        // Wrap lists properly
+        formattedPrompt = formattedPrompt
+          .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+          .replace(/<\/ul>\s*<ul>/g, '');
+        
+        // Convert line breaks to paragraphs
+        formattedPrompt = formattedPrompt
+          .split('\n\n')
+          .map(paragraph => {
+            if (paragraph.trim() && !paragraph.includes('<h') && !paragraph.includes('<ul') && !paragraph.includes('<li')) {
+              return `<p>${paragraph.trim()}</p>`;
+            }
+            return paragraph;
+          })
+          .join('\n');
+        
+        content.innerHTML = formattedPrompt;
+      }
+      
+      modal.classList.remove('hidden');
+      
+      // Add click listener directly to this modal
+      modal.onclick = function(event) {
+        if (event.target === modal) {
+          window.closePromptModal();
+        }
+      };
+    }
+  };
+  
+  window.closePromptModal = function() {
+    const modal = document.getElementById('prompt-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      // Reset to formatted view when closing
+      const content = document.getElementById('modal-content');
+      const rawContent = document.getElementById('modal-raw-content');
+      const toggleBtn = document.getElementById('toggle-raw-btn');
+      if (content && rawContent && toggleBtn) {
+        content.classList.remove('hidden');
+        rawContent.classList.add('hidden');
+        toggleBtn.textContent = 'Show Raw';
+      }
+    }
+  };
+  
+  window.toggleRawPrompt = function() {
+    const content = document.getElementById('modal-content');
+    const rawContent = document.getElementById('modal-raw-content');
+    const toggleBtn = document.getElementById('toggle-raw-btn');
+    
+    if (content && rawContent && toggleBtn) {
+      const isRawVisible = !rawContent.classList.contains('hidden');
+      
+      if (isRawVisible) {
+        // Switch to formatted view
+        content.classList.remove('hidden');
+        rawContent.classList.add('hidden');
+        toggleBtn.textContent = 'Show Raw';
+      } else {
+        // Switch to raw view
+        content.classList.add('hidden');
+        rawContent.classList.remove('hidden');
+        toggleBtn.textContent = 'Show Formatted';
+      }
+    }
+  };
+  
+  window.copyPromptToClipboard = function() {
+    const rawPrompt = window.currentRawPrompt;
+    if (rawPrompt) {
+      navigator.clipboard.writeText(rawPrompt).then(function() {
+        // Show temporary success message
+        const copyBtn = document.getElementById('copy-btn');
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.style.color = '#059669'; // green
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.color = '';
+          }, 2000);
+        }
+      }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = rawPrompt;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const copyBtn = document.getElementById('copy-btn');
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.style.color = '#059669'; // green
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.color = '';
+          }, 2000);
+        }
+      });
+    }
+  };
+  
+  window.showRawMetadataFromData = function(button) {
+    const metadataData = button.getAttribute('data-metadata');
+    
+    if (!metadataData) {
+      console.error('Missing metadata data attribute for showRawMetadataFromData');
+      return;
+    }
+    
+    let metadata;
+    try {
+      metadata = JSON.parse(metadataData);
+    } catch (error) {
+      console.error('Failed to parse metadata data:', error);
+      return;
+    }
+    
+    window.showRawMetadata(metadata);
+  };
+  
+  window.showRawMetadata = function(metadata) {
+    const modal = document.getElementById('raw-metadata-modal');
+    const content = document.getElementById('raw-metadata-content');
+    
+    if (modal && content) {
+      const metadataText = JSON.stringify(metadata, null, 2);
+      content.textContent = metadataText;
+      // Store the metadata text for copying
+      window.currentMetadataText = metadataText;
+      modal.classList.remove('hidden');
+      
+      // Add click listener directly to this modal
+      modal.onclick = function(event) {
+        if (event.target === modal) {
+          window.closeRawMetadataModal();
+        }
+      };
+    }
+  };
+  
+  window.copyMetadataToClipboard = function() {
+    const metadataText = window.currentMetadataText;
+    if (metadataText) {
+      navigator.clipboard.writeText(metadataText).then(function() {
+        // Show temporary success message
+        const copyBtn = document.getElementById('copy-metadata-btn');
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.style.color = '#059669'; // green
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.color = '';
+          }, 2000);
+        }
+      }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = metadataText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const copyBtn = document.getElementById('copy-metadata-btn');
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.style.color = '#059669'; // green
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.style.color = '';
+          }, 2000);
+        }
+      });
+    }
+  };
+  
+  window.closeRawMetadataModal = function() {
+    const modal = document.getElementById('raw-metadata-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  };
+  
+  // Event delegation for modal closing
+  document.addEventListener('click', function(event) {
+    // Check if click is on or within a modal backdrop
+    const promptModal = document.getElementById('prompt-modal');
+    const rawModal = document.getElementById('raw-metadata-modal');
+    
+    // Check if click is within prompt modal but not on the content
+    if (promptModal && !promptModal.classList.contains('hidden')) {
+      if (promptModal.contains(event.target) && !event.target.closest('.bg-white')) {
+        window.closePromptModal();
+        return;
+      }
+    }
+    
+    // Check if click is within raw metadata modal but not on the content
+    if (rawModal && !rawModal.classList.contains('hidden')) {
+      if (rawModal.contains(event.target) && !event.target.closest('.bg-white')) {
+        window.closeRawMetadataModal();
+        return;
+      }
+    }
+  });
+  
+  // Close modals with Escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      window.closePromptModal();
+      window.closeRawMetadataModal();
+    }
+  });
+</script>
+
+<!-- Import markdown-it locally -->
+<script>
+  import MarkdownIt from 'markdown-it';
+  
+  // Initialize markdown-it globally
+  (window as any).markdownit = MarkdownIt;
+</script>
+
+
+
+<style>
+  /* Markdown-it output styling - more comprehensive */
+  .markdown-content {
+    color: #374151 !important;
+    line-height: 1.6 !important;
+    font-size: 14px !important;
+  }
+  
+  /* Headers */
+  .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+    margin-top: 1.5em !important;
+    margin-bottom: 0.5em !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    color: #111827 !important;
+    display: block !important;
+  }
+  
+  .markdown-content h1 {
+    font-size: 1.5em !important;
+    margin-top: 0 !important;
+  }
+  
+  .markdown-content h2 {
+    font-size: 1.25em !important;
+  }
+  
+  .markdown-content h3 {
+    font-size: 1.125em !important;
+  }
+  
+  /* Paragraphs */
+  .markdown-content p {
+    margin-bottom: 1em !important;
+    display: block !important;
+    margin-top: 0 !important;
+  }
+  
+  /* Lists - more specific selectors */
+  .markdown-content ul {
+    margin-bottom: 1em !important;
+    margin-top: 1em !important;
+    padding-left: 2em !important;
+    display: block !important;
+    list-style-type: disc !important;
+    list-style-position: outside !important;
+  }
+  
+  .markdown-content ol {
+    margin-bottom: 1em !important;
+    margin-top: 1em !important;
+    padding-left: 2em !important;
+    display: block !important;
+    list-style-type: decimal !important;
+    list-style-position: outside !important;
+  }
+  
+  .markdown-content li {
+    margin-bottom: 0.5em !important;
+    display: list-item !important;
+    line-height: 1.6 !important;
+    padding-left: 0.5em !important;
+  }
+  
+  /* Handle li elements that contain p tags */
+  .markdown-content li p {
+    margin-bottom: 0.5em !important;
+    margin-top: 0 !important;
+  }
+  
+  .markdown-content li p:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Nested lists */
+  .markdown-content ul ul, .markdown-content ol ol, .markdown-content ul ol, .markdown-content ol ul {
+    margin-top: 0.5em !important;
+    margin-bottom: 0.5em !important;
+    padding-left: 1em !important;
+  }
+  
+  /* Ensure proper spacing between sections */
+  .markdown-content h2 {
+    margin-top: 2em !important;
+  }
+  
+  .markdown-content h2:first-of-type {
+    margin-top: 1.5em !important;
+  }
+  
+  /* Text formatting */
+  .markdown-content strong {
+    font-weight: 600 !important;
+    color: #111827 !important;
+  }
+  
+  .markdown-content em {
+    font-style: italic !important;
+  }
+  
+  /* Code */
+  .markdown-content code {
+    background-color: #f3f4f6 !important;
+    padding: 0.125rem 0.25rem !important;
+    border-radius: 0.25rem !important;
+    font-size: 0.875em !important;
+    color: #1f2937 !important;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace !important;
+  }
+  
+  .markdown-content pre {
+    background-color: #f3f4f6 !important;
+    padding: 1rem !important;
+    border-radius: 0.5rem !important;
+    overflow-x: auto !important;
+    margin: 1em 0 !important;
+    display: block !important;
+  }
+  
+  .markdown-content pre code {
+    background: none !important;
+    padding: 0 !important;
+  }
+  
+  /* Blockquotes */
+  .markdown-content blockquote {
+    border-left: 4px solid #e5e7eb !important;
+    padding-left: 1rem !important;
+    margin: 1em 0 !important;
+    color: #6b7280 !important;
+    display: block !important;
+    font-style: italic !important;
+  }
+  
+  .markdown-content blockquote p {
+    margin-bottom: 0.5em !important;
+  }
+  
+  .markdown-content blockquote p:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  /* Horizontal rules */
+  .markdown-content hr {
+    border: none !important;
+    border-top: 1px solid #e5e7eb !important;
+    margin: 2em 0 !important;
+    display: block !important;
+    height: 1px !important;
+  }
+  
+  /* First element spacing */
+  .markdown-content > *:first-child {
+    margin-top: 0 !important;
+  }
+  
+  /* Last element spacing */
+  .markdown-content > *:last-child {
+    margin-bottom: 0 !important;
+  }
+</style> 
