@@ -71,6 +71,17 @@ if (originalText && modernizedText) {
       <section class="max-w-6xl mx-auto">
         {hasChanges ? (
           <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+            <!-- Explanation for non-developers -->
+            <div class="mb-8 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <h3 class="text-lg font-semibold text-blue-800 mb-2">What you're seeing</h3>
+              <p class="text-blue-700 text-sm leading-relaxed">
+                This view shows you exactly what changed between the original text and the modernized version. 
+                <strong class="text-green-700">Green lines</strong> show text that was added or improved. 
+                <strong class="text-red-700">Red lines</strong> show text that was removed or replaced. 
+                The numbers on the left show which lines in the original and modernized versions are being compared.
+              </p>
+            </div>
+            
             <div class="mb-6">
               <h2 class="text-2xl font-semibold mb-4">Changes Summary</h2>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
