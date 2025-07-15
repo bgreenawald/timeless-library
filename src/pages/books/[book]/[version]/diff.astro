@@ -74,21 +74,21 @@ if (originalText && modernizedText) {
             <div class="mb-6">
               <h2 class="text-2xl font-semibold mb-4">Changes Summary</h2>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="bg-blue-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-blue-800">{changeCount}</div>
-                  <div class="text-sm text-blue-600">Total Changes</div>
+                <div class="bg-amber-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-amber-800">{changeCount}</div>
+                  <div class="text-sm text-amber-600">Total Changes</div>
                 </div>
-                <div class="bg-green-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-green-800">
+                <div class="bg-emerald-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-emerald-800">
                     {diffResult?.diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++')).length || 0}
                   </div>
-                  <div class="text-sm text-green-600">Additions</div>
+                  <div class="text-sm text-emerald-600">Additions</div>
                 </div>
-                <div class="bg-red-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-red-800">
+                <div class="bg-rose-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-rose-800">
                     {diffResult?.diff.split('\n').filter(line => line.startsWith('-') && !line.startsWith('---')).length || 0}
                   </div>
-                  <div class="text-sm text-red-600">Removals</div>
+                  <div class="text-sm text-rose-600">Removals</div>
                 </div>
               </div>
             </div>

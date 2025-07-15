@@ -405,7 +405,7 @@
 
         /* Diff Button Styling */
         .diff-button {
-          background-color: #8b5cf6;
+          background-color: var(--accent-gold);
           color: white;
           padding: 0.75rem 1.5rem;
           border-radius: 9999px;
@@ -417,7 +417,7 @@
         }
 
         .diff-button:hover {
-          background-color: #7c3aed;
+          background-color: var(--accent-gold-hover);
           color: white;
           transform: translateY(-2px);
         }
