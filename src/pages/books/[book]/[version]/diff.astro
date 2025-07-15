@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
 import BookDetail from '../../../../components/BookDetail.astro';
+import { extractVersionFromTag } from '../../../../lib/utils';
 import { generateDiffPaths } from '../../../../lib/paths';
 import { fetchVersionTexts, generateDiff, parseDiffToLines } from '../../../../lib/diff';
 
@@ -9,6 +10,9 @@ export async function getStaticPaths() {
 }
 
 const { book, release, version, versionTag } = Astro.props;
+
+// Extract the display version from the full version tag
+const displayVersion = extractVersionFromTag(version);
 
 // Fetch the original and modernized texts
 const { originalText, modernizedText } = await fetchVersionTexts(versionTag, book.slug, release);
@@ -42,7 +46,7 @@ if (originalText && modernizedText) {
 }
 ---
 
-<Layout title={`${book.data.title} - Version ${version} - Diff`}>
+<Layout title={`${book.data.title} - Version ${displayVersion} - Diff`}>
   <main class="container mx-auto px-6 py-16 md:py-24">
     <BookDetail book={book} />
 
@@ -50,7 +54,7 @@ if (originalText && modernizedText) {
     <section class="max-w-6xl mx-auto mb-12">
       <div class="text-pane text-center">
         <h1 class="text-3xl md:text-4xl mb-4">Text Comparison</h1>
-        <p class="text-lg mb-2">Version: <strong>{version}</strong></p>
+        <p class="text-lg mb-2">Version: <strong>{displayVersion}</strong></p>
         <p class="text-base text-text-ink/70">
           Comparing original text with modernized version
         </p>
@@ -67,24 +71,35 @@ if (originalText && modernizedText) {
       <section class="max-w-6xl mx-auto">
         {hasChanges ? (
           <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
+            <!-- Explanation for non-developers -->
+            <div class="mb-8 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+              <h3 class="text-lg font-semibold text-blue-800 mb-2">What you're seeing</h3>
+              <p class="text-blue-700 text-sm leading-relaxed">
+                This view shows you exactly what changed between the original text and the modernized version. 
+                <strong class="text-green-700">Green lines</strong> show text that was added or improved. 
+                <strong class="text-red-700">Red lines</strong> show text that was removed or replaced. 
+                The numbers on the left show which lines in the original and modernized versions are being compared.
+              </p>
+            </div>
+            
             <div class="mb-6">
               <h2 class="text-2xl font-semibold mb-4">Changes Summary</h2>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                <div class="bg-blue-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-blue-800">{changeCount}</div>
-                  <div class="text-sm text-blue-600">Total Changes</div>
+                <div class="bg-amber-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-amber-800">{changeCount}</div>
+                  <div class="text-sm text-amber-600">Total Changes</div>
                 </div>
-                <div class="bg-green-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-green-800">
+                <div class="bg-emerald-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-emerald-800">
                     {diffResult?.diff.split('\n').filter(line => line.startsWith('+') && !line.startsWith('+++')).length || 0}
                   </div>
-                  <div class="text-sm text-green-600">Additions</div>
+                  <div class="text-sm text-emerald-600">Additions</div>
                 </div>
-                <div class="bg-red-100 p-4 rounded-lg">
-                  <div class="text-2xl font-bold text-red-800">
+                <div class="bg-rose-100 p-4 rounded-lg">
+                  <div class="text-2xl font-bold text-rose-800">
                     {diffResult?.diff.split('\n').filter(line => line.startsWith('-') && !line.startsWith('---')).length || 0}
                   </div>
-                  <div class="text-sm text-red-600">Removals</div>
+                  <div class="text-sm text-rose-600">Removals</div>
                 </div>
               </div>
             </div>
@@ -150,10 +165,10 @@ if (originalText && modernizedText) {
     )}
 
     <!-- Navigation -->
-    <section class="text-center mt-12">
+    <section class="max-w-6xl mx-auto text-center mt-12">
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href={`/books/${book.slug}/${version}`} class="cta-button">
-          Back to Version {version}
+          Back to Version {displayVersion}
         </a>
         <a href={`/books/${book.slug}`} class="cta-button">
           Back to {book.data.title}
