@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../../layouts/Layout.astro';
 import BookDetail from '../../../../components/BookDetail.astro';
+import { extractVersionFromTag } from '../../../../lib/utils';
 import { generateDiffPaths } from '../../../../lib/paths';
 import { fetchVersionTexts, generateDiff, parseDiffToLines } from '../../../../lib/diff';
 
@@ -9,6 +10,9 @@ export async function getStaticPaths() {
 }
 
 const { book, release, version, versionTag } = Astro.props;
+
+// Extract the display version from the full version tag
+const displayVersion = extractVersionFromTag(version);
 
 // Fetch the original and modernized texts
 const { originalText, modernizedText } = await fetchVersionTexts(versionTag, book.slug, release);
@@ -42,7 +46,7 @@ if (originalText && modernizedText) {
 }
 ---
 
-<Layout title={`${book.data.title} - Version ${version} - Diff`}>
+<Layout title={`${book.data.title} - Version ${displayVersion} - Diff`}>
   <main class="container mx-auto px-6 py-16 md:py-24">
     <BookDetail book={book} />
 
@@ -50,7 +54,7 @@ if (originalText && modernizedText) {
     <section class="max-w-6xl mx-auto mb-12">
       <div class="text-pane text-center">
         <h1 class="text-3xl md:text-4xl mb-4">Text Comparison</h1>
-        <p class="text-lg mb-2">Version: <strong>{version}</strong></p>
+        <p class="text-lg mb-2">Version: <strong>{displayVersion}</strong></p>
         <p class="text-base text-text-ink/70">
           Comparing original text with modernized version
         </p>
@@ -153,7 +157,7 @@ if (originalText && modernizedText) {
     <section class="max-w-6xl mx-auto text-center mt-12">
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a href={`/books/${book.slug}/${version}`} class="cta-button">
-          Back to Version {version}
+          Back to Version {displayVersion}
         </a>
         <a href={`/books/${book.slug}`} class="cta-button">
           Back to {book.data.title}

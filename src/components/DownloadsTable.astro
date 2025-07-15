@@ -1,4 +1,5 @@
 ---
+import { extractVersionFromTag } from '../lib/utils';
 import type { GithubRelease } from '../lib/github';
 
 /**
@@ -34,6 +35,9 @@ interface Props {
 }
 
 const { release, version, title } = Astro.props;
+
+// Extract the display version from the full version tag
+const displayVersion = version ? extractVersionFromTag(version) : 'Unknown';
 
 /**
  * Helper function to get the content type and color for an asset.
@@ -76,7 +80,7 @@ function getAssetSortPriority(assetName: string) {
   </h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <div class="text-center mb-6">
-      <p class="text-lg font-medium">Version: {version || 'Unknown'}</p>
+      <p class="text-lg font-medium">Version: {displayVersion}</p>
     </div>
     
     <!-- Downloads Table -->

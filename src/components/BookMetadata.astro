@@ -1,4 +1,5 @@
 ---
+import { extractVersionFromTag } from '../lib/utils';
 import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
 
 interface Props {
@@ -14,6 +15,9 @@ const { metadata, bookSlug, version, title = "Processing Metadata" } = Astro.pro
 if (!metadata) {
   return null;
 }
+
+// Extract the display version from the metadata book_version field
+const displayVersion = extractVersionFromTag(metadata.book_version);
 
 // Format timestamp for display
 const formatTimestamp = (timestamp: string) => {
@@ -61,7 +65,7 @@ const getPhaseTypeDisplay = (phaseType: string) => {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
         <div>
           <p class="text-sm font-medium text-gray-600">Version</p>
-          <p class="text-lg">{metadata.book_version}</p>
+          <p class="text-lg">{displayVersion}</p>
         </div>
         <div>
           <p class="text-sm font-medium text-gray-600">Processed</p>
