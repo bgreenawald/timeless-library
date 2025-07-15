@@ -10,9 +10,9 @@ interface Props {
 const { versions, bookSlug } = Astro.props;
 ---
 
-<section>
-  <h2 class="text-pane text-3xl md:text-4xl text-center max-w-3xl mx-auto">All Available Versions</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+<section class="max-w-6xl mx-auto">
+  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">All Available Versions</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     {versions.map((version: GithubTag, index: number) => (
       <a href={`/books/${bookSlug}/${version.name}`} class="book-card">
         <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>

@@ -40,7 +40,7 @@ const metadata = latestRelease ? await loadBookMetadataFromRelease(book.slug, la
     
     <!-- Show Diff Link -->
     {latestRelease && latestRelease.assets.some(asset => asset.name.endsWith('-modernized.md')) && (
-      <section class="text-center mb-12">
+      <section class="max-w-6xl mx-auto text-center mb-12">
         <a 
           href={`/books/${book.slug}/${latestVersion}/diff`}
           class="diff-button"
@@ -53,7 +53,7 @@ const metadata = latestRelease ? await loadBookMetadataFromRelease(book.slug, la
     {hasVersions ? (
       <VersionsGrid versions={versions} bookSlug={book.slug} />
     ) : (
-      <section class="text-center">
+      <section class="max-w-6xl mx-auto text-center">
         <p class="text-lg">No versions available for this book yet.</p>
       </section>
     )}

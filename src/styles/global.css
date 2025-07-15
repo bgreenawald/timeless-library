@@ -421,3 +421,25 @@
           color: white;
           transform: translateY(-2px);
         }
+
+        /* Layout Utility Classes */
+        .content-width {
+          max-width: 72rem; /* 6xl in Tailwind */
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .content-section {
+          margin-bottom: 6rem; /* 24 in Tailwind */
+        }
+
+        .content-section:last-child {
+          margin-bottom: 0;
+        }
+
+        /* Responsive spacing utilities */
+        @media (min-width: 768px) {
+          .content-section {
+            margin-bottom: 8rem; /* 32 in Tailwind */
+          }
+        }

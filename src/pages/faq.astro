@@ -8,8 +8,8 @@ const { sections } = faqData;
 <Layout title="FAQ - The Modern Library">
   <main class="container mx-auto px-6 py-16 md:py-24">
     <!-- Header Section -->
-    <section class="text-center max-w-4xl mx-auto mb-16">
-      <div class="text-pane">
+    <section class="max-w-6xl mx-auto mb-16">
+      <div class="text-pane text-center">
         <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight mb-6">Frequently Asked Questions</h1>
         <p class="text-lg md:text-xl max-w-3xl mx-auto">
           Find answers to common questions about our modernizations, reading experience, and how we bring classic literature to contemporary audiences.
@@ -18,7 +18,7 @@ const { sections } = faqData;
     </section>
 
     <!-- FAQ Sections -->
-    <div class="max-w-4xl mx-auto space-y-12">
+    <div class="max-w-6xl mx-auto space-y-12">
       {sections.map((section, sectionIndex) => (
         <section>
           <h2 class="text-pane text-2xl md:text-3xl mb-8 text-center">{section.title}</h2>
@@ -54,8 +54,8 @@ const { sections } = faqData;
     </div>
 
     <!-- Contact Section -->
-    <section class="text-center max-w-2xl mx-auto mt-16">
-      <div class="text-pane">
+    <section class="max-w-6xl mx-auto mt-16">
+      <div class="text-pane text-center">
         <h2 class="text-2xl md:text-3xl mb-4">Still Have Questions?</h2>
         <p class="mb-6">
           Can't find what you're looking for? We'd love to hear from you and help answer any additional questions you might have.
