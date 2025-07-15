@@ -5,15 +5,15 @@
       "questions": [
         {
           "question": "What makes your modernizations different from the original texts?",
-          "answer": "Our modernizations preserve the original story, themes, and character development while updating the language to be more accessible to contemporary readers. We maintain the author's voice and intent while making the text flow naturally for today's audience."
+          "answer": "The pitch of this project is something along the lines of 'What if the original author had written this book today with the help of an editor to make it more accessible to a wider audience?' The goal is not simply a summary of the book, but a version of the book that preserves the author's original voice, style, and rigor while making the text more modern and accessible. This is made possible by the advances in AI and the ability to use the original text as a reference."
         },
         {
-          "question": "Do you change the plot or characters in your modernizations?",
-          "answer": "No, we never alter the core plot, character motivations, or major story elements. Our goal is to make the language more accessible while staying true to the original narrative and character development."
+          "question": "Do you ever alter any core features of the book?",
+          "answer": "We don't intend to, but acknowledge that large language models have an inherent amount of randomness to them. We take strides to ensure it is very clear within the requests that we make to the language models to leave the core essence of the book intact, and will do our best to make manual fixes if we discover that this has occurred."
         },
         {
           "question": "How do you choose which books to modernize?",
-          "answer": "We select works that have stood the test of time but may be challenging for modern readers due to dated language or cultural references. We focus on stories with universal themes that resonate across generations."
+          "answer": "Frankly, we are currently focusing on books that we would like to read. We are also open to suggestions from the community. As of now, we are focused only on non-fiction books as we feel that fiction will deserve a different kind of process that we have not thought through yet. "
         }
       ]
     },
@@ -22,15 +22,19 @@
       "questions": [
         {
           "question": "Are your modernizations available in different formats?",
-          "answer": "Currently, our modernizations are available in digital format through our website. We're working on expanding to include print editions and audiobooks in the future."
+          "answer": "Currently, our modernizations are available in digital format through our website. These include PDF, Markdown, and EPUB for use with a variety of digital readers. We are exploring adding audiobooks in the future. ."
         },
         {
-          "question": "Can I read the original text alongside the modernization?",
-          "answer": "Yes! We provide links to public domain versions of the original texts so readers can compare and appreciate both versions. This allows you to see how we've updated the language while preserving the story's essence."
+          "question": "What is the difference between the 'Modernized' and 'Annotated' versions?",
+          "answer": "The 'Modernized' version focuses on making the language and style of the piece more contemporary, and edits the piece to make it more concise and readable. The 'Annotated' Version takes the modernized version and adds several accompanying bits of annotation, including; a pre-chapter introduction which provides useful details to situate the reader; inline annotations to explain difficult bits; and an end of chapter summary to help the reader review what they just read. ."
         },
         {
-          "question": "Do you offer reading guides or discussion questions?",
-          "answer": "We're developing reading guides and discussion questions for each modernization to help readers engage more deeply with the text. These will be available soon on each book's page."
+          "question": "How can we see what was done to the original text?",
+          "answer": "We aim to be as transparent as possible with all of the changes that happened to the original text. For each text, we show the full pipeline transformations that the book went through. This includes what models were used, along with the prompts. Further, there is a feature that allows you to see the original text against the modernized text to that you can see exactly what was changed."
+        },
+        {
+          "question": "How are these works licensed?",
+          "answer": "All of the modernized works are licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. This means that you are free to share and adapt the work, but you must give attribution to the original modernization. You are also not allowed to use the work for commercial purposes. "
         }
       ]
     },
@@ -39,15 +43,15 @@
       "questions": [
         {
           "question": "How do I report an error or suggest an improvement?",
-          "answer": "We welcome feedback! You can contact us through our contact form or email us directly. We review all suggestions and corrections to continuously improve our modernizations."
+          "answer": "We welcome feedback! You can contact us through our contact form or email us directly. We review all suggestions and corrections to continuously improve our modernizations. We also have a Github repository both for the program that generates the modernized books as well as for this website. Any issues or suggestions can also be used there."
         },
         {
-          "question": "Are your modernizations suitable for educational use?",
-          "answer": "Absolutely! Our modernizations are perfect for classrooms, book clubs, and educational settings. They help bridge the gap between classic literature and contemporary readers."
-        },
+          "question": "How much does each modernization cost to make?",
+          "answer": "The cost of each modernization is dependent on the length of the book and which models we use for the process. Typically, we aim for no more than $10-$20 per book."
+        }
         {
-          "question": "Do you have plans for more books in the future?",
-          "answer": "Yes! We're constantly working on new modernizations. We regularly add new titles to our collection, focusing on works that would benefit most from updated language while maintaining their literary value."
+          "question": "What is the best way to support this work?",
+          "answer": "The best way is to read the books. If you find areas for improvement or places that you think the model has hurt the nature of the original work (or just simple grammar, punctuation, or formatting issues), let us know so that we can correct it. Also, we would love for more people to use this program to modernize other public domain books. Each book requires a certain amount of work to make sure it is set up correctly for the process, and a cost associated with the translation. If there are books you are interested in modernizing and would be willing to take on the time and cost, that would greatly help expand this library of modernized books!"
         }
       ]
     }
