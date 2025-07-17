@@ -35,6 +35,10 @@
         {
           "question": "How are these works licensed?",
           "answer": "All of the modernized works are licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. This means that you are free to share and adapt the work, but you must give attribution to the original modernization. You are also not allowed to use the work for commercial purposes. "
+        },
+        {
+          "question": "What do the version numbers of the books mean?",
+          "answer": "We track changes to the modernized book over time using version numbers in the format major.minor. The major number indicates a complete modernization, while the minor number denotes manual updates that correct any errors the AI model may have introduced. New major versions are rare—they occur only when there's been a significant advance in our AI models that enables a noticeably better modernization, or when we determine an existing version isn't working and rerun the process in hopes of achieving a better result."
         }
       ]
     },
@@ -48,11 +52,10 @@
         {
           "question": "How much does each modernization cost to make?",
           "answer": "The cost of each modernization is dependent on the length of the book and which models we use for the process. Typically, we aim for no more than $10-$20 per book."
-          "answer": "The cost of each modernization is dependent on the length of the book and which models we use for the process. Typically, we aim for no more than $10-$20 per book."
         },
         {
           "question": "What is the best way to support this work?",
-          "answer": "The best way is to read the books. If you find areas for improvement or places that you think the model has hurt the nature of the original work (or just simple grammar, punctuation, or formatting issues), let us know so that we can correct it. Also, we would love for more people to use this program to modernize other public domain books. Each book requires a certain amount of work to make sure it is set up correctly for the process, and a cost associated with the translation. If there are books you are interested in modernizing and would be willing to take on the time and cost, that would greatly help expand this library of modernized books!"
+          "answer": "Reading the books is the best support! If you spot areas where the model has altered the original's tone or made simple errors in grammar, punctuation, or formatting, please let us know so we can correct them. We also welcome anyone willing to use this program to modernize other public-domain titles. Each book requires unique setup and has associated costs with running the AI models, so if you're able to invest the time and cover those costs for books you care about, you'll greatly help us expand this library of modernized works."
         }
       ]
     }
