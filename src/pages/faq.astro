@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import faqData from '../data/faq.json';
+import { SITE_CONFIG } from '../lib/config';
 
 const { sections } = faqData;
 ---
 
-<Layout title="FAQ - The Modern Library">
+<Layout title={`FAQ - ${SITE_CONFIG.name}`}>
   <main class="container mx-auto px-6 py-16 md:py-24">
     <!-- Header Section -->
     <section class="max-w-6xl mx-auto mb-16">

@@ -1,6 +1,6 @@
 /**
  * Theme-appropriate colors for book covers that cycle through a curated palette.
- * These colors are designed to complement the Modern Library theme.
+ * These colors are designed to complement the Timeless Library theme.
  */
 
 export const themeColors = [

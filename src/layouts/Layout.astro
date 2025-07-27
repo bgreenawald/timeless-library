@@ -1,6 +1,7 @@
 ---
 import { ViewTransitions } from 'astro:transitions';
 import '../styles/global.css';
+import { SITE_CONFIG } from '../lib/config';
 
 interface Props {
   title: string;
@@ -27,7 +28,7 @@ const { title } = Astro.props;
     <!-- Header & Navigation -->
     <header class="relative">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="text-xl font-bold font-poppins tracking-wider">The Modern Library</a>
+        <a href="/" class="text-xl font-bold font-poppins tracking-wider">{SITE_CONFIG.name}</a>
         
         <!-- Desktop Navigation -->
         <nav class="hidden md:flex items-center space-x-8">
@@ -66,10 +67,8 @@ const { title } = Astro.props;
     <!-- Footer -->
     <footer>
       <div class="container mx-auto text-center text-sm">
-        <p>&copy; 2025 The Modern Library. All Rights Reserved.</p>
-        <p class="mt-2 font-poppins text-xs opacity-70">
-          <a href="#" class="hover:text-[var(--accent-gold)]">Privacy Policy</a> &middot;         <a href="#" class="hover:text-[var(--accent-gold)]">Terms of Service</a>
-        </p>
+        <p>{SITE_CONFIG.name}</p>
+
       </div>
     </footer>
 

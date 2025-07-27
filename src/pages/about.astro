@@ -1,14 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { SITE_CONFIG } from '../lib/config';
 ---
 
-<Layout title="About The Modern Library">
+<Layout title={`About ${SITE_CONFIG.name}`}>
   <main class="container mx-auto px-6 py-16 md:py-24">
     <section class="max-w-6xl mx-auto">
       <div class="text-pane text-center">
-        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">About The Modern Library</h1>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl !leading-tight">About {SITE_CONFIG.name}</h1>
         <p class="mt-6 text-lg md:text-xl max-w-2xl mx-auto">
-          The Modern Library is a project dedicated to bringing classic literature to contemporary readers.
+          {SITE_CONFIG.name} is a project dedicated to bringing classic literature to contemporary readers.
           We utilize advanced Large Language Models (LLMs) to modernize the language and context of timeless stories,
           making them accessible and engaging for a new generation, while meticulously preserving the original's essence and artistic integrity.
         </p>
