@@ -1,47 +1,55 @@
-# Astro Starter Kit: Minimal
+# Timeless Library
 
-```sh
-npm create astro@latest -- --template minimal
+A project dedicated to bringing classic literature to contemporary readers.
+
+## About
+
+The Timeless Library is a web application built with Astro that provides easy access to classic literature. It features a modern, responsive design with book collections, detailed book pages, and an intuitive reading experience.
+
+## Tech Stack
+
+- **Framework**: Astro
+- **Styling**: Tailwind CSS
+- **Content**: Markdown with YAML frontmatter
+- **Language**: TypeScript
+
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+## Project Structure
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
+```
 /
-├── public/
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── content/books/     # Book content (markdown files)
+│   ├── layouts/           # Page layouts
+│   ├── lib/              # Utilities and configuration
+│   └── pages/            # Astro pages
+├── public/covers/        # Book cover images
+└── docs/                # Documentation
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Configuration
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Site-wide settings are managed in `src/lib/config.ts`. Update the `SITE_CONFIG` object to change the project name, description, and other branding elements.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Contributing
 
-## 🧞 Commands
+1. Add book content as markdown files in `src/content/books/`
+2. Include cover images in `public/covers/`
+3. Update site configuration as needed in `src/lib/config.ts`
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+For detailed configuration information, see [SITE_CONFIGURATION.md](./SITE_CONFIGURATION.md).
