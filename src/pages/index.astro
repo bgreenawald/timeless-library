@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { SITE_CONFIG } from '../lib/config';
 
 const books = await getCollection('books', ({ data }) => data.is_featured);
 ---
 
-<Layout title="The Modern Library">
+<Layout title={SITE_CONFIG.name}>
   <!-- Main Content -->
   <main class="container mx-auto px-6 py-16 md:py-24">
     <!-- Hero Section -->

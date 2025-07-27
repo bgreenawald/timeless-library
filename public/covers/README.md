@@ -1,6 +1,6 @@
 # Book Cover Images
 
-This directory contains book cover images for The Modern Library.
+This directory contains book cover images for The Timeless Library.
 
 ## File Organization
 
@@ -27,7 +27,7 @@ This directory contains book cover images for The Modern Library.
 
 - Use high-quality, public domain or properly licensed images
 - Ensure good contrast for readability
-- Consider the overall aesthetic of the Modern Library theme
+- Consider the overall aesthetic of the Timeless Library theme
 - Test how the image looks at different screen sizes
 
 ## Fallback Behavior
