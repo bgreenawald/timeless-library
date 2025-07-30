@@ -1,0 +1,52 @@
+---
+interface Props {
+  fallback?: string;
+  showDetails?: boolean;
+}
+
+const { fallback = "Something went wrong while loading this content.", showDetails = false } = Astro.props;
+
+// Error information can be passed as props from parent components
+const error = Astro.props.error as Error | undefined;
+---
+
+<div class="error-boundary bg-red-50 border border-red-200 rounded-lg p-6 my-4">
+  <div class="flex items-center mb-3">
+    <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+    </svg>
+    <h3 class="text-red-800 font-semibold">Error Loading Content</h3>
+  </div>
+  
+  <p class="text-red-700 mb-4">{fallback}</p>
+  
+  {showDetails && error && (
+    <details class="text-sm text-red-600">
+      <summary class="cursor-pointer font-medium">Technical Details</summary>
+      <pre class="mt-2 bg-red-100 p-3 rounded border overflow-x-auto">
+        {error.message}
+        {import.meta.env.DEV && error.stack && `\n\nStack trace:\n${error.stack}`}
+      </pre>
+    </details>
+  )}
+  
+  <div class="mt-4">
+    <button 
+      onclick="window.location.reload()" 
+      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+    >
+      Try Again
+    </button>
+  </div>
+</div>
+
+<style>
+  .error-boundary {
+    animation: fadeIn 0.3s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

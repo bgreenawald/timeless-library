@@ -11,10 +11,18 @@ export function initializeBookSearch() {
   const bookItems = document.querySelectorAll('.book-item') as NodeListOf<HTMLElement>;
 
   // Check if all required elements exist
-  if (!searchInput || !genreFilter || !tagFilter || !clearFiltersBtn || 
-      !resetSearchBtn || !booksGrid || !emptyState || !resultsCount) {
-    console.error('Required DOM elements for book search are missing');
-    return;
+  if (
+    !searchInput ||
+    !genreFilter ||
+    !tagFilter ||
+    !clearFiltersBtn ||
+    !resetSearchBtn ||
+    !booksGrid ||
+    !emptyState ||
+    !resultsCount
+  ) {
+    // For client-side scripts, we'll throw an error to be caught by error boundaries
+    throw new Error('Required DOM elements for book search are missing');
   }
 
   // Type assertions after null check - TypeScript now knows these are not null
@@ -55,9 +63,10 @@ export function initializeBookSearch() {
       const tags = bookItem.dataset.tags ? bookItem.dataset.tags.split(',') : [];
 
       // Check search term
-      const matchesSearch = !searchTerm || 
-        title.includes(searchTerm) || 
-        author.includes(searchTerm) || 
+      const matchesSearch =
+        !searchTerm ||
+        title.includes(searchTerm) ||
+        author.includes(searchTerm) ||
         description.includes(searchTerm);
 
       // Check genre filter
@@ -94,17 +103,17 @@ export function initializeBookSearch() {
   genreFilterElement.addEventListener('change', filterBooks);
   tagFilterElement.addEventListener('change', filterBooks);
 
-  clearFiltersBtnElement.addEventListener('click', function() {
+  clearFiltersBtnElement.addEventListener('click', function () {
     searchInputElement.value = '';
     genreFilterElement.value = '';
     tagFilterElement.value = '';
     filterBooks();
   });
 
-  resetSearchBtnElement.addEventListener('click', function() {
+  resetSearchBtnElement.addEventListener('click', function () {
     searchInputElement.value = '';
     genreFilterElement.value = '';
     tagFilterElement.value = '';
     filterBooks();
   });
-} 
+}
