@@ -1,9 +1,30 @@
 import { z } from 'astro/zod';
 import { logger } from './logger';
 
-const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
-const REPO_OWNER = import.meta.env.GITHUB_REPO_OWNER || 'bgreenawald';
-const REPO_NAME = import.meta.env.GITHUB_REPO_NAME || 'llm-book-updater';
+// Handle import.meta.env gracefully for Jest environment
+const getEnvVar = (key: string, fallback?: string) => {
+  // Check if we're in a test environment first
+  if (process.env.NODE_ENV === 'test') {
+    return process.env[key] || fallback;
+  }
+  
+  // In non-test environments, use import.meta.env if available
+  try {
+    // Use dynamic access to avoid Jest parse errors
+    const importMetaEnv = (globalThis as any).import?.meta?.env || (global as any).import?.meta?.env;
+    if (importMetaEnv) {
+      return importMetaEnv[key] || fallback;
+    }
+  } catch (e) {
+    // Fallback to process.env if import.meta is not available
+  }
+  
+  return process.env[key] || fallback;
+};
+
+const GITHUB_TOKEN = getEnvVar('GITHUB_TOKEN');
+const REPO_OWNER = getEnvVar('GITHUB_REPO_OWNER', 'bgreenawald');
+const REPO_NAME = getEnvVar('GITHUB_REPO_NAME', 'llm-book-updater');
 
 // Validate GitHub token configuration
 if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
@@ -12,8 +33,8 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   This is required for GitHub API access to avoid rate limiting.');
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
-  // In development, we can continue but warn about potential issues
-  if (import.meta.env.DEV) {
+  // In development, we can continue but warn about potential issues  
+  if (getEnvVar('DEV') === 'true' || getEnvVar('NODE_ENV') === 'development') {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'
     );

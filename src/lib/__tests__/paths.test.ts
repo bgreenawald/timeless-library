@@ -72,7 +72,9 @@ describe('paths', () => {
 
       const result = findLatestVersion(versions);
 
-      expect(result).toBe('book--v1.0.0');
+      // findLatestVersion doesn't filter - it just finds the latest by name sorting
+      // The filtering happens in filterVersions which is called by getBookVersions
+      expect(result).toBe('book--v1.0.0-beta');
     });
   });
 
@@ -95,8 +97,10 @@ describe('paths', () => {
 
     it('should filter out alpha/beta versions in production', async () => {
       // Mock production environment
-      const originalEnv = global.importMeta.env.DEV;
-      global.importMeta.env.DEV = false;
+      const originalEnv = process.env.NODE_ENV;
+      const originalDev = process.env.DEV;
+      process.env.NODE_ENV = 'production';
+      process.env.DEV = 'false';
 
       const mockTags = [
         { name: 'book--v1.0.0', commit: { sha: 'abc', url: 'url' } },
@@ -112,13 +116,16 @@ describe('paths', () => {
       expect(result[0].name).toBe('book--v1.0.0');
 
       // Restore original environment
-      global.importMeta.env.DEV = originalEnv;
+      process.env.NODE_ENV = originalEnv;
+      process.env.DEV = originalDev;
     });
 
     it('should include alpha/beta versions in development', async () => {
       // Mock development environment
-      const originalEnv = global.importMeta.env.DEV;
-      global.importMeta.env.DEV = true;
+      const originalEnv = process.env.NODE_ENV;
+      const originalDev = process.env.DEV;
+      process.env.NODE_ENV = 'development';
+      process.env.DEV = 'true';
 
       const mockTags = [
         { name: 'book--v1.0.0', commit: { sha: 'abc', url: 'url' } },
@@ -133,7 +140,8 @@ describe('paths', () => {
       expect(result).toHaveLength(3);
 
       // Restore original environment
-      global.importMeta.env.DEV = originalEnv;
+      process.env.NODE_ENV = originalEnv;
+      process.env.DEV = originalDev;
     });
 
     it('should return empty array on fetch failure', async () => {

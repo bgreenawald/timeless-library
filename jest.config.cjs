@@ -5,9 +5,16 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   transform: {
     '^.+\\.ts$': ['ts-jest', {
-      useESM: true
+      useESM: true,
+      tsconfig: {
+        module: 'esnext',
+        target: 'es2022'
+      }
     }]
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(.*\\.mjs$))'
+  ],
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
   collectCoverageFrom: [
@@ -19,9 +26,11 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  setupFiles: ['<rootDir>/src/test-setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^astro:content$': '<rootDir>/src/__mocks__/astro-content.ts',
+    '^astro/zod$': 'zod',
   },
   testTimeout: 10000,
 };
