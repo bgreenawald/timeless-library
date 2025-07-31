@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@astrojs/tailwind": "^6.0.2",
-    "@types/dompurify": "^3.0.5",
+    "@types/dompurify": "^3.2.0",
     "astro": "^5.11.1",
     "diff": "^8.0.2",
     "diff-match-patch": "^1.0.5",
