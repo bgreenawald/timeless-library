@@ -29,12 +29,8 @@ updates:
           - "patch"
     # Auto-merge low-risk updates
     allow:
-      - dependency-type: "direct:production"
-        update-type: "version-update:semver-patch"
-      - dependency-type: "direct:development"
-        update-type: "version-update:semver-patch"
-      - dependency-type: "direct:development"
-        update-type: "version-update:semver-minor"
+      - dependency-type: "production"
+      - dependency-type: "development"
 
   # Enable security updates for GitHub Actions
   - package-ecosystem: "github-actions"
