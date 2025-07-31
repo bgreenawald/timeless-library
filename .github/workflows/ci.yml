@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18, 20]
+        node-version: [18, 20, 22]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,13 +36,11 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload coverage to Codecov
-        if: matrix.node-version == 18
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          # token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: TypeScript compilation check
         run: npx tsc --noEmit
