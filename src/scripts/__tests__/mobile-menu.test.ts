@@ -67,7 +67,7 @@ describe('mobile-menu', () => {
       const mockButton = mockElement('button');
       const mockMenu = mockElement('div');
 
-      mockDocument.getElementById.mockImplementation((id: string) => {
+      mockDocument.getElementById.mockImplementation((id: unknown) => {
         switch (id) {
           case 'mobile-menu-button': return mockButton;
           case 'mobile-menu': return mockMenu;
@@ -84,8 +84,8 @@ describe('mobile-menu', () => {
       
       // If we were to add event listeners (like the real function does)
       if (button && menu) {
-        button.addEventListener('click', jest.fn());
-        expect(button.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+        (button as ReturnType<typeof mockElement>).addEventListener('click', jest.fn());
+        expect((button as ReturnType<typeof mockElement>).addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
       }
     });
 
@@ -114,7 +114,27 @@ describe('mobile-menu', () => {
       const mockEvent = {
         preventDefault: jest.fn(),
         stopPropagation: jest.fn(),
-      };
+        stopImmediatePropagation: jest.fn(),
+        bubbles: false,
+        cancelBubble: false,
+        cancelable: true,
+        composed: false,
+        currentTarget: null,
+        defaultPrevented: false,
+        eventPhase: 0,
+        isTrusted: false,
+        returnValue: true,
+        srcElement: null,
+        target: null,
+        timeStamp: 0,
+        type: 'click',
+        composedPath: jest.fn(),
+        initEvent: jest.fn(),
+        AT_TARGET: 2,
+        BUBBLING_PHASE: 3,
+        CAPTURING_PHASE: 1,
+        NONE: 0,
+      } as Event;
 
       toggleMenu(mockEvent);
 

@@ -55,7 +55,7 @@ describe('book-search', () => {
       const mockButton = mockElement('button');
       const mockDiv = mockElement('div');
 
-      mockDocument.getElementById.mockImplementation((id: string) => {
+      mockDocument.getElementById.mockImplementation((id: unknown) => {
         switch (id) {
           case 'search-input': return mockInput;
           case 'genre-filter': return mockSelect;

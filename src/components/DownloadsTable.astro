@@ -1,32 +1,7 @@
 ---
 import { extractVersionFromTag } from '../lib/utils';
-import type { GithubRelease } from '../lib/github';
-
-/**
- * Interface representing a GitHub release asset from the API response.
- */
-interface GithubReleaseAsset {
-  name: string;
-  browser_download_url: string;
-  size?: number;
-  content_type?: string;
-  download_count?: number;
-}
-
-/**
- * Interface representing a GitHub release from the API response.
- * Extends the existing GithubRelease type with additional properties.
- */
-interface GitHubRelease {
-  assets: GithubReleaseAsset[];
-  tag_name: string;
-  name?: string;
-  body?: string;
-  created_at?: string;
-  published_at?: string;
-  draft?: boolean;
-  prerelease?: boolean;
-}
+import type { GitHubRelease } from '../types';
+import { getAssetLabelAndColor, getAssetSortPriority } from '../lib/download-helpers';
 
 interface Props {
   release: GitHubRelease;
@@ -38,45 +13,10 @@ const { release, version, title } = Astro.props;
 
 // Extract the display version from the full version tag
 const displayVersion = version ? extractVersionFromTag(version) : 'Unknown';
-
-/**
- * Helper function to get the content type and color for an asset.
- */
-function getAssetLabelAndColor(assetName: string) {
-  // Extract content type from filename (before the file extension)
-  if (assetName.includes('-annotated.')) {
-    return { label: 'Annotated', colorClasses: 'bg-amber-100 text-amber-800' };
-  }
-  if (assetName.includes('-modernized.')) {
-    return { label: 'Modernized', colorClasses: 'bg-emerald-100 text-emerald-800' };
-  }
-  if (assetName.includes('-original.')) {
-    return { label: 'Original', colorClasses: 'bg-slate-100 text-slate-800' };
-  }
-  if (assetName.endsWith('-metadata.json')) {
-    return { label: 'Metadata', colorClasses: 'bg-stone-100 text-stone-800' };
-  }
-  
-  // Fallback for files that don't follow the naming convention
-  return { label: 'Other', colorClasses: 'bg-gray-100 text-gray-600' };
-}
-
-/**
- * Helper function to get sort priority for assets (lower numbers appear first).
- */
-function getAssetSortPriority(assetName: string) {
-  if (assetName.includes('-annotated.')) return 1;
-  if (assetName.includes('-modernized.')) return 2;
-  if (assetName.includes('-original.')) return 3;
-  if (assetName.endsWith('-metadata.json')) return 4;
-  return 5; // Other files
-}
-
-
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
-  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12" set:html={title}>
+  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">{title}
   </h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <div class="text-center mb-6">
