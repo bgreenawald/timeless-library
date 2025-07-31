@@ -10,4 +10,4 @@ export interface FAQSection {
 
 export interface FAQData {
   sections: FAQSection[];
-} 
+}

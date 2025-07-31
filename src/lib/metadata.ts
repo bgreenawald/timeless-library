@@ -1,5 +1,6 @@
 import type { z } from 'astro/zod';
 import type { GithubRelease } from './github';
+import { logger } from './logger';
 
 /**
  * Interface representing a model used in a processing phase.
@@ -53,7 +54,7 @@ interface BookMetadata {
 
 /**
  * Validates a processing phase object against the expected structure.
- * 
+ *
  * @param phase - The phase object to validate
  * @param phaseIndex - The index of the phase for error reporting
  * @throws Error if the phase structure is invalid
@@ -64,22 +65,28 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
   }
 
   const requiredStringFields = [
-    'phase_name', 'phase_type', 'book_name', 'author_name', 
-    'model_type', 'input_file', 'output_file', 'system_prompt_path', 
-    'user_prompt_path', 'fully_rendered_system_prompt'
+    'phase_name',
+    'phase_type',
+    'book_name',
+    'author_name',
+    'model_type',
+    'input_file',
+    'output_file',
+    'system_prompt_path',
+    'user_prompt_path',
+    'fully_rendered_system_prompt',
   ];
 
   const requiredNumberFields = [
-    'phase_index', 'temperature', 'post_processor_count', 'max_workers'
+    'phase_index',
+    'temperature',
+    'post_processor_count',
+    'max_workers',
   ];
 
-  const requiredBooleanFields = [
-    'enabled', 'completed', 'output_exists'
-  ];
+  const requiredBooleanFields = ['enabled', 'completed', 'output_exists'];
 
-  const requiredArrayFields = [
-    'post_processors', 'length_reduction_parameter'
-  ];
+  const requiredArrayFields = ['post_processors', 'length_reduction_parameter'];
 
   // Validate string fields
   for (const field of requiredStringFields) {
@@ -115,8 +122,12 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
   }
 
   // Validate length_reduction_parameter array contains only numbers
-  if (!phase.length_reduction_parameter.every((item: any) => typeof item === 'number' && !isNaN(item))) {
-    throw new Error(`Phase ${phaseIndex}: 'length_reduction_parameter' array must contain only numbers`);
+  if (
+    !phase.length_reduction_parameter.every((item: any) => typeof item === 'number' && !isNaN(item))
+  ) {
+    throw new Error(
+      `Phase ${phaseIndex}: 'length_reduction_parameter' array must contain only numbers`
+    );
   }
 
   // Validate model object
@@ -134,13 +145,15 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
 
   // Validate phase_index matches the array index
   if (phase.phase_index !== phaseIndex) {
-    throw new Error(`Phase ${phaseIndex}: 'phase_index' (${phase.phase_index}) does not match array index (${phaseIndex})`);
+    throw new Error(
+      `Phase ${phaseIndex}: 'phase_index' (${phase.phase_index}) does not match array index (${phaseIndex})`
+    );
   }
 }
 
 /**
  * Validates the complete metadata structure for version 0.0.0-alpha.
- * 
+ *
  * @param data - The metadata object to validate
  * @throws Error if the metadata structure is invalid
  */
@@ -151,8 +164,14 @@ function validateMetadataV0_0_0_alpha(data: any): void {
 
   // Validate required top-level string fields
   const requiredStringFields = [
-    'metadata_version', 'run_timestamp', 'book_name', 'author_name',
-    'input_file', 'original_file', 'output_directory', 'book_version'
+    'metadata_version',
+    'run_timestamp',
+    'book_name',
+    'author_name',
+    'input_file',
+    'original_file',
+    'output_directory',
+    'book_version',
   ];
 
   for (const field of requiredStringFields) {
@@ -163,21 +182,21 @@ function validateMetadataV0_0_0_alpha(data: any): void {
 
   // Validate required top-level array fields
   if (!data.length_reduction || !Array.isArray(data.length_reduction)) {
-    throw new Error('Missing or invalid array field \'length_reduction\'');
+    throw new Error("Missing or invalid array field 'length_reduction'");
   }
 
   if (!data.phases || !Array.isArray(data.phases)) {
-    throw new Error('Missing or invalid array field \'phases\'');
+    throw new Error("Missing or invalid array field 'phases'");
   }
 
   // Validate length_reduction array contains only numbers
   if (!data.length_reduction.every((item: any) => typeof item === 'number' && !isNaN(item))) {
-    throw new Error('\'length_reduction\' array must contain only numbers');
+    throw new Error("'length_reduction' array must contain only numbers");
   }
 
   // Validate phases array is not empty
   if (data.phases.length === 0) {
-    throw new Error('\'phases\' array cannot be empty');
+    throw new Error("'phases' array cannot be empty");
   }
 
   // Validate each phase object
@@ -193,107 +212,104 @@ const METADATA_PARSERS: Record<string, (data: any) => BookMetadata> = {
   '0.0.0-alpha': (data: any): BookMetadata => {
     // Validate the complete metadata structure
     validateMetadataV0_0_0_alpha(data);
-    
+
     return data as BookMetadata;
-  }
+  },
 };
 
 /**
  * Parses a metadata file with version checking.
- * 
+ *
  * @param metadataContent - The raw JSON content of the metadata file
  * @returns Parsed metadata object
  * @throws Error if the metadata version is not supported or the format is invalid
  */
 export function parseMetadata(metadataContent: string): BookMetadata {
   let data: any;
-  
+
   try {
     data = JSON.parse(metadataContent);
   } catch (error) {
-    throw new Error(`Failed to parse metadata JSON: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse metadata JSON: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
-  
+
   const version = data.metadata_version;
-  
+
   if (!version) {
     throw new Error('Metadata file missing version information');
   }
-  
+
   const parser = METADATA_PARSERS[version];
-  
+
   if (!parser) {
-    throw new Error(`Unsupported metadata version: ${version}. Supported versions: ${Object.keys(METADATA_PARSERS).join(', ')}`);
+    throw new Error(
+      `Unsupported metadata version: ${version}. Supported versions: ${Object.keys(METADATA_PARSERS).join(', ')}`
+    );
   }
-  
+
   try {
     return parser(data);
   } catch (error) {
-    throw new Error(`Failed to parse metadata version ${version}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to parse metadata version ${version}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
 /**
  * Loads metadata for a specific book and version from GitHub release assets.
- * 
+ *
  * This function looks for the metadata file in the GitHub release assets.
  * There should be exactly one file that ends with '-metadata.json' in each release.
- * 
+ *
  * @param bookSlug - The book slug (e.g., 'the-federalist-papers')
  * @param release - The GitHub release object containing assets
  * @returns Parsed metadata or null if not found
  */
-export async function loadBookMetadataFromRelease(bookSlug: string, release: GithubRelease): Promise<BookMetadata | null> {
+export async function loadBookMetadataFromRelease(
+  bookSlug: string,
+  release: GithubRelease
+): Promise<BookMetadata | null> {
   try {
     // Find all metadata files in release assets - there should be exactly one
-    const metadataAssets = release.assets.filter(asset => 
-      asset.name.endsWith('-metadata.json')
-    );
-    
+    const metadataAssets = release.assets.filter(asset => asset.name.endsWith('-metadata.json'));
+
     if (metadataAssets.length === 0) {
-      console.warn(`No metadata file found for ${bookSlug} in release ${release.tag_name}`);
+      logger.warn(`No metadata file found for ${bookSlug} in release ${release.tag_name}`);
       return null; // No metadata file found in this release
     }
-    
+
     if (metadataAssets.length > 1) {
       const assetNames = metadataAssets.map(asset => asset.name).join(', ');
-      console.error(`Multiple metadata files found for ${bookSlug} in release ${release.tag_name}: ${assetNames}`);
-      throw new Error(`Multiple metadata files found in release ${release.tag_name}: ${assetNames}. Expected exactly one file ending with '-metadata.json'`);
+      logger.error(
+        `Multiple metadata files found for ${bookSlug} in release ${release.tag_name}: ${assetNames}`
+      );
+      throw new Error(
+        `Multiple metadata files found in release ${release.tag_name}: ${assetNames}. Expected exactly one file ending with '-metadata.json'`
+      );
     }
-    
+
     // We now have exactly one metadata asset
     const metadataAsset = metadataAssets[0];
-    
+
     // Fetch the metadata file from the release asset
     const response = await fetch(metadataAsset.browser_download_url);
-    
+
     if (!response.ok) {
-      console.error(`Failed to fetch metadata from ${metadataAsset.browser_download_url}: ${response.status} ${response.statusText}`);
+      logger.error(
+        `Failed to fetch metadata from ${metadataAsset.browser_download_url}: ${response.status} ${response.statusText}`
+      );
       return null;
     }
-    
+
     const metadataContent = await response.text();
     return parseMetadata(metadataContent);
-    
   } catch (error) {
-    console.error(`Error loading metadata for ${bookSlug} from release:`, error);
+    logger.error(`Error loading metadata for ${bookSlug} from release:`, error);
     return null;
   }
 }
 
-/**
- * Loads metadata for a specific book and version.
- * This function is kept for backward compatibility but now delegates to the release-based loading.
- * 
- * @param bookSlug - The book slug
- * @param version - The version string (optional, for version-specific pages)
- * @returns Parsed metadata or null if not found
- */
-export async function loadBookMetadata(bookSlug: string, version?: string): Promise<BookMetadata | null> {
-  // This function is deprecated - use loadBookMetadataFromRelease instead
-  // Keeping it for backward compatibility but it will always return null
-  console.warn('loadBookMetadata is deprecated. Use loadBookMetadataFromRelease with a GitHub release object instead.');
-  return null;
-}
-
-export type { BookMetadata, ProcessingPhase, Model }; 
+export type { BookMetadata, ProcessingPhase, Model };

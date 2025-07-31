@@ -1,0 +1,11 @@
+# Run full test suite before pushing
+echo "Running full test suite before push..."
+npm run test:coverage
+
+# Check TypeScript compilation
+echo "Checking TypeScript compilation..."
+npx tsc --noEmit
+
+# Run build to ensure everything compiles
+echo "Running build check..."
+npm run build
