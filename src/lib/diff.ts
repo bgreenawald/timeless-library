@@ -199,7 +199,7 @@ export function parseDiffToLines(diffText: string): Array<{
     let oldLineNum = '';
     let newLineNum = '';
     let isHunk = false;
-    let isHeader = false;
+    const isHeader = false;
 
     if (line.startsWith('@@')) {
       type = 'hunk';

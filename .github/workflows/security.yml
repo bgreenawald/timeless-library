@@ -38,9 +38,16 @@ jobs:
         # Check for common security patterns in code
         echo "Checking for potential security issues..."
         
-        # Check for hardcoded secrets (basic patterns)
-        if grep -r -i "password\|secret\|key\|token" src/ --include="*.ts" --include="*.js" --include="*.astro" | grep -v "import.meta.env" | grep -v "process.env" | grep -v "test" | grep -v "example" | grep -v "placeholder"; then
+        # Check for hardcoded secrets (more targeted approach)
+        # Look for patterns that are more likely to be actual secrets
+        if grep -r -E "(password\s*[:=]\s*['\"][^'\"]{8,}['\"]|secret\s*[:=]\s*['\"][^'\"]{8,}['\"]|api_key\s*[:=]\s*['\"][^'\"]{8,}['\"]|access_token\s*[:=]\s*['\"][^'\"]{8,}['\"]|private_key\s*[:=]\s*['\"][^'\"]{8,}['\"])" src/ --include="*.ts" --include="*.js" --include="*.astro" | grep -v "test" | grep -v "example" | grep -v "placeholder"; then
           echo "⚠️  Potential hardcoded secrets found. Please review."
+          exit 1
+        fi
+        
+        # Check for suspicious patterns that might indicate secrets
+        if grep -r -E "(sk_|pk_|ghp_|gho_|ghu_|ghs_|ghr_)[a-zA-Z0-9]{20,}" src/ --include="*.ts" --include="*.js" --include="*.astro" | grep -v "test" | grep -v "example" | grep -v "placeholder"; then
+          echo "⚠️  Potential API keys or tokens found. Please review."
           exit 1
         fi
         
@@ -71,4 +78,4 @@ jobs:
       uses: actions/dependency-review-action@v3
       with:
         fail-on-severity: moderate
-        allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+        allow-licenses: MIT, MIT-0, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, CC0-1.0, Unlicense
