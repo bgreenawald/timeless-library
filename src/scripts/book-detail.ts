@@ -1,4 +1,3 @@
-
 export function handleImageError(img: HTMLImageElement): void {
   const title = img.getAttribute('data-title');
   const author = img.getAttribute('data-author');

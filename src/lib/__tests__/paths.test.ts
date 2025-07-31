@@ -136,7 +136,11 @@ describe('paths', () => {
       const result = await getBookVersions('book');
 
       expect(result).toHaveLength(3);
-      expect(result.map(v => v.name)).toEqual(['book--v1.0.0', 'book--v1.0.0-alpha', 'book--v1.0.0-beta']);
+      expect(result.map(v => v.name)).toEqual([
+        'book--v1.0.0',
+        'book--v1.0.0-alpha',
+        'book--v1.0.0-beta',
+      ]);
 
       // Restore original environment
       process.env.DEV = originalDev;

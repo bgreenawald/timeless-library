@@ -57,15 +57,24 @@ describe('book-search', () => {
 
       mockDocument.getElementById.mockImplementation((id: unknown) => {
         switch (id) {
-          case 'search-input': return mockInput;
-          case 'genre-filter': return mockSelect;
-          case 'tag-filter': return mockSelect;
-          case 'clear-filters': return mockButton;
-          case 'reset-search': return mockButton;
-          case 'books-grid': return mockDiv;
-          case 'empty-state': return mockDiv;
-          case 'results-count': return mockDiv;
-          default: return null;
+          case 'search-input':
+            return mockInput;
+          case 'genre-filter':
+            return mockSelect;
+          case 'tag-filter':
+            return mockSelect;
+          case 'clear-filters':
+            return mockButton;
+          case 'reset-search':
+            return mockButton;
+          case 'books-grid':
+            return mockDiv;
+          case 'empty-state':
+            return mockDiv;
+          case 'results-count':
+            return mockDiv;
+          default:
+            return null;
         }
       });
 

@@ -1,4 +1,3 @@
-
 /**
  * Helper function to get the content type and color for an asset.
  */
@@ -16,7 +15,7 @@ export function getAssetLabelAndColor(assetName: string): { label: string; color
   if (assetName.endsWith('-metadata.json')) {
     return { label: 'Metadata', colorClasses: 'bg-stone-100 text-stone-800' };
   }
-  
+
   // Fallback for files that don't follow the naming convention
   return { label: 'Other', colorClasses: 'bg-gray-100 text-gray-600' };
 }

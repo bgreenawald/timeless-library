@@ -56,7 +56,7 @@ describe('mobile-menu', () => {
         // Re-import won't work in Jest, so we test the behavior by calling getElementById
         const button = mockDocument.getElementById('mobile-menu-button');
         const menu = mockDocument.getElementById('mobile-menu');
-        
+
         // Should return null for missing elements
         expect(button).toBeNull();
         expect(menu).toBeNull();
@@ -69,9 +69,12 @@ describe('mobile-menu', () => {
 
       mockDocument.getElementById.mockImplementation((id: unknown) => {
         switch (id) {
-          case 'mobile-menu-button': return mockButton;
-          case 'mobile-menu': return mockMenu;
-          default: return null;
+          case 'mobile-menu-button':
+            return mockButton;
+          case 'mobile-menu':
+            return mockMenu;
+          default:
+            return null;
         }
       });
 
@@ -81,18 +84,21 @@ describe('mobile-menu', () => {
 
       expect(button).not.toBeNull();
       expect(menu).not.toBeNull();
-      
+
       // If we were to add event listeners (like the real function does)
       if (button && menu) {
         (button as ReturnType<typeof mockElement>).addEventListener('click', jest.fn());
-        expect((button as ReturnType<typeof mockElement>).addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+        expect((button as ReturnType<typeof mockElement>).addEventListener).toHaveBeenCalledWith(
+          'click',
+          expect.any(Function)
+        );
       }
     });
 
     it('should provide menu toggle functionality', () => {
       const mockButton = mockElement('button');
       const mockMenu = mockElement('div');
-      
+
       // Setup initial state
       mockButton.getAttribute.mockReturnValue('false');
 
@@ -100,7 +106,7 @@ describe('mobile-menu', () => {
       const toggleMenu = (e: Event) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const isExpanded = mockButton.getAttribute('aria-expanded') === 'true';
         if (!isExpanded) {
           // Open menu
