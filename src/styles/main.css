@@ -334,8 +334,6 @@
           transition: max-height 0.3s ease;
           background-color: rgba(250, 243, 232, 0.8);
           border-top: 1px solid rgba(229, 224, 215, 0.3);
-          /* Temporary: disable transition for debugging */
-          /* transition: none; */
         }
 
         .faq-answer-content {
