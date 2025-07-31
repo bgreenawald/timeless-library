@@ -20,7 +20,6 @@ const { book } = Astro.props;
             alt={`Cover for ${book.data.title}`}
             class="w-full h-auto rounded-lg shadow-lg"
             loading="lazy"
-            onerror="handleImageError(this)"
             data-title={book.data.title}
             data-author={book.data.author}
             data-theme-color={getThemeColor(0)}
