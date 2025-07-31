@@ -1,4 +1,4 @@
-import { getCollection } from 'astro:content';
+import { getCollection, type CollectionEntry } from 'astro:content';
 import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
 import { logger } from './logger';
 import { getEnvVar } from './env';
@@ -64,7 +64,7 @@ export async function generateBookPaths() {
     const books = await getCollection('books');
 
     const paths = await Promise.all(
-      books.map(async book => {
+      books.map(async (book: CollectionEntry<'books'>) => {
         try {
           const versions = await getBookVersions(book.slug);
           const latestVersion = findLatestVersion(versions);
@@ -112,7 +112,7 @@ export async function generateVersionPaths() {
     const books = await getCollection('books');
 
     const paths = await Promise.all(
-      books.map(async book => {
+      books.map(async (book: CollectionEntry<'books'>) => {
         try {
           const versions = await getBookVersions(book.slug);
 
@@ -168,7 +168,7 @@ export async function generateDiffPaths() {
     const books = await getCollection('books');
 
     const paths = await Promise.all(
-      books.map(async book => {
+      books.map(async (book: CollectionEntry<'books'>) => {
         try {
           const versions = await getBookVersions(book.slug);
 
