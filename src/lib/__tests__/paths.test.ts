@@ -121,10 +121,8 @@ describe('paths', () => {
     });
 
     it('should include alpha/beta versions in development', async () => {
-      // Mock development environment
-      const originalEnv = process.env.NODE_ENV;
+      // Mock development environment - set DEV to true which should be sufficient
       const originalDev = process.env.DEV;
-      process.env.NODE_ENV = 'development';
       process.env.DEV = 'true';
 
       const mockTags = [
@@ -138,9 +136,13 @@ describe('paths', () => {
       const result = await getBookVersions('book');
 
       expect(result).toHaveLength(3);
+      expect(result.map(v => v.name)).toEqual([
+        'book--v1.0.0',
+        'book--v1.0.0-alpha',
+        'book--v1.0.0-beta',
+      ]);
 
       // Restore original environment
-      process.env.NODE_ENV = originalEnv;
       process.env.DEV = originalDev;
     });
 

@@ -1,0 +1,37 @@
+
+.book-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease-in-out;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-cover {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  min-height: 200px;
+}
+
+.book-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+}
+
+.book-info {
+  padding-top: 1rem;
+}
+
+.book-summary {
+  font-size: 0.875rem;
+  color: #4b5563;
+}

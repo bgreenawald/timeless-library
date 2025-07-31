@@ -12,7 +12,8 @@ export default defineConfig(
         '**/dist/**', 
         '**/.astro/**',
         '**/src/lib/__tests__/**', // Exclude Jest tests
-        '**/src/lib/logger.test.ts' // Exclude Jest test files
+        '**/src/lib/logger.test.ts', // Exclude Jest test files
+        '**/src/scripts/__tests__/**' // Exclude Jest script tests
       ],
     },
     resolve: {

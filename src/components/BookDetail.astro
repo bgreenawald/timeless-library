@@ -1,31 +1,6 @@
 ---
 import { getThemeColor } from '../lib/colors';
-
-/**
- * Interface representing the data structure of a book from the content collection.
- */
-interface BookData {
-  title: string;
-  author: string;
-  original_publication_year: number;
-  short_description: string;
-  description: string;
-  genres: ("Adventure" | "Fiction" | "Classic" | "Whaling" | "History" | "Political Science")[];
-  tags?: string[];
-  is_featured?: boolean;
-  cover_image?: string;
-}
-
-/**
- * Interface representing a book collection entry from Astro.
- */
-interface Book {
-  id: string;
-  slug: string;
-  body: string;
-  collection: string;
-  data: BookData;
-}
+import type { Book } from '../types';
 
 interface Props {
   book: Book;
@@ -45,7 +20,9 @@ const { book } = Astro.props;
             alt={`Cover for ${book.data.title}`}
             class="w-full h-auto rounded-lg shadow-lg"
             loading="lazy"
-            onerror={`handleImageError(this, '${book.data.title.replace(/'/g, "\\'")}', '${book.data.author.replace(/'/g, "\\'")}', '${getThemeColor(0)}')`}
+            data-title={book.data.title}
+            data-author={book.data.author}
+            data-theme-color={getThemeColor(0)}
           />
         </div>
       ) : (
@@ -68,33 +45,13 @@ const { book } = Astro.props;
   </div>
 </section>
 
-<script is:inline>
-  function handleImageError(img, title, author, backgroundColor) {
-    // Hide the image
-    img.style.display = 'none';
-    
-    // Create a safe placeholder element
-    const placeholder = document.createElement('div');
-    placeholder.className = 'book-detail-cover-placeholder';
-    placeholder.style.backgroundColor = backgroundColor;
-    placeholder.setAttribute('role', 'img');
-    placeholder.setAttribute('aria-label', `Cover placeholder for ${title}`);
-    
-    // Create title element
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'book-title';
-    titleDiv.textContent = title;
-    
-    // Create author element
-    const authorDiv = document.createElement('div');
-    authorDiv.className = 'book-author';
-    authorDiv.textContent = `by ${author}`;
-    
-    // Append elements safely
-    placeholder.appendChild(titleDiv);
-    placeholder.appendChild(authorDiv);
-    
-    // Replace the image with the placeholder
-    img.parentElement.appendChild(placeholder);
-  }
+<script>
+  import { handleImageError } from '../scripts/book-detail';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const img = document.querySelector('.book-detail-cover img') as HTMLImageElement;
+    if (img) {
+      img.addEventListener('error', () => handleImageError(img));
+    }
+  });
 </script> 

@@ -2,6 +2,10 @@
 echo "Running full test suite before push..."
 npm run test:coverage
 
+# Run format check
+echo "Running format check..."
+npm run format:check
+
 # Check TypeScript compilation
 echo "Checking TypeScript compilation..."
 npx tsc --noEmit
@@ -9,3 +13,4 @@ npx tsc --noEmit
 # Run build to ensure everything compiles
 echo "Running build check..."
 npm run build
+

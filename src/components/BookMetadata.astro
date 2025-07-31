@@ -1,6 +1,6 @@
 ---
 import { extractVersionFromTag } from '../lib/utils';
-import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
+import type { BookMetadata, ProcessingPhase } from '../types';
 
 interface Props {
   metadata: BookMetadata | null;
@@ -43,7 +43,7 @@ const getPhaseTypeDisplay = (phaseType: string) => {
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
-  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12" set:html={title}>
+  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">{title}
   </h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <!-- Collapsible Header -->
@@ -212,379 +212,200 @@ const getPhaseTypeDisplay = (phaseType: string) => {
 </div>
 
 <script is:inline>
-  // Make functions globally available
-  window.toggleMetadata = function(button) {
-    const content = document.getElementById('metadata-content');
-    const icon = button.querySelector('svg');
-    
-    if (content) {
-      const isHidden = content.classList.contains('hidden');
-      
-      if (isHidden) {
-        content.classList.remove('hidden');
-        button.setAttribute('aria-expanded', 'true');
-        if (icon) icon.classList.add('rotate-180');
-      } else {
-        content.classList.add('hidden');
-        button.setAttribute('aria-expanded', 'false');
-        if (icon) icon.classList.remove('rotate-180');
-      }
-    }
-  };
-  
-  window.showPromptFromData = function(button) {
-    const phaseName = button.getAttribute('data-phase-name');
-    const promptData = button.getAttribute('data-prompt');
-    
-    if (!phaseName || !promptData) {
-      console.error('Missing required data attributes for showPromptFromData');
-      return;
-    }
-    
-    let prompt;
-    try {
-      prompt = JSON.parse(promptData);
-    } catch (error) {
-      console.error('Failed to parse prompt data:', error);
-      return;
-    }
-    
-    window.showPrompt(phaseName, prompt);
-  };
-  
-  window.showPrompt = function(phaseName, prompt) {
-    const modal = document.getElementById('prompt-modal');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    const rawContent = document.getElementById('modal-raw-content');
-    
-    if (modal && title && content && rawContent) {
-      title.textContent = `${phaseName} - System Prompt`;
-      
-      // Store the raw prompt for later use
-      window.currentRawPrompt = prompt;
-      rawContent.textContent = prompt;
-      
-      // Use markdown-it if available, otherwise fallback to simple formatting
-      if (typeof window.markdownit !== 'undefined') {
-        const md = window.markdownit();
+import MarkdownIt from 'markdown-it';
+import DOMPurify from 'dompurify';
+
+// Type definitions
+declare global {
+  interface Window {
+    markdownit: typeof MarkdownIt;
+    DOMPurify: typeof DOMPurify;
+    currentRawPrompt?: string;
+    currentMetadataText?: string;
+    toggleMetadata: (button: HTMLElement) => void;
+    showPromptFromData: (button: HTMLElement) => void;
+    showPrompt: (phaseName: string, prompt: string) => void;
+    closePromptModal: () => void;
+    toggleRawPrompt: () => void;
+    copyPromptToClipboard: () => void;
+    showRawMetadataFromData: (button: HTMLElement) => void;
+    showRawMetadata: (metadata: any) => void;
+    copyMetadataToClipboard: () => void;
+    closeRawMetadataModal: () => void;
+  }
+}
+
+function initialize() {
+    // Initialize markdown-it and DOMPurify globally
+    window.markdownit = MarkdownIt;
+    window.DOMPurify = DOMPurify;
+
+    window.toggleMetadata = function(button) {
+        const content = document.getElementById('metadata-content');
+        const icon = button.querySelector('svg');
+        if (!content || !icon) return;
+
+        const isHidden = content.classList.contains('hidden');
+        content.classList.toggle('hidden', !isHidden);
+        button.setAttribute('aria-expanded', String(isHidden));
+        icon.classList.toggle('rotate-180', isHidden);
+    };
+
+    window.showPromptFromData = function(button) {
+        const phaseName = button.getAttribute('data-phase-name');
+        const promptData = button.getAttribute('data-prompt');
+        if (!phaseName || !promptData) return;
+
+        try {
+            const prompt = JSON.parse(promptData);
+            window.showPrompt(phaseName, prompt);
+        } catch (error) {
+            console.error('Failed to parse prompt data:', error);
+        }
+    };
+
+    window.showPrompt = function(phaseName, prompt) {
+        const modal = document.getElementById('prompt-modal') as HTMLElement;
+        const title = document.getElementById('modal-title');
+        const content = document.getElementById('modal-content');
+        const rawContent = document.getElementById('modal-raw-content');
+        if (!modal || !title || !content || !rawContent) return;
+
+        title.textContent = `${phaseName} - System Prompt`;
+        window.currentRawPrompt = prompt;
+        rawContent.textContent = prompt;
+
+        const md = new (window.markdownit)();
         const rendered = md.render(prompt);
-        content.innerHTML = DOMPurify.sanitize(rendered);
-        
-        // Force apply styles to list elements
-        const lists = content.querySelectorAll('ul, ol');
-        lists.forEach(list => {
-          list.style.marginBottom = '1em';
-          list.style.marginTop = '1em';
-          list.style.paddingLeft = '2em';
-          list.style.display = 'block';
-          if (list.tagName === 'UL') {
-            list.style.listStyleType = 'disc';
-          } else {
-            list.style.listStyleType = 'decimal';
-          }
-        });
-        
-        const listItems = content.querySelectorAll('li');
-        listItems.forEach(li => {
-          li.style.marginBottom = '0.5em';
-          li.style.display = 'list-item';
-          li.style.lineHeight = '1.6';
-          li.style.paddingLeft = '0.5em';
-        });
-        
-        // Force apply styles to blockquotes
-        const blockquotes = content.querySelectorAll('blockquote');
-        console.log('Found blockquotes:', blockquotes.length);
-        blockquotes.forEach(blockquote => {
-          console.log('Styling blockquote:', blockquote.outerHTML);
-          blockquote.style.borderLeft = '4px solid #e5e7eb';
-          blockquote.style.paddingLeft = '1rem';
-          blockquote.style.margin = '1em 0';
-          blockquote.style.display = 'block';
-          blockquote.style.color = '#6b7280';
-          blockquote.style.fontStyle = 'italic';
-        });
-        
-        // Style pre elements that contain blockquote content
-        const preElements = content.querySelectorAll('pre');
-        console.log('Found pre elements:', preElements.length);
-        preElements.forEach(pre => {
-          const preText = pre.textContent || '';
-          // Check if this pre element contains blockquote content (starts with >)
-          if (preText.trim().startsWith('>')) {
-            console.log('Styling pre as blockquote:', pre.outerHTML);
-            pre.style.borderLeft = '4px solid #e5e7eb';
-            pre.style.paddingLeft = '1rem';
-            pre.style.margin = '1em 0';
-            pre.style.display = 'block';
-            pre.style.color = '#6b7280';
-            pre.style.fontStyle = 'italic';
-            pre.style.backgroundColor = 'transparent';
-            pre.style.border = 'none';
-            pre.style.borderRadius = '0';
-            pre.style.fontFamily = 'inherit';
-            pre.style.fontSize = 'inherit';
-            pre.style.lineHeight = '1.6';
-            pre.style.whiteSpace = 'pre-wrap';
-          }
-        });
-        
-        // Force apply styles to horizontal rules
-        const horizontalRules = content.querySelectorAll('hr');
-        horizontalRules.forEach(hr => {
-          hr.style.border = 'none';
-          hr.style.borderTop = '1px solid #e5e7eb';
-          hr.style.margin = '2em 0';
-          hr.style.display = 'block';
-          hr.style.height = '1px';
-        });
-      } else {
+        content.innerHTML = window.DOMPurify.sanitize(rendered);
 
-        // Fallback to simple formatting
-        let formattedPrompt = prompt
-          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/`(.*?)`/g, '<code>$1</code>')
-          .replace(/^\* (.*$)/gim, '<li>$1</li>')
-          .replace(/^- (.*$)/gim, '<li>$1</li>')
-          .replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
-        
-        // Wrap lists properly
-        formattedPrompt = formattedPrompt
-          .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-          .replace(/<\/ul>\s*<ul>/g, '');
-        
-        // Convert line breaks to paragraphs
-        formattedPrompt = formattedPrompt
-          .split('\n\n')
-          .map(paragraph => {
-            if (paragraph.trim() && !paragraph.includes('<h') && !paragraph.includes('<ul') && !paragraph.includes('<li')) {
-              return `<p>${paragraph.trim()}</p>`;
-            }
-            return paragraph;
-          })
-          .join('\n');
-        
-        content.innerHTML = DOMPurify.sanitize(formattedPrompt);
-      }
-      
-      modal.classList.remove('hidden');
-      
-      // Add click listener directly to this modal
-      modal.onclick = function(event) {
-        if (event.target === modal) {
-          window.closePromptModal();
+        modal.classList.remove('hidden');
+    };
+
+    window.closePromptModal = function() {
+        const modal = document.getElementById('prompt-modal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        // Reset to formatted view
+        document.getElementById('modal-content')?.classList.remove('hidden');
+        document.getElementById('modal-raw-content')?.classList.add('hidden');
+        const toggleBtn = document.getElementById('toggle-raw-btn');
+        if(toggleBtn) toggleBtn.textContent = 'Show Raw';
+    };
+
+    window.toggleRawPrompt = function() {
+        const content = document.getElementById('modal-content');
+        const rawContent = document.getElementById('modal-raw-content');
+        const toggleBtn = document.getElementById('toggle-raw-btn');
+        if (!content || !rawContent || !toggleBtn) return;
+
+        const isRawVisible = !rawContent.classList.contains('hidden');
+        content.classList.toggle('hidden', !isRawVisible);
+        rawContent.classList.toggle('hidden', isRawVisible);
+        toggleBtn.textContent = isRawVisible ? 'Show Raw' : 'Show Formatted';
+    };
+
+    window.copyPromptToClipboard = function() {
+        if (!window.currentRawPrompt) return;
+        navigator.clipboard.writeText(window.currentRawPrompt).then(() => {
+            const copyBtn = document.getElementById('copy-btn');
+            if (!copyBtn) return;
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+        }).catch(err => console.error('Failed to copy: ', err));
+    };
+
+    window.showRawMetadataFromData = function(button) {
+        const metadataData = button.getAttribute('data-metadata');
+        if (!metadataData) return;
+        try {
+            const metadata = JSON.parse(metadataData);
+            window.showRawMetadata(metadata);
+        } catch (error) {
+            console.error('Failed to parse metadata data:', error);
         }
-      };
-    }
-  };
-  
-  window.closePromptModal = function() {
-    const modal = document.getElementById('prompt-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-      // Reset to formatted view when closing
-      const content = document.getElementById('modal-content');
-      const rawContent = document.getElementById('modal-raw-content');
-      const toggleBtn = document.getElementById('toggle-raw-btn');
-      if (content && rawContent && toggleBtn) {
-        content.classList.remove('hidden');
-        rawContent.classList.add('hidden');
-        toggleBtn.textContent = 'Show Raw';
-      }
-    }
-  };
-  
-  window.toggleRawPrompt = function() {
-    const content = document.getElementById('modal-content');
-    const rawContent = document.getElementById('modal-raw-content');
-    const toggleBtn = document.getElementById('toggle-raw-btn');
-    
-    if (content && rawContent && toggleBtn) {
-      const isRawVisible = !rawContent.classList.contains('hidden');
-      
-      if (isRawVisible) {
-        // Switch to formatted view
-        content.classList.remove('hidden');
-        rawContent.classList.add('hidden');
-        toggleBtn.textContent = 'Show Raw';
-      } else {
-        // Switch to raw view
-        content.classList.add('hidden');
-        rawContent.classList.remove('hidden');
-        toggleBtn.textContent = 'Show Formatted';
-      }
-    }
-  };
-  
-  window.copyPromptToClipboard = function() {
-    const rawPrompt = window.currentRawPrompt;
-    if (rawPrompt) {
-      navigator.clipboard.writeText(rawPrompt).then(function() {
-        // Show temporary success message
-        const copyBtn = document.getElementById('copy-btn');
-        if (copyBtn) {
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = 'Copied!';
-          copyBtn.style.color = '#059669'; // green
-          setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.color = '';
-          }, 2000);
+    };
+
+    window.showRawMetadata = function(metadata) {
+        const modal = document.getElementById('raw-metadata-modal');
+        const content = document.getElementById('raw-metadata-content');
+        if (!modal || !content) return;
+
+        const metadataText = JSON.stringify(metadata, null, 2);
+        content.textContent = metadataText;
+        window.currentMetadataText = metadataText;
+        modal.classList.remove('hidden');
+    };
+
+    window.copyMetadataToClipboard = function() {
+        if (!window.currentMetadataText) return;
+        navigator.clipboard.writeText(window.currentMetadataText).then(() => {
+            const copyBtn = document.getElementById('copy-metadata-btn');
+            if (!copyBtn) return;
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+        }).catch(err => console.error('Failed to copy: ', err));
+    };
+
+    window.closeRawMetadataModal = function() {
+        const modal = document.getElementById('raw-metadata-modal');
+        if (modal) modal.classList.add('hidden');
+    };
+
+    // Event listeners
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            window.closePromptModal();
+            window.closeRawMetadataModal();
         }
-      }).catch(function(err) {
-        console.error('Failed to copy: ', err);
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = rawPrompt;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        const copyBtn = document.getElementById('copy-btn');
-        if (copyBtn) {
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = 'Copied!';
-          copyBtn.style.color = '#059669'; // green
-          setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.color = '';
-          }, 2000);
-        }
-      });
+    });
+
+    // Attach event listeners to buttons once the DOM is loaded
+    const metadataButton = document.querySelector('button[aria-controls="metadata-content"]');
+    if (metadataButton) {
+        metadataButton.addEventListener('click', () => window.toggleMetadata(metadataButton as HTMLElement));
     }
-  };
-  
-  window.showRawMetadataFromData = function(button) {
-    const metadataData = button.getAttribute('data-metadata');
-    
-    if (!metadataData) {
-      console.error('Missing metadata data attribute for showRawMetadataFromData');
-      return;
-    }
-    
-    let metadata;
-    try {
-      metadata = JSON.parse(metadataData);
-    } catch (error) {
-      console.error('Failed to parse metadata data:', error);
-      return;
-    }
-    
-    window.showRawMetadata(metadata);
-  };
-  
-  window.showRawMetadata = function(metadata) {
-    const modal = document.getElementById('raw-metadata-modal');
-    const content = document.getElementById('raw-metadata-content');
-    
-    if (modal && content) {
-      const metadataText = JSON.stringify(metadata, null, 2);
-      content.textContent = metadataText;
-      // Store the metadata text for copying
-      window.currentMetadataText = metadataText;
-      modal.classList.remove('hidden');
-      
-      // Add click listener directly to this modal
-      modal.onclick = function(event) {
-        if (event.target === modal) {
-          window.closeRawMetadataModal();
-        }
-      };
-    }
-  };
-  
-  window.copyMetadataToClipboard = function() {
-    const metadataText = window.currentMetadataText;
-    if (metadataText) {
-      navigator.clipboard.writeText(metadataText).then(function() {
-        // Show temporary success message
-        const copyBtn = document.getElementById('copy-metadata-btn');
-        if (copyBtn) {
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = 'Copied!';
-          copyBtn.style.color = '#059669'; // green
-          setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.color = '';
-          }, 2000);
-        }
-      }).catch(function(err) {
-        console.error('Failed to copy: ', err);
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = metadataText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        const copyBtn = document.getElementById('copy-metadata-btn');
-        if (copyBtn) {
-          const originalText = copyBtn.textContent;
-          copyBtn.textContent = 'Copied!';
-          copyBtn.style.color = '#059669'; // green
-          setTimeout(() => {
-            copyBtn.textContent = originalText;
-            copyBtn.style.color = '';
-          }, 2000);
-        }
-      });
-    }
-  };
-  
-  window.closeRawMetadataModal = function() {
-    const modal = document.getElementById('raw-metadata-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-    }
-  };
-  
-  // Event delegation for modal closing
-  document.addEventListener('click', function(event) {
-    // Check if click is on or within a modal backdrop
+
+    document.querySelectorAll('button[data-prompt]').forEach(button => {
+        button.addEventListener('click', () => window.showPromptFromData(button as HTMLElement));
+    });
+
+    document.querySelectorAll('button[data-metadata]').forEach(button => {
+        button.addEventListener('click', () => window.showRawMetadataFromData(button as HTMLElement));
+    });
+
     const promptModal = document.getElementById('prompt-modal');
-    const rawModal = document.getElementById('raw-metadata-modal');
-    
-    // Check if click is within prompt modal but not on the content
-    if (promptModal && !promptModal.classList.contains('hidden')) {
-      if (promptModal.contains(event.target) && !event.target.closest('.bg-white')) {
-        window.closePromptModal();
-        return;
-      }
+    if(promptModal) {
+        document.getElementById('toggle-raw-btn')?.addEventListener('click', window.toggleRawPrompt);
+        document.getElementById('copy-btn')?.addEventListener('click', window.copyPromptToClipboard);
+        promptModal.querySelector('button.text-gray-400')?.addEventListener('click', window.closePromptModal);
+        promptModal.addEventListener('click', (event) => {
+            if (event.target === promptModal) {
+                window.closePromptModal();
+            }
+        });
     }
-    
-    // Check if click is within raw metadata modal but not on the content
-    if (rawModal && !rawModal.classList.contains('hidden')) {
-      if (rawModal.contains(event.target) && !event.target.closest('.bg-white')) {
-        window.closeRawMetadataModal();
-        return;
-      }
-    }
-  });
-  
-  // Close modals with Escape key
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-      window.closePromptModal();
-      window.closeRawMetadataModal();
-    }
-  });
-</script>
 
-<!-- Import markdown-it and DOMPurify locally -->
-<script>
-  import MarkdownIt from 'markdown-it';
-  import DOMPurify from 'dompurify';
-  
-  // Initialize markdown-it and DOMPurify globally
-  (window as any).markdownit = MarkdownIt;
-  (window as any).DOMPurify = DOMPurify;
+    const rawMetadataModal = document.getElementById('raw-metadata-modal');
+    if(rawMetadataModal) {
+        document.getElementById('copy-metadata-btn')?.addEventListener('click', window.copyMetadataToClipboard);
+        rawMetadataModal.querySelector('button.text-gray-400')?.addEventListener('click', window.closeRawMetadataModal);
+        rawMetadataModal.addEventListener('click', (event) => {
+            if (event.target === rawMetadataModal) {
+                window.closeRawMetadataModal();
+            }
+        });
+    }
+}
+
+// Run initialization
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
 </script>
 
 
