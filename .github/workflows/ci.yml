@@ -42,6 +42,9 @@ jobs:
           flags: unittests
           name: codecov-umbrella
 
+      - name: Generate Astro types
+        run: npx astro sync
+
       - name: TypeScript compilation check
         run: npx tsc --noEmit
 
