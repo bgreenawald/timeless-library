@@ -1,27 +1,7 @@
 import { getCollection } from 'astro:content';
 import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
 import { logger } from './logger';
-
-// Handle import.meta.env gracefully for Jest environment
-const getEnvVar = (key: string, fallback?: string) => {
-  // Always use process.env in test environment, regardless of NODE_ENV
-  if (typeof jest !== 'undefined' || process.env.NODE_ENV === 'test') {
-    return process.env[key] || fallback;
-  }
-  
-  // In non-test environments, use import.meta.env if available
-  try {
-    // Use dynamic access to avoid Jest parse errors
-    const importMetaEnv = (globalThis as any).import?.meta?.env || (global as any).import?.meta?.env;
-    if (importMetaEnv) {
-      return importMetaEnv[key] || fallback;
-    }
-  } catch (e) {
-    // Fallback to process.env if import.meta is not available
-  }
-  
-  return process.env[key] || fallback;
-};
+import { getEnvVar } from './env';
 
 /**
  * Filters versions to exclude alpha and beta tags in non-development environments
