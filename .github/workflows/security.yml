@@ -57,9 +57,10 @@ jobs:
           exit 1
         fi
         
-        # Check for innerHTML usage (XSS risk)
-        if grep -r "innerHTML" src/ --include="*.ts" --include="*.js" --include="*.astro"; then
-          echo "⚠️  Use of innerHTML found. Consider using textContent or proper sanitization."
+        # Check for unsafe innerHTML usage (XSS risk)
+        # Look for innerHTML usage that's not properly sanitized
+        if grep -r "innerHTML" src/ --include="*.ts" --include="*.js" --include="*.astro" | grep -v "DOMPurify.sanitize"; then
+          echo "⚠️  Unsafe use of innerHTML found. Consider using textContent or proper sanitization with DOMPurify."
           exit 1
         fi
         
