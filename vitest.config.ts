@@ -15,5 +15,10 @@ export default defineConfig(
         '**/src/lib/logger.test.ts' // Exclude Jest test files
       ],
     },
+    resolve: {
+      alias: {
+        '~': '/src'
+      }
+    }
   })
 );

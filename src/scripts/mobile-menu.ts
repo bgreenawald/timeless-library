@@ -69,9 +69,3 @@ document.addEventListener('astro:page-load', () => {
   }
   initMobileMenu();
 });
-
-declare global {
-  interface Window {
-    cleanupMobileMenu: () => void;
-  }
-}
