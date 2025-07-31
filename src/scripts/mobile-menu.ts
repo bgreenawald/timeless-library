@@ -1,83 +1,77 @@
-export function initMobileMenu(): void {
+function initMobileMenu() {
   const mobileMenuButton = document.getElementById('mobile-menu-button');
   const mobileMenu = document.getElementById('mobile-menu');
 
-  if (!mobileMenuButton || !mobileMenu) return;
+  if (!mobileMenuButton || !mobileMenu) {
+    return;
+  }
 
-  // Remove any existing event listeners by cloning the button
-  const newButton = mobileMenuButton.cloneNode(true) as HTMLElement;
-  mobileMenuButton.parentNode?.replaceChild(newButton, mobileMenuButton);
+  const openMenu = () => {
+    mobileMenu.style.display = 'block';
+    mobileMenu.setAttribute('aria-hidden', 'false');
+    mobileMenuButton.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  };
 
-  // Get the new button reference
-  const button = document.getElementById('mobile-menu-button');
-  if (!button) return;
+  const closeMenu = () => {
+    mobileMenu.style.display = 'none';
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    mobileMenuButton.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  };
 
-  button.addEventListener('click', function (e: Event) {
+  const toggleMenu = (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
-
-    const isExpanded = button.getAttribute('aria-expanded') === 'true';
-
-    // Toggle menu visibility
+    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
     if (isExpanded) {
-      // Close menu
-      mobileMenu.style.display = 'none';
-      mobileMenu.setAttribute('aria-hidden', 'true');
-      button.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      closeMenu();
     } else {
-      // Open menu
-      mobileMenu.style.display = 'block';
-      mobileMenu.setAttribute('aria-hidden', 'false');
-      button.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
-    }
-  });
-
-  // Close menu when clicking outside
-  const outsideClickHandler = function (event: Event) {
-    const target = event.target as HTMLElement;
-
-    // Check if click is on the overlay background (not the nav menu)
-    const isClickOnOverlay =
-      target === mobileMenu || (target.classList && target.classList.contains('bg-black'));
-
-    // Check if click is on the actual navigation menu
-    const isClickOnNav = target.closest('nav');
-
-    if (!button.contains(target) && !isClickOnNav && isClickOnOverlay) {
-      mobileMenu.style.display = 'none';
-      mobileMenu.setAttribute('aria-hidden', 'true');
-      button.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      openMenu();
     }
   };
 
-  // Use capture phase to ensure this runs before other handlers
-  document.addEventListener('click', outsideClickHandler, true);
+  const outsideClickHandler = (event: MouseEvent) => {
+    if (!mobileMenuButton.contains(event.target as Node) && !mobileMenu.contains(event.target as Node)) {
+      closeMenu();
+    }
+  };
 
-  // Close menu on escape key
-  const escapeKeyHandler = function (event: KeyboardEvent) {
+  const escapeKeyHandler = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      mobileMenu.style.display = 'none';
-      mobileMenu.setAttribute('aria-hidden', 'true');
-      button.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      closeMenu();
     }
   };
 
+  mobileMenuButton.addEventListener('click', toggleMenu);
+  document.addEventListener('click', outsideClickHandler);
   document.addEventListener('keydown', escapeKeyHandler);
 
   // Clean up function for Astro view transitions
-  window.cleanupMobileMenu = function () {
-    document.removeEventListener('click', outsideClickHandler, true);
+  window.cleanupMobileMenu = () => {
+    mobileMenuButton.removeEventListener('click', toggleMenu);
+    document.removeEventListener('click', outsideClickHandler);
     document.removeEventListener('keydown', escapeKeyHandler);
   };
 }
 
-// Type declaration for the cleanup function
+// Initialize on every page load/navigation
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMobileMenu);
+} else {
+  initMobileMenu();
+}
+
+// Re-initialize on Astro view transitions
+document.addEventListener('astro:page-load', () => {
+  if (window.cleanupMobileMenu) {
+    window.cleanupMobileMenu();
+  }
+  initMobileMenu();
+});
+
 declare global {
   interface Window {
-    cleanupMobileMenu?: () => void;
+    cleanupMobileMenu: () => void;
   }
 }

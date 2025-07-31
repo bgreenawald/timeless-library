@@ -56,8 +56,7 @@ describe('metadata', () => {
     });
 
     it('should throw error for missing version', () => {
-      const metadataWithoutVersion = { ...validMetadata };
-      delete metadataWithoutVersion.metadata_version;
+      const { metadata_version, ...metadataWithoutVersion } = validMetadata;
       const metadataJson = JSON.stringify(metadataWithoutVersion);
 
       expect(() => parseMetadata(metadataJson)).toThrow(
@@ -76,8 +75,7 @@ describe('metadata', () => {
     });
 
     it('should throw error for missing required fields', () => {
-      const metadataWithoutBookName = { ...validMetadata };
-      delete metadataWithoutBookName.book_name;
+      const { book_name, ...metadataWithoutBookName } = validMetadata;
       const metadataJson = JSON.stringify(metadataWithoutBookName);
 
       expect(() => parseMetadata(metadataJson)).toThrow(

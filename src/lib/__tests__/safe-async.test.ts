@@ -18,7 +18,7 @@ describe('safe-async', () => {
 
   describe('safeAsync', () => {
     it('should return operation result on success', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = jest.fn<() => Promise<string>>().mockResolvedValue('success');
       const fallback = 'fallback';
 
       const result = await safeAsync(operation, fallback);
@@ -28,7 +28,7 @@ describe('safe-async', () => {
     });
 
     it('should return fallback on error', async () => {
-      const operation = jest.fn().mockRejectedValue(new Error('Test error'));
+      const operation = jest.fn<() => Promise<string>>().mockRejectedValue(new Error('Test error'));
       const fallback = 'fallback';
 
       const result = await safeAsync(operation, fallback, 'Custom error message');
@@ -42,11 +42,11 @@ describe('safe-async', () => {
     it('should return all successful results', async () => {
       const operations = [
         {
-          operation: jest.fn().mockResolvedValue('result1'),
+          operation: jest.fn<() => Promise<string>>().mockResolvedValue('result1'),
           fallback: 'fallback1',
         },
         {
-          operation: jest.fn().mockResolvedValue('result2'),
+          operation: jest.fn<() => Promise<string>>().mockResolvedValue('result2'),
           fallback: 'fallback2',
         },
       ];
@@ -59,11 +59,11 @@ describe('safe-async', () => {
     it('should return fallback for failed operations', async () => {
       const operations = [
         {
-          operation: jest.fn().mockResolvedValue('result1'),
+          operation: jest.fn<() => Promise<string>>().mockResolvedValue('result1'),
           fallback: 'fallback1',
         },
         {
-          operation: jest.fn().mockRejectedValue(new Error('Test error')),
+          operation: jest.fn<() => Promise<string>>().mockRejectedValue(new Error('Test error')),
           fallback: 'fallback2',
         },
       ];
@@ -76,7 +76,7 @@ describe('safe-async', () => {
 
   describe('withRetry', () => {
     it('should return result on first success', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = jest.fn<() => Promise<string>>().mockResolvedValue('success');
 
       const result = await withRetry(operation, 3, 100);
 
@@ -86,7 +86,7 @@ describe('safe-async', () => {
 
     it('should retry on failure and eventually succeed', async () => {
       const operation = jest
-        .fn()
+        .fn<() => Promise<string>>()
         .mockRejectedValueOnce(new Error('First failure'))
         .mockRejectedValueOnce(new Error('Second failure'))
         .mockResolvedValue('success');
@@ -98,7 +98,7 @@ describe('safe-async', () => {
     });
 
     it('should throw after max retries', async () => {
-      const operation = jest.fn().mockRejectedValue(new Error('Persistent error'));
+      const operation = jest.fn<() => Promise<string>>().mockRejectedValue(new Error('Persistent error'));
 
       await expect(withRetry(operation, 2, 10)).rejects.toThrow('Persistent error');
       expect(operation).toHaveBeenCalledTimes(3); // Initial + 2 retries
@@ -107,7 +107,7 @@ describe('safe-async', () => {
 
   describe('withTimeout', () => {
     it('should return result before timeout', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = jest.fn<() => Promise<string>>().mockResolvedValue('success');
 
       const result = await withTimeout(operation, 1000);
 
@@ -116,7 +116,7 @@ describe('safe-async', () => {
 
     it('should timeout for slow operations', async () => {
       const operation = jest
-        .fn()
+        .fn<() => Promise<string>>()
         .mockImplementation(
           () => new Promise(resolve => setTimeout(() => resolve('success'), 200))
         );
@@ -126,7 +126,7 @@ describe('safe-async', () => {
 
     it('should use custom timeout message', async () => {
       const operation = jest
-        .fn()
+        .fn<() => Promise<string>>()
         .mockImplementation(
           () => new Promise(resolve => setTimeout(() => resolve('success'), 200))
         );
