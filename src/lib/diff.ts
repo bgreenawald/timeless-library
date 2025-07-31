@@ -220,7 +220,6 @@ export function parseDiffToLines(diffText: string): Array<{
       continue;
     } else if (line.startsWith('---') || line.startsWith('+++')) {
       type = 'header';
-      isHeader = true;
       result.push({
         type,
         oldLineNum: '',
