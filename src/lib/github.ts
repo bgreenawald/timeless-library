@@ -13,7 +13,7 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   This is required for GitHub API access to avoid rate limiting.');
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
-  // In development, we can continue but warn about potential issues  
+  // In development, we can continue but warn about potential issues
   if (getEnvVar('DEV') === 'true' || getEnvVar('NODE_ENV') === 'development') {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'

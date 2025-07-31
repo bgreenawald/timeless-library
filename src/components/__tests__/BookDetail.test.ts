@@ -5,7 +5,7 @@ import BookDetail from '../BookDetail.astro';
 describe('BookDetail Component', () => {
   test('renders book title and author', async () => {
     const container = await AstroContainer.create();
-    
+
     const mockBook = {
       id: 'test-book',
       slug: 'test-book',
@@ -20,12 +20,12 @@ describe('BookDetail Component', () => {
         genres: ['Fiction' as const, 'Adventure' as const],
         tags: ['test', 'example'],
         is_featured: true,
-        cover_image: '/test-cover.jpg'
-      }
+        cover_image: '/test-cover.jpg',
+      },
     };
 
     const result = await container.renderToString(BookDetail, {
-      props: { book: mockBook }
+      props: { book: mockBook },
     });
 
     expect(result).toContain('Test Book Title');
@@ -38,7 +38,7 @@ describe('BookDetail Component', () => {
 
   test('renders without cover image', async () => {
     const container = await AstroContainer.create();
-    
+
     const mockBook = {
       id: 'test-book',
       slug: 'test-book',
@@ -52,12 +52,12 @@ describe('BookDetail Component', () => {
         description: 'This is a test book description',
         genres: ['Fiction' as const],
         tags: undefined,
-        is_featured: false
-      }
+        is_featured: false,
+      },
     };
 
     const result = await container.renderToString(BookDetail, {
-      props: { book: mockBook }
+      props: { book: mockBook },
     });
 
     expect(result).toContain('Test Book Title');
@@ -68,7 +68,7 @@ describe('BookDetail Component', () => {
 
   test('renders with cover image', async () => {
     const container = await AstroContainer.create();
-    
+
     const mockBook = {
       id: 'test-book',
       slug: 'test-book',
@@ -81,12 +81,12 @@ describe('BookDetail Component', () => {
         short_description: 'A test book',
         description: 'This is a test book description',
         genres: ['Fiction' as const],
-        cover_image: '/covers/test-book.jpg'
-      }
+        cover_image: '/covers/test-book.jpg',
+      },
     };
 
     const result = await container.renderToString(BookDetail, {
-      props: { book: mockBook }
+      props: { book: mockBook },
     });
 
     expect(result).toContain('Test Book Title');

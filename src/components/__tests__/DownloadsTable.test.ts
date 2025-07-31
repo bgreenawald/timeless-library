@@ -10,27 +10,27 @@ describe('DownloadsTable Component', () => {
         name: 'test-book-annotated.epub',
         browser_download_url: 'https://example.com/test-book-annotated.epub',
         size: 1024,
-        content_type: 'application/epub+zip'
+        content_type: 'application/epub+zip',
       },
       {
         name: 'test-book-modernized.pdf',
         browser_download_url: 'https://example.com/test-book-modernized.pdf',
         size: 2048,
-        content_type: 'application/pdf'
+        content_type: 'application/pdf',
       },
       {
         name: 'test-book-original.txt',
         browser_download_url: 'https://example.com/test-book-original.txt',
         size: 512,
-        content_type: 'text/plain'
+        content_type: 'text/plain',
       },
       {
         name: 'test-book-metadata.json',
         browser_download_url: 'https://example.com/test-book-metadata.json',
         size: 256,
-        content_type: 'application/json'
-      }
-    ]
+        content_type: 'application/json',
+      },
+    ],
   };
 
   test('renders downloads table with all asset types', async () => {
@@ -40,8 +40,8 @@ describe('DownloadsTable Component', () => {
       props: {
         release: mockRelease,
         version: 'v1.0.0-original',
-        title: 'Test Downloads'
-      }
+        title: 'Test Downloads',
+      },
     });
 
     expect(result).toContain('Test Downloads');
@@ -63,8 +63,8 @@ describe('DownloadsTable Component', () => {
       props: {
         release: mockRelease,
         version: 'v1.0.0-original',
-        title: 'Test Downloads'
-      }
+        title: 'Test Downloads',
+      },
     });
 
     // Check that assets appear in the correct order
@@ -85,8 +85,8 @@ describe('DownloadsTable Component', () => {
       props: {
         release: mockRelease,
         version: null,
-        title: 'Test Downloads'
-      }
+        title: 'Test Downloads',
+      },
     });
 
     expect(result).toContain('Version: Unknown');
@@ -99,8 +99,8 @@ describe('DownloadsTable Component', () => {
       props: {
         release: mockRelease,
         version: 'v1.0.0-original',
-        title: 'Test Downloads'
-      }
+        title: 'Test Downloads',
+      },
     });
 
     expect(result).toContain('https://example.com/test-book-annotated.epub');

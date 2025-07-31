@@ -14,9 +14,9 @@ describe('BookMetadata Component', () => {
         phase_type: 'MODERNIZE',
         model: {
           name: 'GPT-4',
-          id: 'gpt-4-0613'
+          id: 'gpt-4-0613',
         },
-        fully_rendered_system_prompt: 'You are tasked with modernizing text...'
+        fully_rendered_system_prompt: 'You are tasked with modernizing text...',
       },
       {
         phase_index: 2,
@@ -24,11 +24,11 @@ describe('BookMetadata Component', () => {
         phase_type: 'ANNOTATE',
         model: {
           name: 'Claude-3',
-          id: 'claude-3-sonnet'
+          id: 'claude-3-sonnet',
         },
-        fully_rendered_system_prompt: 'You are tasked with adding annotations...'
-      }
-    ]
+        fully_rendered_system_prompt: 'You are tasked with adding annotations...',
+      },
+    ],
   };
 
   test('handles null metadata gracefully', async () => {
@@ -39,8 +39,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('Processing Metadata');
@@ -54,8 +54,8 @@ describe('BookMetadata Component', () => {
         metadata: mockMetadata,
         bookSlug: 'test-book',
         version: 'v1.0.0-annotated',
-        title: 'Test Processing Metadata'
-      }
+        title: 'Test Processing Metadata',
+      },
     });
 
     expect(result).toContain('Test Processing Metadata');
@@ -70,8 +70,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('Processing Phases');
@@ -90,8 +90,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     // The exact formatting depends on locale, but it should contain date elements
@@ -104,8 +104,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('toggleMetadata');
@@ -120,8 +120,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('prompt-modal');
@@ -136,8 +136,8 @@ describe('BookMetadata Component', () => {
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: mockMetadata,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('Processing Metadata');
@@ -145,7 +145,7 @@ describe('BookMetadata Component', () => {
 
   test('handles phases with different types', async () => {
     const container = await AstroContainer.create();
-    
+
     const metadataWithDifferentPhases = {
       ...mockMetadata,
       phases: [
@@ -154,23 +154,23 @@ describe('BookMetadata Component', () => {
           phase_name: 'edit',
           phase_type: 'EDIT',
           model: { name: 'GPT-4', id: 'gpt-4' },
-          fully_rendered_system_prompt: 'Edit prompt'
+          fully_rendered_system_prompt: 'Edit prompt',
         },
         {
           phase_index: 2,
           phase_name: 'final',
           phase_type: 'FINAL',
           model: { name: 'Claude', id: 'claude' },
-          fully_rendered_system_prompt: 'Final prompt'
-        }
-      ]
+          fully_rendered_system_prompt: 'Final prompt',
+        },
+      ],
     };
 
     const result = await container.renderToString(BookMetadata, {
       props: {
         metadata: metadataWithDifferentPhases,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('Edit');

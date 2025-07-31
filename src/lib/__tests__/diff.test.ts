@@ -56,12 +56,12 @@ describe('diff', () => {
       const result = parseDiffToLines(diffText);
 
       expect(result).toHaveLength(7);
-      expect(result[0].type).toBe('header');  // "--- original.md" 
-      expect(result[1].type).toBe('header');  // "+++ modernized.md"
-      expect(result[2].type).toBe('hunk');    // "@@ -1,3 +1,3 @@"
+      expect(result[0].type).toBe('header'); // "--- original.md"
+      expect(result[1].type).toBe('header'); // "+++ modernized.md"
+      expect(result[2].type).toBe('hunk'); // "@@ -1,3 +1,3 @@"
       expect(result[3].type).toBe('context'); // " Line 1"
       expect(result[4].type).toBe('removed'); // "-Old line 2"
-      expect(result[5].type).toBe('added');   // "+New line 2"
+      expect(result[5].type).toBe('added'); // "+New line 2"
       expect(result[6].type).toBe('context'); // " Line 3"
     });
 

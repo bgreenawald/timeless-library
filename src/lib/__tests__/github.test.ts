@@ -9,8 +9,8 @@ Object.defineProperty(globalThis, 'import', {
         GITHUB_REPO_OWNER: 'test-owner',
         GITHUB_REPO_NAME: 'test-repo',
         DEV: false,
-      }
-    }
+      },
+    },
   },
 });
 

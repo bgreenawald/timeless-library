@@ -98,7 +98,9 @@ describe('safe-async', () => {
     });
 
     it('should throw after max retries', async () => {
-      const operation = jest.fn<() => Promise<string>>().mockRejectedValue(new Error('Persistent error'));
+      const operation = jest
+        .fn<() => Promise<string>>()
+        .mockRejectedValue(new Error('Persistent error'));
 
       await expect(withRetry(operation, 2, 10)).rejects.toThrow('Persistent error');
       expect(operation).toHaveBeenCalledTimes(3); // Initial + 2 retries

@@ -1,6 +1,7 @@
 # Astro Component Tests
 
-This directory contains component tests for all Astro components using Vitest and Astro's experimental Container API.
+This directory contains component tests for all Astro components using Vitest
+and Astro's experimental Container API.
 
 ## Test Setup
 
@@ -28,14 +29,18 @@ npm run test:coverage
 ## Test Files
 
 ### BookDetail.test.ts
+
 Tests the `BookDetail.astro` component:
+
 - Renders book title, author, and publication year
 - Handles books with and without cover images
 - Displays genres and tags correctly
 - Uses fallback placeholder when no cover image
 
 ### BookMetadata.test.ts
+
 Tests the `BookMetadata.astro` component:
+
 - Renders metadata summary (version, timestamp, phases)
 - Displays processing phases table
 - Formats timestamps correctly
@@ -43,7 +48,9 @@ Tests the `BookMetadata.astro` component:
 - Handles different phase types
 
 ### DownloadsTable.test.ts
+
 Tests the `DownloadsTable.astro` component:
+
 - Renders download table with all asset types
 - Sorts assets in correct priority order
 - Handles unknown versions gracefully
@@ -51,7 +58,9 @@ Tests the `DownloadsTable.astro` component:
 - Labels assets correctly (Annotated, Modernized, Original, Metadata)
 
 ### ErrorBoundary.test.ts
+
 Tests the `ErrorBoundary.astro` component:
+
 - Renders default and custom error messages
 - Shows/hides error details based on props
 - Handles missing error objects gracefully
@@ -59,7 +68,9 @@ Tests the `ErrorBoundary.astro` component:
 - Applies correct CSS classes
 
 ### VersionsGrid.test.ts
+
 Tests the `VersionsGrid.astro` component:
+
 - Renders all available versions
 - Generates correct links for each version
 - Displays version descriptions
@@ -69,6 +80,7 @@ Tests the `VersionsGrid.astro` component:
 ## Testing Patterns
 
 ### Basic Component Test
+
 ```typescript
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import { expect, test, describe } from 'vitest';
@@ -77,9 +89,11 @@ import MyComponent from '../MyComponent.astro';
 describe('MyComponent', () => {
   test('renders correctly', async () => {
     const container = await AstroContainer.create();
-    
+
     const result = await container.renderToString(MyComponent, {
-      props: { /* your props */ }
+      props: {
+        /* your props */
+      },
     });
 
     expect(result).toContain('expected content');
@@ -88,7 +102,9 @@ describe('MyComponent', () => {
 ```
 
 ### Mock Data
-Components use realistic mock data that matches the expected TypeScript interfaces:
+
+Components use realistic mock data that matches the expected TypeScript
+interfaces:
 
 ```typescript
 const mockBook = {
@@ -100,13 +116,14 @@ const mockBook = {
     title: 'Test Book Title',
     author: 'Test Author',
     // ... other properties
-  }
+  },
 };
 ```
 
 ## Environment Setup
 
 The test environment includes:
+
 - Mocked environment variables for GitHub integration
 - Mocked global `fetch` function
 - happy-dom for DOM simulation

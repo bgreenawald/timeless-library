@@ -32,7 +32,10 @@ function initMobileMenu() {
   };
 
   const outsideClickHandler = (event: MouseEvent) => {
-    if (!mobileMenuButton.contains(event.target as Node) && !mobileMenu.contains(event.target as Node)) {
+    if (
+      !mobileMenuButton.contains(event.target as Node) &&
+      !mobileMenu.contains(event.target as Node)
+    ) {
       closeMenu();
     }
   };

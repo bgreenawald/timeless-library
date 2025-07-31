@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { logger as realLogger } from './logger';
 
 // Mock the entire logger module
 const mockLogger = {
@@ -11,7 +12,7 @@ const mockLogger = {
 };
 
 jest.mock('./logger', () => ({
-  logger: mockLogger
+  logger: mockLogger,
 }));
 
 describe('logger', () => {
@@ -54,14 +55,15 @@ describe('logger', () => {
 /**
  * Manual test function for logger configuration
  * This can be run manually to test logging functionality
+ * Uses the real Winston logger instance for effective testing
  */
 export function testLogger() {
   console.log('Testing Winston logger configuration...');
 
-  mockLogger.debug('This is a debug message - should only appear in development');
-  mockLogger.info('This is an info message - should appear in both dev and production');
-  mockLogger.warn('This is a warning message - should appear in both dev and production');
-  mockLogger.error('This is an error message - should appear in both dev and production');
+  realLogger.debug('This is a debug message - should only appear in development');
+  realLogger.info('This is an info message - should appear in both dev and production');
+  realLogger.warn('This is a warning message - should appear in both dev and production');
+  realLogger.error('This is an error message - should appear in both dev and production');
 
   console.log('Logger test complete. Check logs/ directory for output files.');
 }

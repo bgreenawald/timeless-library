@@ -6,7 +6,7 @@ describe('VersionsGrid Component', () => {
   const mockVersions = [
     { name: 'v1.0.0-original', commit: { sha: 'abc123' } },
     { name: 'v1.1.0-modernized', commit: { sha: 'def456' } },
-    { name: 'v1.2.0-annotated', commit: { sha: 'ghi789' } }
+    { name: 'v1.2.0-annotated', commit: { sha: 'ghi789' } },
   ];
 
   test('renders versions grid with all versions', async () => {
@@ -15,8 +15,8 @@ describe('VersionsGrid Component', () => {
     const result = await container.renderToString(VersionsGrid, {
       props: {
         versions: mockVersions,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('All Available Versions');
@@ -34,8 +34,8 @@ describe('VersionsGrid Component', () => {
     const result = await container.renderToString(VersionsGrid, {
       props: {
         versions: mockVersions,
-        bookSlug: 'my-book'
-      }
+        bookSlug: 'my-book',
+      },
     });
 
     expect(result).toContain('/books/my-book/v1.0.0-original');
@@ -49,8 +49,8 @@ describe('VersionsGrid Component', () => {
     const result = await container.renderToString(VersionsGrid, {
       props: {
         versions: mockVersions,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('View details for version v1.0.0-original');
@@ -64,8 +64,8 @@ describe('VersionsGrid Component', () => {
     const result = await container.renderToString(VersionsGrid, {
       props: {
         versions: [],
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     expect(result).toContain('All Available Versions');
@@ -79,8 +79,8 @@ describe('VersionsGrid Component', () => {
     const result = await container.renderToString(VersionsGrid, {
       props: {
         versions: mockVersions,
-        bookSlug: 'test-book'
-      }
+        bookSlug: 'test-book',
+      },
     });
 
     // The getThemeColor function should generate different colors for different indices
