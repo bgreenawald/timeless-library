@@ -27,7 +27,7 @@ To get a local copy up and running, follow these simple steps.
 
 1.  Clone the repo
     ```sh
-    git clone https://github.com/your_username_/timeless-library.git
+    git clone https://github.com/bgreenawald/timeless-library.git
     ```
 2.  Install NPM packages
     ```sh
@@ -70,4 +70,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 Your Name - [@your_twitter](https://twitter.com/your_twitter) - email@example.com
 
-Project Link: [https://github.com/your_username_/timeless-library](https://github.com/your_username_/timeless-library)
+Project Link: [https://github.com/bgreenawald/timeless-library](https://github.com/bgreenawald/timeless-library)
