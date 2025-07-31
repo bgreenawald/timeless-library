@@ -269,7 +269,7 @@ const getPhaseTypeDisplay = (phaseType: string) => {
       if (typeof window.markdownit !== 'undefined') {
         const md = window.markdownit();
         const rendered = md.render(prompt);
-        content.innerHTML = rendered;
+        content.innerHTML = DOMPurify.sanitize(rendered);
         
         // Force apply styles to list elements
         const lists = content.querySelectorAll('ul, ol');
@@ -369,7 +369,7 @@ const getPhaseTypeDisplay = (phaseType: string) => {
           })
           .join('\n');
         
-        content.innerHTML = formattedPrompt;
+        content.innerHTML = DOMPurify.sanitize(formattedPrompt);
       }
       
       modal.classList.remove('hidden');
@@ -577,12 +577,14 @@ const getPhaseTypeDisplay = (phaseType: string) => {
   });
 </script>
 
-<!-- Import markdown-it locally -->
+<!-- Import markdown-it and DOMPurify locally -->
 <script>
   import MarkdownIt from 'markdown-it';
+  import DOMPurify from 'dompurify';
   
-  // Initialize markdown-it globally
+  // Initialize markdown-it and DOMPurify globally
   (window as any).markdownit = MarkdownIt;
+  (window as any).DOMPurify = DOMPurify;
 </script>
 
 

@@ -45,7 +45,7 @@ const { book } = Astro.props;
             alt={`Cover for ${book.data.title}`}
             class="w-full h-auto rounded-lg shadow-lg"
             loading="lazy"
-            onerror={`this.style.display='none'; this.parentElement.innerHTML='<div class="book-detail-cover-placeholder" style="background-color: ${getThemeColor(0)}"><div class="book-title">${book.data.title}</div><div class="book-author">by ${book.data.author}</div></div>';`}
+            onerror={`handleImageError(this, '${book.data.title.replace(/'/g, "\\'")}', '${book.data.author.replace(/'/g, "\\'")}', '${getThemeColor(0)}')`}
           />
         </div>
       ) : (
@@ -66,4 +66,35 @@ const { book } = Astro.props;
       {book.data.tags && <p class="mt-2 text-sm md:text-base max-w-2xl mx-auto">Tags: {book.data.tags.join(', ')}</p>}
     </div>
   </div>
-</section> 
+</section>
+
+<script is:inline>
+  function handleImageError(img, title, author, backgroundColor) {
+    // Hide the image
+    img.style.display = 'none';
+    
+    // Create a safe placeholder element
+    const placeholder = document.createElement('div');
+    placeholder.className = 'book-detail-cover-placeholder';
+    placeholder.style.backgroundColor = backgroundColor;
+    placeholder.setAttribute('role', 'img');
+    placeholder.setAttribute('aria-label', `Cover placeholder for ${title}`);
+    
+    // Create title element
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'book-title';
+    titleDiv.textContent = title;
+    
+    // Create author element
+    const authorDiv = document.createElement('div');
+    authorDiv.className = 'book-author';
+    authorDiv.textContent = `by ${author}`;
+    
+    // Append elements safely
+    placeholder.appendChild(titleDiv);
+    placeholder.appendChild(authorDiv);
+    
+    // Replace the image with the placeholder
+    img.parentElement.appendChild(placeholder);
+  }
+</script> 
