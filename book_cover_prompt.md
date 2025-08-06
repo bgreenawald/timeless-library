@@ -26,7 +26,7 @@ The entire image should be the book cover, divided into three solid color blocks
 3. **Edition Block** (bottom 15% of cover)
    - Fills the bottom 15% of the entire image
    - Same color as the title block
-   - Text: "modernized edition" in lowercase
+   - Text: "Timeless Library Edition"
    - Same modern font family
    - Centered text
    - Font weight: Light to Regular
@@ -63,17 +63,54 @@ Base the color scheme on these warm, elegant tones from the Timeless Library the
 - **Aspect Ratio:** 2:3 (standard book cover ratio)
 - **Resolution:** High resolution (at least 1200x1800px)
 - **Format:** Clean vector-style design
-- **Cover Composition:** The entire image is the book cover, completely filled by the three color blocks
-- **Content:** Only solid color blocks and typography - no imagery, borders, or decorative elements
-- **No gradients or textures**
+- **Cover Composition:** The entire image is the book cover, primarily filled by the three color blocks
+- **Content:** Solid color blocks, typography, and minimal geometric/textural accents only
+- **Visual Elements:** Subtle geometric shapes, thin divider lines, or minimal texture overlays allowed
+- **Complexity Limit:** Maximum 1-2 additional visual elements beyond the core three-block structure
 
-### Style Variations
-For different books, consider these color combinations:
+### Style Variations & Visual Personality
+Create unique covers using subtle visual elements and pattern systems while maintaining the three-block structure:
+
+**Base Color Combinations:**
 1. **Classic:** Cream background, dark gray title/edition, gold author bar
 2. **Elegant:** Dark gray background, cream title/edition, gold author bar
 3. **Warm:** Gold background, dark gray title/edition, cream author bar
 4. **Sophisticated:** Dark gray background, gold title/edition, cream author bar
 5. **Minimal:** Cream background, dark gray title/edition, light gray author bar
+
+**Subtle Visual Elements (choose 1-2 per cover):**
+- **Geometric accents:** Small circles, triangles, or thin rectangles in block corners (maximum 3% of block size)
+- **Divider lines:** Hair-thin horizontal lines between blocks (1-2px, using palette colors at 30% opacity)
+- **Typography treatments:** 
+  - Italicized key words in titles
+  - Small caps for author surnames
+  - Creative line breaks that create visual rhythm
+- **Asymmetrical text:** Slightly off-center alignment (10-15% offset from center)
+- **Scale variations:** One text element slightly larger/smaller than standard
+
+**Block Proportion Variations:**
+- **Standard:** 60% title / 25% author / 15% edition
+- **Title-focused:** 65% title / 20% author / 15% edition
+- **Balanced:** 55% title / 30% author / 15% edition
+- **Classic:** 58% title / 27% author / 15% edition
+
+**Minimal Pattern Systems:**
+- **Texture overlays:** Very subtle paper or linen texture (5-10% opacity) on background blocks
+- **Border treatments:** 
+  - Thin accent borders around entire cover (2-3px, palette color at 40% opacity)
+  - Internal borders between blocks (1px lines in contrasting palette colors)
+- **Typography hierarchy variations:**
+  - Mix of uppercase/lowercase in titles
+  - Author names in all caps vs sentence case
+  - Different font weights within the same text block
+- **Tonal gradations:** Very subtle color shifts within blocks (5-10% lighter/darker variations of base colors)
+
+**Individual Personality Guidelines:**
+- Each cover should use 1-2 visual elements maximum to maintain sophistication
+- Vary typography treatments, block proportions, AND one visual accent per cover
+- Keep all elements within the established color palette
+- Ensure any added elements enhance rather than compete with readability
+- Maintain the clean, library-appropriate aesthetic
 
 ### Quality Requirements
 - Clean, professional appearance
