@@ -1,7 +1,20 @@
 import { jest } from '@jest/globals';
+
+// Mock the entire logger module first
+jest.mock('./logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    clear: jest.fn(),
+    add: jest.fn(),
+  },
+}));
+
 import { logger as realLogger } from './logger';
 
-// Mock the entire logger module
+// Create a typed mock for easier testing
 const mockLogger = {
   debug: jest.fn(),
   info: jest.fn(),
@@ -10,10 +23,6 @@ const mockLogger = {
   clear: jest.fn(),
   add: jest.fn(),
 };
-
-jest.mock('./logger', () => ({
-  logger: mockLogger,
-}));
 
 describe('logger', () => {
   beforeEach(() => {
