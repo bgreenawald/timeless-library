@@ -37,12 +37,14 @@ if (originalText && modernizedText) {
   changeCount = diffResult.changeCount;
   
   // Debug logging
-  console.log('Diff Debug - Generated diff:', {
-    hasChanges,
-    changeCount,
-    diffLength: diffResult.diff.length,
-    diffLinesCount: diffLines.length
-  });
+  if (import.meta.env.DEV) {
+    console.log('Diff Debug - Generated diff:', {
+      hasChanges,
+      changeCount,
+      diffLength: diffResult.diff.length,
+      diffLinesCount: diffLines.length
+    });
+  }
 }
 ---
 
@@ -151,15 +153,17 @@ if (originalText && modernizedText) {
                 : "Modernized text file is not available for this version."
             }
           </p>
-          <!-- Debug: List all asset names for troubleshooting -->
-          <details style="margin-top:2em;">
-            <summary style="cursor:pointer;">Show release asset names (debug)</summary>
-            <ul style="text-align:left;display:inline-block;">
-              {release.assets.map(asset => (
-                <li>{asset.name}</li>
-              ))}
-            </ul>
-          </details>
+          {import.meta.env.DEV && (
+            <!-- Debug: List all asset names for troubleshooting -->
+            <details style="margin-top:2em;">
+              <summary style="cursor:pointer;">Show release asset names (debug)</summary>
+              <ul style="text-align:left;display:inline-block;">
+                {release.assets.map(asset => (
+                  <li>{asset.name}</li>
+                ))}
+              </ul>
+            </details>
+          )}
         </div>
       </section>
     )}

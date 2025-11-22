@@ -144,5 +144,7 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
   <script>
     import { initializeBookSearch } from '../../scripts/book-search';
     document.addEventListener('DOMContentLoaded', initializeBookSearch);
+    // Re-initialize on Astro view transitions
+    document.addEventListener('astro:page-load', initializeBookSearch);
   </script>
 </Layout>
