@@ -1,6 +1,7 @@
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+// @vitest-environment node
 import { expect, test, describe } from 'vitest';
 import VersionsGrid from '../VersionsGrid.astro';
+import { createTestContainer } from '../../test-utils';
 
 describe('VersionsGrid Component', () => {
   const mockVersions = [
@@ -10,7 +11,7 @@ describe('VersionsGrid Component', () => {
   ];
 
   test('renders versions grid with all versions', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(VersionsGrid, {
       props: {
@@ -29,7 +30,7 @@ describe('VersionsGrid Component', () => {
   });
 
   test('generates correct links for each version', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(VersionsGrid, {
       props: {
@@ -44,7 +45,7 @@ describe('VersionsGrid Component', () => {
   });
 
   test('displays version descriptions', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(VersionsGrid, {
       props: {
@@ -59,7 +60,7 @@ describe('VersionsGrid Component', () => {
   });
 
   test('renders with empty versions array', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(VersionsGrid, {
       props: {
@@ -74,7 +75,7 @@ describe('VersionsGrid Component', () => {
   });
 
   test('applies theme colors to version cards', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(VersionsGrid, {
       props: {
