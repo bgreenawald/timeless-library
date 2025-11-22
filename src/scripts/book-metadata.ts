@@ -59,6 +59,7 @@ function initialize() {
             const prompt = JSON.parse(promptData);
             window.showPrompt(phaseName, prompt);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to parse prompt data:', error);
         }
     };
@@ -112,6 +113,7 @@ function initialize() {
             const originalText = copyBtn.textContent;
             copyBtn.textContent = 'Copied!';
             setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+            // eslint-disable-next-line no-console
         }).catch(err => console.error('Failed to copy: ', err));
     };
 
@@ -122,6 +124,7 @@ function initialize() {
             const metadata = JSON.parse(metadataData);
             window.showRawMetadata(metadata);
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to parse metadata data:', error);
         }
     };
@@ -145,6 +148,7 @@ function initialize() {
             const originalText = copyBtn.textContent;
             copyBtn.textContent = 'Copied!';
             setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+            // eslint-disable-next-line no-console
         }).catch(err => console.error('Failed to copy: ', err));
     };
 
