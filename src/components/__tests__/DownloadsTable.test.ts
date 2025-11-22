@@ -1,6 +1,7 @@
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+// @vitest-environment node
 import { expect, test, describe } from 'vitest';
 import DownloadsTable from '../DownloadsTable.astro';
+import { createTestContainer } from '../../test-utils';
 
 describe('DownloadsTable Component', () => {
   const mockRelease = {
@@ -34,7 +35,7 @@ describe('DownloadsTable Component', () => {
   };
 
   test('renders downloads table with all asset types', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(DownloadsTable, {
       props: {
@@ -57,7 +58,7 @@ describe('DownloadsTable Component', () => {
   });
 
   test('sorts assets in correct order', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(DownloadsTable, {
       props: {
@@ -79,7 +80,7 @@ describe('DownloadsTable Component', () => {
   });
 
   test('handles unknown version gracefully', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(DownloadsTable, {
       props: {
@@ -93,7 +94,7 @@ describe('DownloadsTable Component', () => {
   });
 
   test('renders download links', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(DownloadsTable, {
       props: {

@@ -1,10 +1,11 @@
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+// @vitest-environment node
 import { expect, test, describe } from 'vitest';
 import BookDetail from '../BookDetail.astro';
+import { createTestContainer } from '../../test-utils';
 
 describe('BookDetail Component', () => {
   test('renders book title and author', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const mockBook = {
       id: 'test-book',
@@ -37,7 +38,7 @@ describe('BookDetail Component', () => {
   });
 
   test('renders without cover image', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const mockBook = {
       id: 'test-book',
@@ -67,7 +68,7 @@ describe('BookDetail Component', () => {
   });
 
   test('renders with cover image', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const mockBook = {
       id: 'test-book',

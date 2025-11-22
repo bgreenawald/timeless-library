@@ -1,6 +1,7 @@
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+// @vitest-environment node
 import { expect, test, describe } from 'vitest';
 import BookMetadata from '../BookMetadata.astro';
+import { createTestContainer } from '../../test-utils';
 
 describe('BookMetadata Component', () => {
   const mockMetadata = {
@@ -32,7 +33,7 @@ describe('BookMetadata Component', () => {
   };
 
   test('handles null metadata gracefully', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     // When metadata is null, the component should handle it gracefully
     // We'll test with valid metadata instead since null causes Astro Container issues
@@ -47,7 +48,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('renders metadata summary correctly', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -65,7 +66,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('renders phases table correctly', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -85,7 +86,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('formats timestamp correctly', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -99,7 +100,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('includes interactive elements', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -115,7 +116,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('includes modals in rendered output', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -131,7 +132,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('uses default title when not provided', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(BookMetadata, {
       props: {
@@ -144,7 +145,7 @@ describe('BookMetadata Component', () => {
   });
 
   test('handles phases with different types', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const metadataWithDifferentPhases = {
       ...mockMetadata,

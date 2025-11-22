@@ -54,4 +54,11 @@ const { book } = Astro.props;
       img.addEventListener('error', () => handleImageError(img));
     }
   });
+  // Re-bind on view transitions
+  document.addEventListener('astro:page-load', () => {
+    const img = document.querySelector('.book-detail-cover img') as HTMLImageElement;
+    if (img) {
+      img.addEventListener('error', () => handleImageError(img));
+    }
+  });
 </script> 
