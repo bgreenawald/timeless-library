@@ -117,8 +117,8 @@ function initialize() {
         setTimeout(() => {
           copyBtn.textContent = originalText;
         }, 2000);
-        // eslint-disable-next-line no-console
       })
+      // eslint-disable-next-line no-console
       .catch(err => console.error('Failed to copy: ', err));
   };
 
@@ -157,8 +157,8 @@ function initialize() {
         setTimeout(() => {
           copyBtn.textContent = originalText;
         }, 2000);
-        // eslint-disable-next-line no-console
       })
+      // eslint-disable-next-line no-console
       .catch(err => console.error('Failed to copy: ', err));
   };
 
