@@ -2,6 +2,7 @@
 interface Props {
   fallback?: string;
   showDetails?: boolean;
+  error?: Error;
 }
 
 const { fallback = "Something went wrong while loading this content.", showDetails = false } = Astro.props;

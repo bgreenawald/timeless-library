@@ -1,4 +1,5 @@
-. "$HOME/.nvm/nvm.sh"
-# Temporarily disabled due to test configuration issues
-# npm run test:pre-commit
-echo "Pre-commit tests temporarily disabled - please run tests manually"
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx lint-staged
+npm run test:pre-commit
