@@ -31,10 +31,23 @@ function initialize() {
         const icon = button.querySelector('svg');
         if (!content || !icon) return;
 
-        const isHidden = content.classList.contains('hidden');
-        content.classList.toggle('hidden', !isHidden);
-        button.setAttribute('aria-expanded', String(isHidden));
-        icon.classList.toggle('rotate-180', isHidden);
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+            // Collapse
+            content.classList.remove('grid-rows-[1fr]', 'opacity-100');
+            content.classList.add('grid-rows-[0fr]', 'opacity-0');
+            content.setAttribute('aria-hidden', 'true');
+            button.setAttribute('aria-expanded', 'false');
+            icon.classList.remove('rotate-180');
+        } else {
+            // Expand
+            content.classList.remove('grid-rows-[0fr]', 'opacity-0');
+            content.classList.add('grid-rows-[1fr]', 'opacity-100');
+            content.setAttribute('aria-hidden', 'false');
+            button.setAttribute('aria-expanded', 'true');
+            icon.classList.add('rotate-180');
+        }
     };
 
     window.showPromptFromData = function(button) {
