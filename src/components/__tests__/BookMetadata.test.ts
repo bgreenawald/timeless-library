@@ -110,8 +110,8 @@ describe('BookMetadata Component', () => {
     });
 
     expect(result).toContain('toggleMetadata');
-    expect(result).toContain('showRawMetadataFromData');
-    expect(result).toContain('showPromptFromData');
+    expect(result).toContain('data-metadata');
+    expect(result).toContain('data-prompt');
     expect(result).toContain('aria-expanded="false"');
   });
 
