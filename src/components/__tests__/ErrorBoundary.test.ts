@@ -1,10 +1,11 @@
-import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+// @vitest-environment node
 import { expect, test, describe } from 'vitest';
 import ErrorBoundary from '../ErrorBoundary.astro';
+import { createTestContainer } from '../../test-utils';
 
 describe('ErrorBoundary Component', () => {
   test('renders default error message', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(ErrorBoundary, {
       props: {},
@@ -16,7 +17,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('renders custom fallback message', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(ErrorBoundary, {
       props: {
@@ -30,7 +31,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('shows error details when showDetails is true', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const mockError = new Error('Test error message');
     mockError.stack = 'Error: Test error message\n    at test:1:1';
@@ -47,7 +48,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('hides error details when showDetails is false', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const mockError = new Error('Test error message');
 
@@ -63,7 +64,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('handles missing error gracefully', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(ErrorBoundary, {
       props: {
@@ -77,7 +78,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('includes reload button', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(ErrorBoundary, {
       props: {},
@@ -88,7 +89,7 @@ describe('ErrorBoundary Component', () => {
   });
 
   test('applies correct CSS classes', async () => {
-    const container = await AstroContainer.create();
+    const container = await createTestContainer();
 
     const result = await container.renderToString(ErrorBoundary, {
       props: {},
