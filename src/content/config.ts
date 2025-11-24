@@ -8,7 +8,7 @@ const booksCollection = defineCollection({
     original_publication_year: z.number(),
     short_description: z.string(),
     description: z.string(),
-    genres: z.array(z.enum(['Philosophy', 'History', 'Political Science'])),
+    genres: z.array(z.enum(['Economics', 'Philosophy', 'History', 'Political Science'])),
     tags: z.array(z.string()).optional(),
     is_featured: z.boolean().optional(),
     cover_image: z.string().optional(), // Path to cover image in public/covers/
