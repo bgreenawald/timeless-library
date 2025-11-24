@@ -157,7 +157,7 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
  * @param data - The metadata object to validate
  * @throws Error if the metadata structure is invalid
  */
-function validateMetadataV0_0_0_alpha(data: any): void {
+function validateMetadataV0_0(data: any): void {
   if (!data || typeof data !== 'object') {
     throw new Error('Metadata must be an object');
   }
@@ -209,9 +209,9 @@ function validateMetadataV0_0_0_alpha(data: any): void {
  * Supported metadata versions and their parsing functions.
  */
 const METADATA_PARSERS: Record<string, (data: any) => BookMetadata> = {
-  '0.0.0-alpha': (data: any): BookMetadata => {
+  '0.0': (data: any): BookMetadata => {
     // Validate the complete metadata structure
-    validateMetadataV0_0_0_alpha(data);
+    validateMetadataV0_0(data);
 
     return data as BookMetadata;
   },

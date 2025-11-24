@@ -3,7 +3,7 @@ import { parseMetadata } from '../metadata';
 describe('metadata', () => {
   describe('parseMetadata', () => {
     const validMetadata = {
-      metadata_version: '0.0.0-alpha',
+      metadata_version: '0.0',
       run_timestamp: '2024-01-01T00:00:00Z',
       book_name: 'Test Book',
       author_name: 'Test Author',
