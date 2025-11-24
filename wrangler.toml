@@ -1,5 +1,0 @@
-name = "timeless-library"
-compatibility_date = "2025-11-23"
-
-# Tell Wrangler to serve the Astro build output
-site = { bucket = "./dist" }
