@@ -16,8 +16,7 @@ const displayVersion = version ? extractVersionFromTag(version) : 'Unknown';
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
-  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">{title}
-  </h2>
+  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12" set:html={title}></h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <div class="text-center mb-6">
       <p class="text-lg font-medium">Version: {displayVersion}</p>
