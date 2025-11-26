@@ -118,3 +118,6 @@ Thumbs.db
 
 # Surge
 .surge.sh
+
+# Claude
+.claude/
