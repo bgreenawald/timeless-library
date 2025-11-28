@@ -1,3 +1,5 @@
+@import 'tailwindcss';
+
 /* * Custom CSS for the "Timeless Library" theme.
     * We use a base of Tailwind CSS for structure and responsiveness,
     * and then apply our custom theme on top for the unique look and feel.
