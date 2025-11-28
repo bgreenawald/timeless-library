@@ -32,7 +32,7 @@
     "diff2html": "^3.4.51",
     "dompurify": "^3.2.7",
     "markdown-it": "^14.1.0",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.17",
     "winston": "^3.18.3"
   },
   "devDependencies": {
