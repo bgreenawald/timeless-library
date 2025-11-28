@@ -1,5 +1,6 @@
 // Vitest setup for Astro component tests
 import { vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 // Mock environment variables for tests
 process.env.NODE_ENV = 'test';
