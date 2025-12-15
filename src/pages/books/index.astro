@@ -1,7 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import { getThemeColor } from '../../lib/colors';
 
 const books = await getCollection('books');
 
@@ -95,10 +94,10 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
 
       <!-- Books Grid -->
       <div id="books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {books.map((book, index) => (
+        {books.map((book) => (
           <a href={`/books/${book.slug}`} class="book-item" data-genres={book.data.genres.join(',')} data-tags={book.data.tags?.join(',') || ''}>
             <div class="book-card">
-              <div class="book-cover" style={`background-color: ${getThemeColor(index)}`}>
+              <div class="book-cover" style={`background-image: url('${book.data.cover_image}')`}>
                 <div class="book-title">{book.data.title}</div>
                 <div class="book-author">by {book.data.author}</div>
               </div>
