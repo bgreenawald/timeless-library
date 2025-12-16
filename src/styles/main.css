@@ -183,7 +183,7 @@
         .book-title {
           font-family: 'Poppins', sans-serif;
           font-weight: 600;
-          font-size: 1.5rem;
+          font-size: 1.75rem;
           line-height: 1.2;
           background-color: rgba(58, 58, 58, 0.85);
           padding: 0.5rem 1rem;
@@ -193,6 +193,7 @@
         .book-author {
           font-family: 'Lora', serif;
           font-style: italic;
+          font-size: 1.1rem;
           margin-top: 0.5rem;
           background-color: rgba(58, 58, 58, 0.85);
           padding: 0.25rem 0.75rem;

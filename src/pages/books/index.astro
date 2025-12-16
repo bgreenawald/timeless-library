@@ -97,7 +97,7 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
         {books.map((book) => (
           <a href={`/books/${book.slug}`} class="book-item" data-genres={book.data.genres.join(',')} data-tags={book.data.tags?.join(',') || ''}>
             <div class="book-card">
-              <div class="book-cover" style={`background-image: url('${book.data.cover_image}')`}>
+              <div class="book-cover" style={`background-image: url('${book.data.cover_image.replace('cover.webp', 'mini-cover.webp')}')`}>
                 <div class="book-title">{book.data.title}</div>
                 <div class="book-author">by {book.data.author}</div>
               </div>

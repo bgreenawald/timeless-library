@@ -26,7 +26,7 @@ const books = await getCollection('books', ({ data }) => data.is_featured);
         {books.map((book) => (
           <a href={`/books/${book.slug}`}>
           <div class="book-card">
-            <div class="book-cover" style="background-color: rgb(58, 58, 58, 0.75)">
+            <div class="book-cover" style={`background-image: url('${book.data.cover_image.replace('cover.webp', 'mini-cover.webp')}')`}>
               <div class="book-title">{book.data.title}</div>
               <div class="book-author">by {book.data.author}</div>
             </div>
