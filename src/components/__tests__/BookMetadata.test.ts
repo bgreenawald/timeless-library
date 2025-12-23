@@ -7,7 +7,6 @@ describe('BookMetadata Component', () => {
   const mockMetadata = {
     book_version: 'v1.0.0-annotated',
     run_timestamp: '2023-12-01T10:30:00Z',
-    length_reduction: [25, 15],
     phases: [
       {
         phase_index: 1,
