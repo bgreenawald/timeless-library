@@ -481,8 +481,7 @@ const getModelDisplay = (phase: ProcessingPhase) => {
     try {
       const md = new window.markdownit();
       const rendered = md.render(promptContent);
-      const sanitized = window.DOMPurify.sanitize(rendered);
-      content.innerHTML = sanitized;
+      content.innerHTML = window.DOMPurify.sanitize(rendered);
     } catch (error) {
       console.error('Error rendering markdown:', error);
       content.textContent = promptContent;
