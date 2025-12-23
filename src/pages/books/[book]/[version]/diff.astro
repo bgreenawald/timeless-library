@@ -4,6 +4,7 @@ import BookDetail from '../../../../components/BookDetail.astro';
 import { extractVersionFromTag } from '../../../../lib/utils';
 import { generateDiffPaths } from '../../../../lib/paths';
 import { fetchVersionTexts, generateDiff, parseDiffToLines } from '../../../../lib/diff';
+import { logger } from '../../../../lib/logger';
 
 export async function getStaticPaths() {
   return generateDiffPaths();
@@ -38,7 +39,7 @@ if (originalText && modernizedText) {
   
   // Debug logging
   if (import.meta.env.DEV) {
-    console.log('Diff Debug - Generated diff:', {
+    logger.debug('Diff Debug - Generated diff:', {
       hasChanges,
       changeCount,
       diffLength: diffResult.diff.length,
