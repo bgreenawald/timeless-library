@@ -34,11 +34,37 @@ const getPhaseTypeDisplay = (phaseType: string) => {
     'MODERNIZE': 'Modernize',
     'EDIT': 'Edit',
     'FINAL': 'Final',
+    'FINAL_TWO_STAGE': 'Final (Two-Stage)',
     'INTRODUCTION': 'Introduction',
     'SUMMARY': 'Summary',
     'ANNOTATE': 'Annotate'
   };
   return typeMap[phaseType] || phaseType;
+};
+
+// Helper to check if a phase is a two-stage phase
+const isTwoStagePhase = (phase: ProcessingPhase): boolean => {
+  return phase.phase_type === 'FINAL_TWO_STAGE';
+};
+
+// Helper to get model display info for a phase
+const getModelDisplay = (phase: ProcessingPhase) => {
+  if (isTwoStagePhase(phase)) {
+    // Type assertion for two-stage phase
+    const twoStagePhase = phase as any;
+    return {
+      isTwoStage: true,
+      identifyModel: twoStagePhase.identify_model,
+      implementModel: twoStagePhase.implement_model,
+    };
+  } else {
+    // Regular phase
+    const regularPhase = phase as any;
+    return {
+      isTwoStage: false,
+      model: regularPhase.model,
+    };
+  }
 };
 ---
 
@@ -99,33 +125,51 @@ const getPhaseTypeDisplay = (phaseType: string) => {
           </tr>
         </thead>
           <tbody>
-            {metadata.phases.map((phase: ProcessingPhase) => (
-              <tr class="border-b border-gray-200 hover:bg-gray-50">
-                <td class="py-3 px-4 text-center">
-                  <span class="font-medium">#{phase.phase_index}</span>
-                </td>
-                <td class="py-3 px-4">
-                  <span class="inline-block bg-amber-100 text-amber-800 px-2 py-1 rounded text-sm font-medium">
-                    {getPhaseTypeDisplay(phase.phase_type)}
-                  </span>
-                </td>
-                <td class="py-3 px-4">
-                  <div>
-                    <p class="font-medium">{phase.model.name}</p>
-                    <p class="text-sm text-gray-500">{phase.model.id}</p>
-                  </div>
-                </td>
-                <td class="py-3 px-4 text-center">
-                  <button
-                    class="text-amber-700 hover:text-amber-900 font-medium text-sm"
-                    data-phase-name={phase.phase_name}
-                    data-prompt={JSON.stringify(phase.fully_rendered_system_prompt)}
-                  >
-                    View Prompt
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {metadata.phases.map((phase: ProcessingPhase) => {
+              const modelInfo = getModelDisplay(phase);
+              return (
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="py-3 px-4 text-center">
+                    <span class="font-medium">#{phase.phase_index}</span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="inline-block bg-amber-100 text-amber-800 px-2 py-1 rounded text-sm font-medium">
+                      {getPhaseTypeDisplay(phase.phase_type)}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    {modelInfo.isTwoStage ? (
+                      <div class="space-y-2">
+                        <div>
+                          <p class="text-xs font-semibold text-gray-600">Identify</p>
+                          <p class="font-medium">{modelInfo.identifyModel.name}</p>
+                          <p class="text-sm text-gray-500">{modelInfo.identifyModel.id}</p>
+                        </div>
+                        <div>
+                          <p class="text-xs font-semibold text-gray-600">Implement</p>
+                          <p class="font-medium">{modelInfo.implementModel.name}</p>
+                          <p class="text-sm text-gray-500">{modelInfo.implementModel.id}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p class="font-medium">{modelInfo.model.name}</p>
+                        <p class="text-sm text-gray-500">{modelInfo.model.id}</p>
+                      </div>
+                    )}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <button
+                      class="text-amber-700 hover:text-amber-900 font-medium text-sm"
+                      data-phase-name={phase.phase_name}
+                      data-prompt={JSON.stringify(phase.fully_rendered_system_prompt)}
+                    >
+                      View Prompt
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -157,6 +201,17 @@ const getPhaseTypeDisplay = (phaseType: string) => {
             class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
           >
             &times;
+          </button>
+        </div>
+      </div>
+      <!-- Stage Tabs (hidden by default, shown for two-stage prompts) -->
+      <div id="stage-tabs" class="hidden border-b px-6">
+        <div class="flex space-x-4">
+          <button id="identify-tab" class="py-3 px-4 font-medium border-b-2 border-amber-600 text-amber-700">
+            Identify Stage
+          </button>
+          <button id="implement-tab" class="py-3 px-4 font-medium border-b-2 border-transparent text-gray-600 hover:text-gray-800">
+            Implement Stage
           </button>
         </div>
       </div>
@@ -344,39 +399,175 @@ const getPhaseTypeDisplay = (phaseType: string) => {
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
     const rawContent = document.getElementById('modal-raw-content');
-    if (!modal || !title || !content || !rawContent) return;
+    const stageTabs = document.getElementById('stage-tabs');
+    if (!modal || !title || !content || !rawContent || !stageTabs) return;
 
     title.textContent = `${phaseName} - System Prompt`;
     window.currentRawPrompt = prompt;
     rawContent.textContent = prompt;
 
-    const md = new window.markdownit();
-    const rendered = md.render(prompt);
-    content.innerHTML = window.DOMPurify.sanitize(rendered);
+    // Check if this is a two-stage prompt
+    const isTwoStage = prompt.includes('[IDENTIFY STAGE]') && prompt.includes('[IMPLEMENT STAGE]');
+
+    if (isTwoStage) {
+      // Parse the two stages
+      const stages = parseTwoStagePrompt(prompt);
+      window.currentPromptStages = stages;
+      window.currentIsTwoStage = true;
+
+      // Ensure formatted content is visible, raw is hidden
+      content.classList.remove('hidden');
+      rawContent.classList.add('hidden');
+
+      // Show tabs and display identify stage by default
+      stageTabs.classList.remove('hidden');
+      displayStage('identify');
+
+      // Setup tab event listeners
+      setupStageTabListeners();
+    } else {
+      // Single stage prompt - hide tabs and display normally
+      stageTabs.classList.add('hidden');
+      window.currentIsTwoStage = false;
+
+      // Ensure formatted content is visible, raw is hidden
+      content.classList.remove('hidden');
+      rawContent.classList.add('hidden');
+
+      const md = new window.markdownit();
+      const rendered = md.render(prompt);
+      content.innerHTML = window.DOMPurify.sanitize(rendered);
+    }
 
     modal.classList.remove('hidden');
   }
 
+  function parseTwoStagePrompt(prompt) {
+    const identifyMarker = '[IDENTIFY STAGE]';
+    const implementMarker = '[IMPLEMENT STAGE]';
+
+    const identifyStart = prompt.indexOf(identifyMarker);
+    const implementStart = prompt.indexOf(implementMarker);
+
+    if (identifyStart === -1 || implementStart === -1) {
+      return { identify: prompt, implement: '' };
+    }
+
+    const identifyContent = prompt.substring(
+      identifyStart + identifyMarker.length,
+      implementStart
+    ).trim();
+
+    const implementContent = prompt.substring(
+      implementStart + implementMarker.length
+    ).trim();
+
+    return {
+      identify: identifyContent,
+      implement: implementContent
+    };
+  }
+
+  function displayStage(stage) {
+    if (!window.currentPromptStages || !window.markdownit) return;
+
+    const content = document.getElementById('modal-content');
+    if (!content) return;
+
+    const promptContent = stage === 'identify'
+      ? window.currentPromptStages.identify
+      : window.currentPromptStages.implement;
+
+    try {
+      const md = new window.markdownit();
+      const rendered = md.render(promptContent);
+      content.innerHTML = window.DOMPurify.sanitize(rendered);
+    } catch (error) {
+      console.error('Error rendering markdown:', error);
+      content.textContent = promptContent;
+    }
+
+    // Update tab styling
+    const identifyTab = document.getElementById('identify-tab');
+    const implementTab = document.getElementById('implement-tab');
+
+    if (identifyTab && implementTab) {
+      if (stage === 'identify') {
+        identifyTab.classList.add('border-amber-600', 'text-amber-700');
+        identifyTab.classList.remove('border-transparent', 'text-gray-600');
+        implementTab.classList.remove('border-amber-600', 'text-amber-700');
+        implementTab.classList.add('border-transparent', 'text-gray-600');
+      } else {
+        implementTab.classList.add('border-amber-600', 'text-amber-700');
+        implementTab.classList.remove('border-transparent', 'text-gray-600');
+        identifyTab.classList.remove('border-amber-600', 'text-amber-700');
+        identifyTab.classList.add('border-transparent', 'text-gray-600');
+      }
+    }
+
+    window.currentStage = stage;
+  }
+
+  function setupStageTabListeners() {
+    const identifyTab = document.getElementById('identify-tab');
+    const implementTab = document.getElementById('implement-tab');
+
+    if (identifyTab && !identifyTab.dataset.twoStageInitialized) {
+      identifyTab.dataset.twoStageInitialized = 'true';
+      identifyTab.addEventListener('click', () => displayStage('identify'));
+    }
+
+    if (implementTab && !implementTab.dataset.twoStageInitialized) {
+      implementTab.dataset.twoStageInitialized = 'true';
+      implementTab.addEventListener('click', () => displayStage('implement'));
+    }
+  }
+
   function closePromptModal() {
     const modal = document.getElementById('prompt-modal');
+    const stageTabs = document.getElementById('stage-tabs');
     if (!modal) return;
+
     modal.classList.add('hidden');
     document.getElementById('modal-content')?.classList.remove('hidden');
     document.getElementById('modal-raw-content')?.classList.add('hidden');
+
+    // Hide tabs when closing
+    if (stageTabs) stageTabs.classList.add('hidden');
+
     const toggleBtn = document.getElementById('toggle-raw-btn');
     if (toggleBtn) toggleBtn.textContent = 'Show Raw';
+
+    // Reset stage tab state
+    window.currentIsTwoStage = false;
+    window.currentPromptStages = null;
+    window.currentStage = null;
   }
 
   function toggleRawPrompt() {
     const content = document.getElementById('modal-content');
     const rawContent = document.getElementById('modal-raw-content');
     const toggleBtn = document.getElementById('toggle-raw-btn');
+    const stageTabs = document.getElementById('stage-tabs');
     if (!content || !rawContent || !toggleBtn) return;
 
     const isRawVisible = !rawContent.classList.contains('hidden');
     content.classList.toggle('hidden', !isRawVisible);
     rawContent.classList.toggle('hidden', isRawVisible);
     toggleBtn.textContent = isRawVisible ? 'Show Raw' : 'Show Formatted';
+
+    // Hide stage tabs when showing raw content
+    if (stageTabs) {
+      if (isRawVisible) {
+        // Going to formatted view - show tabs if it's a two-stage prompt
+        if (window.currentIsTwoStage) {
+          stageTabs.classList.remove('hidden');
+        }
+      } else {
+        // Going to raw view - hide tabs
+        stageTabs.classList.add('hidden');
+      }
+    }
   }
 
   function copyPromptToClipboard() {
