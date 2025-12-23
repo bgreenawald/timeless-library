@@ -18,7 +18,6 @@ interface ProcessingPhase {
   phase_index: number;
   phase_type: string;
   enabled: boolean;
-  temperature: number;
   post_processors: string[];
   post_processor_count: number;
   completed: boolean;
@@ -32,7 +31,6 @@ interface ProcessingPhase {
   system_prompt_path: string;
   user_prompt_path: string;
   fully_rendered_system_prompt: string;
-  length_reduction_parameter: number[];
   output_exists: boolean;
 }
 
@@ -47,7 +45,6 @@ interface BookMetadata {
   input_file: string;
   original_file: string;
   output_directory: string;
-  length_reduction: number[];
   phases: ProcessingPhase[];
   book_version: string;
 }
@@ -77,16 +74,11 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
     'fully_rendered_system_prompt',
   ];
 
-  const requiredNumberFields = [
-    'phase_index',
-    'temperature',
-    'post_processor_count',
-    'max_workers',
-  ];
+  const requiredNumberFields = ['phase_index', 'post_processor_count', 'max_workers'];
 
   const requiredBooleanFields = ['enabled', 'completed', 'output_exists'];
 
-  const requiredArrayFields = ['post_processors', 'length_reduction_parameter'];
+  const requiredArrayFields = ['post_processors'];
 
   // Validate string fields
   for (const field of requiredStringFields) {
@@ -119,15 +111,6 @@ function validateProcessingPhase(phase: any, phaseIndex: number): void {
   // Validate post_processors array contains only strings
   if (!phase.post_processors.every((item: any) => typeof item === 'string')) {
     throw new Error(`Phase ${phaseIndex}: 'post_processors' array must contain only strings`);
-  }
-
-  // Validate length_reduction_parameter array contains only numbers
-  if (
-    !phase.length_reduction_parameter.every((item: any) => typeof item === 'number' && !isNaN(item))
-  ) {
-    throw new Error(
-      `Phase ${phaseIndex}: 'length_reduction_parameter' array must contain only numbers`
-    );
   }
 
   // Validate model object
@@ -180,18 +163,8 @@ function validateMetadataV0_0(data: any): void {
     }
   }
 
-  // Validate required top-level array fields
-  if (!data.length_reduction || !Array.isArray(data.length_reduction)) {
-    throw new Error("Missing or invalid array field 'length_reduction'");
-  }
-
   if (!data.phases || !Array.isArray(data.phases)) {
     throw new Error("Missing or invalid array field 'phases'");
-  }
-
-  // Validate length_reduction array contains only numbers
-  if (!data.length_reduction.every((item: any) => typeof item === 'number' && !isNaN(item))) {
-    throw new Error("'length_reduction' array must contain only numbers");
   }
 
   // Validate phases array is not empty

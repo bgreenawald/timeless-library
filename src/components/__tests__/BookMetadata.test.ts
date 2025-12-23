@@ -62,7 +62,6 @@ describe('BookMetadata Component', () => {
     expect(result).toContain('Test Processing Metadata');
     expect(result).toContain('1.0.0');
     expect(result).toContain('2'); // Number of phases
-    expect(result).toContain('25%, 15%'); // Length reduction
   });
 
   test('renders phases table correctly', async () => {
