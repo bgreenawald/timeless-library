@@ -1,7 +1,7 @@
 ---
 title: 'The Federalist Papers'
 author: 'John Jay, James Madison, and Alexander Hamilton'
-original_publication_year: 1851
+original_publication_year: 1788
 short_description:
   "A foundational collection of 85 essays written by John Jay, James Madison,
   and Alexander Hamilton under the pseudonym 'Publius'. These essays
