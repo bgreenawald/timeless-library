@@ -24,5 +24,5 @@ tags:
     'finance',
   ]
 is_featured: True
-cover_image: '/covers/the-wealth-of-nations.webp'
+cover_image: '/covers/the-wealth-of-nations/cover.webp'
 ---

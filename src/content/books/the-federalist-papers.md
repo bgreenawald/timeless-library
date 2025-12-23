@@ -20,5 +20,5 @@ genres: ['History', 'Political Science']
 tags:
   ['federalism', 'constitution', 'us history', 'us politics', 'us government']
 is_featured: True
-cover_image: '/covers/the-federalist-papers.webp'
+cover_image: '/covers/the-federalist-papers/cover.webp'
 ---
