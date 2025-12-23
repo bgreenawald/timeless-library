@@ -18,7 +18,7 @@ describe('BookDetail Component', () => {
         original_publication_year: 2023,
         short_description: 'A test book',
         description: 'This is a test book description',
-        genres: ['Fiction' as const, 'Adventure' as const],
+        genres: ['Philosophy' as const, 'History' as const],
         tags: ['test', 'example'],
         is_featured: true,
         cover_image: '/test-cover.jpg',
@@ -33,7 +33,7 @@ describe('BookDetail Component', () => {
     expect(result).toContain('by Test Author');
     expect(result).toContain('Published in 2023');
     expect(result).toContain('This is a test book description');
-    expect(result).toContain('Genres: Fiction, Adventure');
+    expect(result).toContain('Genres: Philosophy, History');
     expect(result).toContain('Tags: test, example');
   });
 
@@ -51,7 +51,7 @@ describe('BookDetail Component', () => {
         original_publication_year: 2023,
         short_description: 'A test book',
         description: 'This is a test book description',
-        genres: ['Fiction' as const],
+        genres: ['Economics' as const],
         tags: undefined,
         is_featured: false,
       },
@@ -81,7 +81,7 @@ describe('BookDetail Component', () => {
         original_publication_year: 2023,
         short_description: 'A test book',
         description: 'This is a test book description',
-        genres: ['Fiction' as const],
+        genres: ['Political Science' as const],
         cover_image: '/covers/test-book.jpg',
       },
     };

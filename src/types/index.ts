@@ -10,7 +10,7 @@ export interface BookData {
   original_publication_year: number;
   short_description: string;
   description: string;
-  genres: ('Adventure' | 'Fiction' | 'Classic' | 'Whaling' | 'History' | 'Political Science')[];
+  genres: ('Economics' | 'Philosophy' | 'History' | 'Political Science')[];
   tags?: string[];
   is_featured?: boolean;
   cover_image?: string;
