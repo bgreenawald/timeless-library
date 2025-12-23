@@ -1,13 +1,13 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
 import { logger } from './logger';
-import { getEnvVar } from './env';
+import { isDev, getEnvVar } from './env';
 
 /**
  * Filters versions to exclude alpha and beta tags in non-development environments
  */
 function filterVersions(versions: GithubTag[]): GithubTag[] {
-  if (getEnvVar('DEV') !== 'true' && getEnvVar('NODE_ENV') !== 'development') {
+  if (!isDev()) {
     return versions.filter(
       tag => !tag.name.toLowerCase().includes('alpha') && !tag.name.toLowerCase().includes('beta')
     );
