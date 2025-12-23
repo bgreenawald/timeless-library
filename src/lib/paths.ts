@@ -7,7 +7,7 @@ import { isDev, getEnvVar } from './env';
  * Filters versions to exclude alpha and beta tags in non-development environments
  */
 function filterVersions(versions: GithubTag[]): GithubTag[] {
-  if (!isDev() && getEnvVar('NODE_ENV') !== 'development') {
+  if (!isDev()) {
     return versions.filter(
       tag => !tag.name.toLowerCase().includes('alpha') && !tag.name.toLowerCase().includes('beta')
     );

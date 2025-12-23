@@ -14,7 +14,7 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
   // In development, we can continue but warn about potential issues
-  if (isDev() || getEnvVar('NODE_ENV') === 'development') {
+  if (isDev()) {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'
     );
