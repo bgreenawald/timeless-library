@@ -1,6 +1,6 @@
 import { z } from 'astro/zod';
 import { logger } from './logger';
-import { getEnvVar } from './env';
+import { getEnvVar, isDev } from './env';
 
 const GITHUB_TOKEN = getEnvVar('GITHUB_TOKEN');
 const REPO_OWNER = getEnvVar('GITHUB_REPO_OWNER', 'bgreenawald');
@@ -14,7 +14,7 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
   // In development, we can continue but warn about potential issues
-  if (getEnvVar('DEV') === 'true' || getEnvVar('NODE_ENV') === 'development') {
+  if (isDev() || getEnvVar('NODE_ENV') === 'development') {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'
     );
