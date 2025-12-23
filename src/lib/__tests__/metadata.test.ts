@@ -11,7 +11,6 @@ describe('metadata', () => {
       original_file: 'original.md',
       output_directory: './output',
       book_version: 'v1.0.0',
-      length_reduction: [0.1, 0.2],
       phases: [
         {
           phase_name: 'test_phase',
@@ -76,9 +75,7 @@ describe('metadata', () => {
       const { book_name, ...metadataWithoutBookName } = validMetadata;
       const metadataJson = JSON.stringify(metadataWithoutBookName);
 
-      expect(() => parseMetadata(metadataJson)).toThrow(
-        "Missing or invalid string field 'book_name'"
-      );
+      expect(() => parseMetadata(metadataJson)).toThrow('book_name: Required');
     });
 
     it('should throw error for empty phases array', () => {
@@ -104,7 +101,7 @@ describe('metadata', () => {
       const metadataJson = JSON.stringify(metadataWithInvalidPhase);
 
       expect(() => parseMetadata(metadataJson)).toThrow(
-        "'phase_index' (999) does not match array index (0)"
+        "Phase 'phase_index' must match array index"
       );
     });
 
@@ -120,7 +117,7 @@ describe('metadata', () => {
       };
       const metadataJson = JSON.stringify(metadataWithInvalidModel);
 
-      expect(() => parseMetadata(metadataJson)).toThrow("model missing or invalid 'name' field");
+      expect(() => parseMetadata(metadataJson)).toThrow('phases.0.model.name: Required');
     });
   });
 });
