@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { SITE_CONFIG } from '../lib/config';
+import { getMiniCoverUrl } from '../lib/coverUtils';
 
 const books = await getCollection('books', ({ data }) => data.is_featured);
 ---
@@ -23,19 +24,22 @@ const books = await getCollection('books', ({ data }) => data.is_featured);
     <section class="max-w-6xl mx-auto">
       <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">Featured Modernizations </h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {books.map((book) => (
-          <a href={`/books/${book.slug}`}>
-          <div class="book-card">
-            <div class="book-cover" style={`background-image: url('${book.data.cover_image.replace('cover.webp', 'mini-cover.webp')}')`}>
-              <div class="book-title">{book.data.title}</div>
-              <div class="book-author">by {book.data.author}</div>
+        {books.map((book) => {
+          const miniCoverUrl = getMiniCoverUrl(book.data.cover_image);
+          return (
+            <a href={`/books/${book.slug}`}>
+            <div class="book-card">
+              <div class="book-cover" style={miniCoverUrl ? `background-image: url('${miniCoverUrl}')` : undefined}>
+                <div class="book-title">{book.data.title}</div>
+                <div class="book-author">by {book.data.author}</div>
+              </div>
+              <div class="book-info">
+                <p class="book-summary">{book.data.short_description}</p>
+              </div>
             </div>
-            <div class="book-info">
-              <p class="book-summary">{book.data.short_description}</p>
-            </div>
-          </div>
-          </a>
-        ))}
+            </a>
+          );
+        })}
       </div>
     </section>
   </main>
