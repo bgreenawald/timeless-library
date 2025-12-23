@@ -33,7 +33,7 @@ const displayVersion = version ? extractVersionFromTag(version) : 'Unknown';
           </tr>
         </thead>
         <tbody>
-          {release.assets
+          {[...release.assets]
             .sort((a, b) => getAssetSortPriority(a.name) - getAssetSortPriority(b.name))
             .map(asset => {
             const { label, colorClasses } = getAssetLabelAndColor(asset.name);
