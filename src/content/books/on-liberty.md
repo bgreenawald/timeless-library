@@ -17,6 +17,5 @@ description:
 genres: ['Philosophy', 'Political Science']
 tags:
   ['liberalism', 'utilitarianism', 'freedom', 'ethics', 'political philosophy']
-is_featured: True
 cover_image: '/covers/on-liberty/cover.webp'
 ---
