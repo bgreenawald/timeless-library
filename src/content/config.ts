@@ -9,7 +9,7 @@ const booksCollection = defineCollection({
     short_description: z.string(),
     description: z.string(),
     genres: z.array(
-      z.enum(['Economics', 'Philosophy', 'History', 'Political Science', 'Theology'])
+      z.enum(['Economics', 'Philosophy', 'History', 'Political Science', 'Theology', 'Sociology'])
     ),
     tags: z.array(z.string()).optional(),
     is_featured: z.boolean().optional(),
