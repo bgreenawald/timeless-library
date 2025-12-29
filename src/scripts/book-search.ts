@@ -1,4 +1,15 @@
 // src/scripts/book-search.ts
+
+// Track initialization state and event handlers to prevent double-binding
+let isInitialized = false;
+let eventHandlers: {
+  searchInput?: (e: Event) => void;
+  genreFilter?: () => void;
+  tagFilter?: () => void;
+  clearFilters?: () => void;
+  resetSearch?: () => void;
+} = {};
+
 export function initializeBookSearch() {
   const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
   const genreFilter = document.getElementById('genre-filter') as HTMLSelectElement | null;
@@ -10,7 +21,7 @@ export function initializeBookSearch() {
   const resultsCount = document.getElementById('results-count') as HTMLElement | null;
   const bookItems = document.querySelectorAll('.book-item') as NodeListOf<HTMLElement>;
 
-  // Check if all required elements exist
+  // Check if all required elements exist - return early if missing (non-catalog pages)
   if (
     !searchInput ||
     !genreFilter ||
@@ -21,8 +32,30 @@ export function initializeBookSearch() {
     !emptyState ||
     !resultsCount
   ) {
-    // For client-side scripts, we'll throw an error to be caught by error boundaries
-    throw new Error('Required DOM elements for book search are missing');
+    // Return early instead of throwing - this allows the function to be called
+    // on non-catalog pages without breaking other scripts
+    return;
+  }
+
+  // Clean up previous listeners if already initialized
+  if (isInitialized) {
+    if (eventHandlers.searchInput && searchInput) {
+      searchInput.removeEventListener('input', eventHandlers.searchInput);
+    }
+    if (eventHandlers.genreFilter && genreFilter) {
+      genreFilter.removeEventListener('change', eventHandlers.genreFilter);
+    }
+    if (eventHandlers.tagFilter && tagFilter) {
+      tagFilter.removeEventListener('change', eventHandlers.tagFilter);
+    }
+    if (eventHandlers.clearFilters && clearFiltersBtn) {
+      clearFiltersBtn.removeEventListener('click', eventHandlers.clearFilters);
+    }
+    if (eventHandlers.resetSearch && resetSearchBtn) {
+      resetSearchBtn.removeEventListener('click', eventHandlers.resetSearch);
+    }
+    // Reset handlers
+    eventHandlers = {};
   }
 
   // Type assertions after null check - TypeScript now knows these are not null
@@ -98,22 +131,34 @@ export function initializeBookSearch() {
 
   const debouncedFilterBooks = debounce(filterBooks, 300);
 
+  // Create named handler functions so we can remove them later
+  const handleClearFilters = function () {
+    searchInputElement.value = '';
+    genreFilterElement.value = '';
+    tagFilterElement.value = '';
+    filterBooks();
+  };
+
+  const handleResetSearch = function () {
+    searchInputElement.value = '';
+    genreFilterElement.value = '';
+    tagFilterElement.value = '';
+    filterBooks();
+  };
+
+  // Store handlers for cleanup
+  eventHandlers.searchInput = debouncedFilterBooks;
+  eventHandlers.genreFilter = filterBooks;
+  eventHandlers.tagFilter = filterBooks;
+  eventHandlers.clearFilters = handleClearFilters;
+  eventHandlers.resetSearch = handleResetSearch;
+
   // Event listeners
-  searchInputElement.addEventListener('input', debouncedFilterBooks);
-  genreFilterElement.addEventListener('change', filterBooks);
-  tagFilterElement.addEventListener('change', filterBooks);
+  searchInputElement.addEventListener('input', eventHandlers.searchInput);
+  genreFilterElement.addEventListener('change', eventHandlers.genreFilter);
+  tagFilterElement.addEventListener('change', eventHandlers.tagFilter);
+  clearFiltersBtnElement.addEventListener('click', eventHandlers.clearFilters);
+  resetSearchBtnElement.addEventListener('click', eventHandlers.resetSearch);
 
-  clearFiltersBtnElement.addEventListener('click', function () {
-    searchInputElement.value = '';
-    genreFilterElement.value = '';
-    tagFilterElement.value = '';
-    filterBooks();
-  });
-
-  resetSearchBtnElement.addEventListener('click', function () {
-    searchInputElement.value = '';
-    genreFilterElement.value = '';
-    tagFilterElement.value = '';
-    filterBooks();
-  });
+  isInitialized = true;
 }
