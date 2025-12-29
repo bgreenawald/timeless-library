@@ -35,7 +35,7 @@ describe('book-search', () => {
   });
 
   describe('initializeBookSearch', () => {
-    it('should throw error when required DOM elements are missing', async () => {
+    it('should return early when required DOM elements are missing', async () => {
       // Mock missing elements
       mockDocument.getElementById.mockReturnValue(null);
       mockDocument.querySelectorAll.mockReturnValue([]);
@@ -43,9 +43,9 @@ describe('book-search', () => {
       // Dynamic import to avoid module-level execution
       const { initializeBookSearch } = await import('../book-search');
 
-      expect(() => initializeBookSearch()).toThrow(
-        'Required DOM elements for book search are missing'
-      );
+      // Should return early without throwing (allows function to be called on non-catalog pages)
+      expect(() => initializeBookSearch()).not.toThrow();
+      expect(initializeBookSearch()).toBeUndefined();
     });
 
     it('should initialize successfully when all elements are present', async () => {
@@ -89,6 +89,54 @@ describe('book-search', () => {
       expect(mockInput.addEventListener).toHaveBeenCalled();
       expect(mockSelect.addEventListener).toHaveBeenCalled();
       expect(mockButton.addEventListener).toHaveBeenCalled();
+    });
+
+    it('should prevent double-binding by cleaning up previous listeners', async () => {
+      // Mock all required elements
+      const mockInput = { ...mockElement('input'), value: '' };
+      const mockSelect = { ...mockElement('select'), value: '' };
+      const mockButton = mockElement('button');
+      const mockDiv = mockElement('div');
+
+      mockDocument.getElementById.mockImplementation((id: unknown) => {
+        switch (id) {
+          case 'search-input':
+            return mockInput;
+          case 'genre-filter':
+            return mockSelect;
+          case 'tag-filter':
+            return mockSelect;
+          case 'clear-filters':
+            return mockButton;
+          case 'reset-search':
+            return mockButton;
+          case 'books-grid':
+            return mockDiv;
+          case 'empty-state':
+            return mockDiv;
+          case 'results-count':
+            return mockDiv;
+          default:
+            return null;
+        }
+      });
+
+      mockDocument.querySelectorAll.mockReturnValue([mockDiv]);
+
+      const { initializeBookSearch } = await import('../book-search');
+
+      // First initialization
+      initializeBookSearch();
+      const firstAddCallCount = mockInput.addEventListener.mock.calls.length;
+
+      // Second initialization should clean up and re-add
+      initializeBookSearch();
+      const secondAddCallCount = mockInput.addEventListener.mock.calls.length;
+
+      // Should have called removeEventListener before the second addEventListener
+      expect(mockInput.removeEventListener).toHaveBeenCalled();
+      // Should have added listeners twice (once per initialization)
+      expect(secondAddCallCount).toBe(firstAddCallCount + 1);
     });
   });
 });
