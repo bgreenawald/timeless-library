@@ -99,12 +99,17 @@ export async function withTimeout<T>(
   timeoutMs: number,
   errorMessage?: string
 ): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       const message = errorMessage || `Operation timed out after ${timeoutMs}ms`;
       reject(new Error(message));
     }, timeoutMs);
   });
 
-  return Promise.race([operation(), timeoutPromise]);
+  try {
+    return await Promise.race([operation(), timeoutPromise]);
+  } finally {
+    clearTimeout(timeoutId!);
+  }
 }
