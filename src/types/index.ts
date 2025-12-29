@@ -1,20 +1,13 @@
 import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
 import type { GithubRelease } from '../lib/github';
+import { z } from 'astro:content';
+import { bookSchema } from '../content/config';
 
 /**
  * Interface representing the data structure of a book from the content collection.
+ * Derived from the Zod schema to ensure type safety and synchronization.
  */
-export interface BookData {
-  title: string;
-  author: string;
-  original_publication_year: number;
-  short_description: string;
-  description: string;
-  genres: ('Economics' | 'Philosophy' | 'History' | 'Political Science')[];
-  tags?: string[];
-  is_featured?: boolean;
-  cover_image?: string;
-}
+export type BookData = z.infer<typeof bookSchema>;
 
 /**
  * Interface representing a book collection entry from Astro.
