@@ -1,6 +1,6 @@
 import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
 import type { GithubRelease } from '../lib/github';
-import type { z } from 'astro:content';
+import { z } from 'astro:content';
 import { bookSchema } from '../content/config';
 
 /**
