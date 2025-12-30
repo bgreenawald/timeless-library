@@ -14,7 +14,7 @@ Object.defineProperty(globalThis, 'import', {
   },
 });
 
-import { findLatestVersion, getBookVersions } from '../paths';
+import { findLatestVersion, getBookVersions, clearTagsCache } from '../paths';
 import { fetchTags } from '../github';
 
 // Mock the github module
@@ -34,6 +34,7 @@ jest.mock('../logger', () => ({
 describe('paths', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearTagsCache(); // Clear cache between tests to ensure isolation
   });
 
   describe('findLatestVersion', () => {
@@ -167,6 +168,29 @@ describe('paths', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].name).toBe('war--v1.0.0');
+    });
+
+    it('should cache tags and only call fetchTags once for multiple getBookVersions calls', async () => {
+      const mockTags = [
+        { name: 'book1--v1.0.0', commit: { sha: 'abc', url: 'url' } },
+        { name: 'book2--v1.0.0', commit: { sha: 'def', url: 'url' } },
+        { name: 'book1--v1.1.0', commit: { sha: 'ghi', url: 'url' } },
+      ];
+
+      mockFetchTags.mockResolvedValue(mockTags);
+
+      // Call getBookVersions multiple times
+      const result1 = await getBookVersions('book1');
+      const result2 = await getBookVersions('book2');
+      const result3 = await getBookVersions('book1');
+
+      // fetchTags should only be called once due to caching
+      expect(mockFetchTags).toHaveBeenCalledTimes(1);
+
+      // Results should still be correct
+      expect(result1).toHaveLength(2);
+      expect(result2).toHaveLength(1);
+      expect(result3).toHaveLength(2);
     });
   });
 });
