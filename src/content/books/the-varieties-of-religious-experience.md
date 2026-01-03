@@ -15,5 +15,5 @@ description:
   philosophy and has remained in print for over a century.'
 genres: ['Philosophy', 'Theology']
 tags: ['psychology', 'religion', 'pragmatism', 'philosophy', 'mysticism']
-cover_image: '/covers/the-varieties-of-religious-experiences/cover.webp'
+cover_image: '/covers/the-varieties-of-religious-experience/cover.webp'
 ---
