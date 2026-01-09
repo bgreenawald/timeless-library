@@ -6,11 +6,9 @@ import { getMiniCoverUrl } from '../lib/coverUtils';
 
 const featuredEntry = await getEntry('featured', 'featured');
 const featuredSlugs = featuredEntry?.data.slugs ?? [];
-const allBooks = await getCollection('books');
-const booksBySlug = new Map(allBooks.map((book) => [book.slug, book]));
-const books = featuredSlugs
-  .map((slug) => booksBySlug.get(slug))
-  .filter((book): book is (typeof allBooks)[number] => Boolean(book));
+const books = (
+  await Promise.all(featuredSlugs.map((slug) => getEntry('books', slug)))
+).filter((book): book is import('astro:content').CollectionEntry<'books'> => Boolean(book));
 ---
 
 <Layout title={SITE_CONFIG.name}>
