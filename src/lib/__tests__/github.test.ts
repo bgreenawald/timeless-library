@@ -1,19 +1,5 @@
 import { jest } from '@jest/globals';
 
-// Mock import.meta.env before importing modules that use it
-Object.defineProperty(globalThis, 'import', {
-  value: {
-    meta: {
-      env: {
-        GITHUB_TOKEN: 'test-token',
-        GITHUB_REPO_OWNER: 'test-owner',
-        GITHUB_REPO_NAME: 'test-repo',
-        DEV: false,
-      },
-    },
-  },
-});
-
 import { fetchTags, fetchRelease, fetchRawFile } from '../github';
 
 // Mock the logger

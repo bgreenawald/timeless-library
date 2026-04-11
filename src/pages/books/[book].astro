@@ -31,12 +31,14 @@ const metadata = latestRelease ? await loadBookMetadataFromRelease(book.slug, la
     )}
 
     <!-- Book Metadata -->
-    <BookMetadata 
-      metadata={metadata} 
-      bookSlug={book.slug} 
-      version={latestVersion || undefined}
-      title="How This Book Was Made"
-    />
+    {metadata && (
+      <BookMetadata
+        metadata={metadata}
+        bookSlug={book.slug}
+        version={latestVersion || undefined}
+        title="How This Book Was Made"
+      />
+    )}
     
     <!-- Show Diff Link -->
     {latestRelease && latestRelease.assets.some(asset => asset.name.endsWith('-modernized.md')) && (

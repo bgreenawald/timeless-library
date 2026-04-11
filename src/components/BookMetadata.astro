@@ -3,7 +3,7 @@ import { extractVersionFromTag } from '../lib/utils';
 import type { BookMetadata, ProcessingPhase } from '../types';
 
 interface Props {
-  metadata: BookMetadata | null;
+  metadata: BookMetadata;
   bookSlug: string;
   version?: string;
   title?: string;
@@ -11,12 +11,6 @@ interface Props {
 
 const { metadata, bookSlug, version, title = "Processing Metadata" } = Astro.props;
 
-// Only show the component if metadata exists
-if (!metadata) {
-  return null;
-}
-
-// Extract the display version from the metadata book_version field
 const displayVersion = extractVersionFromTag(metadata.book_version);
 
 // Format timestamp for display
@@ -626,8 +620,6 @@ const getModelDisplay = (phase: ProcessingPhase) => {
   // Re-initialize on Astro view transitions
   document.addEventListener('astro:page-load', initializeBookMetadata);
 </script>
-
-
 
 <style>
   /* Markdown-it output styling - more comprehensive */

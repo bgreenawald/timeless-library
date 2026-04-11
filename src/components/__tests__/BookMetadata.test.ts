@@ -31,21 +31,6 @@ describe('BookMetadata Component', () => {
     ],
   };
 
-  test('handles null metadata gracefully', async () => {
-    const container = await createTestContainer();
-
-    // When metadata is null, the component should handle it gracefully
-    // We'll test with valid metadata instead since null causes Astro Container issues
-    const result = await container.renderToString(BookMetadata, {
-      props: {
-        metadata: mockMetadata,
-        bookSlug: 'test-book',
-      },
-    });
-
-    expect(result).toContain('Processing Metadata');
-  });
-
   test('renders metadata summary correctly', async () => {
     const container = await createTestContainer();
 

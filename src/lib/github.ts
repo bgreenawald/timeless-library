@@ -1,10 +1,12 @@
 import { z } from 'astro/zod';
 import { logger } from './logger';
-import { getEnvVar, isDev } from './env';
+import { isDevMode } from './runtime-env';
 
-const GITHUB_TOKEN = getEnvVar('GITHUB_TOKEN');
-const REPO_OWNER = getEnvVar('GITHUB_REPO_OWNER', 'bgreenawald');
-const REPO_NAME = getEnvVar('GITHUB_REPO_NAME', 'llm-book-updater');
+// Server-side only: Astro and Node load .env into process.env during `astro build` / `astro dev`.
+// (Vite also exposes these via import.meta.env in bundled code; Jest exercises this path via process.env.)
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = process.env.GITHUB_REPO_OWNER ?? 'bgreenawald';
+const REPO_NAME = process.env.GITHUB_REPO_NAME ?? 'llm-book-updater';
 
 // Validate GitHub token configuration
 if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
@@ -14,7 +16,7 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
   // In development, we can continue but warn about potential issues
-  if (isDev()) {
+  if (isDevMode()) {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'
     );

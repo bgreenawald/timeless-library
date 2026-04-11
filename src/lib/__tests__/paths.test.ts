@@ -1,20 +1,6 @@
 import { jest } from '@jest/globals';
 
-// Mock import.meta.env before importing modules that use it
-Object.defineProperty(globalThis, 'import', {
-  value: {
-    meta: {
-      env: {
-        GITHUB_TOKEN: 'test-token',
-        GITHUB_REPO_OWNER: 'test-owner',
-        GITHUB_REPO_NAME: 'test-repo',
-        DEV: false,
-      },
-    },
-  },
-});
-
-import { findLatestVersion, getBookVersions, clearTagsCache } from '../paths';
+import { findLatestVersion, getBookVersions, clearTagsCache, clearReleaseCache } from '../paths';
 import { fetchTags } from '../github';
 
 // Mock the github module
@@ -35,6 +21,7 @@ describe('paths', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     clearTagsCache(); // Clear cache between tests to ensure isolation
+    clearReleaseCache();
   });
 
   describe('findLatestVersion', () => {
@@ -64,7 +51,7 @@ describe('paths', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle alpha/beta versions correctly', () => {
+    it('should rank release above pre-releases', () => {
       const versions = [
         { name: 'book--v1.0.0-alpha', commit: { sha: 'abc', url: 'url' } },
         { name: 'book--v1.0.0-beta', commit: { sha: 'def', url: 'url' } },
@@ -73,9 +60,25 @@ describe('paths', () => {
 
       const result = findLatestVersion(versions);
 
-      // findLatestVersion doesn't filter - it just finds the latest by name sorting
-      // The filtering happens in filterVersions which is called by getBookVersions
-      expect(result).toBe('book--v1.0.0-beta');
+      expect(result).toBe('book--v1.0.0');
+    });
+
+    it('should order numeric segments correctly', () => {
+      const versions = [
+        { name: 'book--v0.2.0', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v0.10.0', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v0.10.0');
+    });
+
+    it('should compare pre-release labels lexically when core matches', () => {
+      const versions = [
+        { name: 'book--v1.0.0-rc.1', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v1.0.0-rc.2', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v1.0.0-rc.2');
     });
   });
 
