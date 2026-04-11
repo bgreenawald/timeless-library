@@ -20,7 +20,6 @@ describe('BookDetail Component', () => {
         description: 'This is a test book description',
         genres: ['Philosophy' as const, 'History' as const],
         tags: ['test', 'example'],
-        is_featured: true,
         cover_image: '/test-cover.jpg',
       },
     };
@@ -53,7 +52,6 @@ describe('BookDetail Component', () => {
         description: 'This is a test book description',
         genres: ['Economics' as const],
         tags: undefined,
-        is_featured: false,
       },
     };
 
