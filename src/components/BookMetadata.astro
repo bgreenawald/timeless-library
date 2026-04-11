@@ -34,6 +34,11 @@ const formatTimestamp = (timestamp: string) => {
 
 const getPhaseTypeDisplay = (phaseType: string) => PHASE_TYPE_DISPLAY[phaseType] ?? phaseType;
 
+/** Escape `<` in JSON output used with set:html so `</script>` cannot break out of script tags. */
+function jsonForScriptHtml(value: unknown): string {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
 // Helper to get model display info for a phase
 const getModelDisplay = (phase: ProcessingPhase) => {
   if (phase.phase_type === 'FINAL_TWO_STAGE' && 'identify_model' in phase) {
@@ -70,9 +75,9 @@ const getModelDisplay = (phase: ProcessingPhase) => {
     <div id="metadata-content" class="grid grid-rows-[0fr] opacity-0 transition-all duration-500 ease-in-out" aria-hidden="true">
       <div class="overflow-hidden">
       {metadata.phases.map((phase: ProcessingPhase) => (
-        <script type="application/json" id={`prompt-${phase.phase_index}`} set:html={JSON.stringify({ phaseName: phase.phase_name, prompt: phase.fully_rendered_system_prompt })} />
+        <script type="application/json" id={`prompt-${phase.phase_index}`} set:html={jsonForScriptHtml({ phaseName: phase.phase_name, prompt: phase.fully_rendered_system_prompt })} />
       ))}
-      <script type="application/json" id="raw-metadata-json" set:html={JSON.stringify(metadata)} />
+      <script type="application/json" id="raw-metadata-json" set:html={jsonForScriptHtml(metadata)} />
       <!-- Metadata Summary -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
         <div>

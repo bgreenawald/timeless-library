@@ -104,6 +104,41 @@ function parseVersionSegment(tagName: string): { nums: number[]; pre: string } {
   return { nums, pre };
 }
 
+function isNumericPrereleaseIdentifier(id: string): boolean {
+  return /^\d+$/.test(id);
+}
+
+/**
+ * Semver-style pre-release comparison: split on '.', compare identifiers;
+ * numeric-only identifiers compare as integers; numeric sorts before non-numeric;
+ * shorter identifier list is lower when prefixes match.
+ */
+function comparePrereleaseIdentifiers(a: string, b: string): number {
+  const paParts = a === '' ? [] : a.split('.');
+  const pbParts = b === '' ? [] : b.split('.');
+  const maxLen = Math.max(paParts.length, pbParts.length);
+  for (let i = 0; i < maxLen; i++) {
+    const segA = paParts[i];
+    const segB = pbParts[i];
+    if (segA === undefined) return -1;
+    if (segB === undefined) return 1;
+    const numA = isNumericPrereleaseIdentifier(segA);
+    const numB = isNumericPrereleaseIdentifier(segB);
+    if (numA && numB) {
+      const diff = parseInt(segA, 10) - parseInt(segB, 10);
+      if (diff !== 0) return diff;
+    } else if (numA && !numB) {
+      return -1;
+    } else if (!numA && numB) {
+      return 1;
+    } else {
+      const diff = segA.localeCompare(segB);
+      if (diff !== 0) return diff;
+    }
+  }
+  return 0;
+}
+
 function compareVersionTags(a: string, b: string): number {
   const pa = parseVersionSegment(a);
   const pb = parseVersionSegment(b);
@@ -114,7 +149,7 @@ function compareVersionTags(a: string, b: string): number {
   }
   if (pa.pre === '' && pb.pre !== '') return 1;
   if (pa.pre !== '' && pb.pre === '') return -1;
-  return pa.pre.localeCompare(pb.pre);
+  return comparePrereleaseIdentifiers(pa.pre, pb.pre);
 }
 
 /**
@@ -135,9 +170,11 @@ export async function getReleaseForVersion(versionName: string): Promise<GithubR
   const cached = releaseCache.get(versionName);
   if (cached) return cached;
 
-  const promise = fetchRelease(versionName);
-  releaseCache.set(versionName, promise);
-  return promise;
+  const result = await fetchRelease(versionName);
+  if (result !== null) {
+    releaseCache.set(versionName, Promise.resolve(result));
+  }
+  return result;
 }
 
 /**

@@ -60,7 +60,7 @@ release as documented in `AGENTS.md`.
 
 - **Astro Content Collections**: Books are defined in `src/content/books/` as
   markdown files
-- **Book Schema**: Defined in `src/content/config.ts` with title, author,
+- **Book Schema**: Defined in `src/content.config.ts` with title, author,
   genres, publication year, etc.
 - **GitHub Integration**: Book versions are fetched from GitHub releases in the
   `llm-book-updater` repository

@@ -46,6 +46,31 @@ describe('diff', () => {
       expect(result.hasChanges).toBe(true);
       expect(result.changeCount).toBeGreaterThan(0);
     });
+
+    it('counts additions when added content starts with ++ (not a +++ file header)', () => {
+      // Trailing newlines avoid a spurious -x/+x pair from "No newline at end of file".
+      const originalText = 'x\n';
+      const modernizedText = 'x\n++marker-like\n';
+
+      const result = generateDiff(originalText, modernizedText);
+
+      expect(result.additions).toBe(1);
+      expect(result.removals).toBe(0);
+      expect(result.changeCount).toBe(1);
+      expect(result.diff).toContain('+++marker-like');
+    });
+
+    it('counts removals when removed content starts with -- (not a --- file header)', () => {
+      const originalText = 'x\n--marker-like\n';
+      const modernizedText = 'x\n';
+
+      const result = generateDiff(originalText, modernizedText);
+
+      expect(result.removals).toBe(1);
+      expect(result.additions).toBe(0);
+      expect(result.changeCount).toBe(1);
+      expect(result.diff).toContain('---marker-like');
+    });
   });
 
   describe('parseDiffToLines', () => {

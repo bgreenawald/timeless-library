@@ -1,11 +1,18 @@
 import { jest } from '@jest/globals';
 
-import { findLatestVersion, getBookVersions, clearTagsCache, clearReleaseCache } from '../paths';
-import { fetchTags } from '../github';
+import {
+  findLatestVersion,
+  getBookVersions,
+  getReleaseForVersion,
+  clearTagsCache,
+  clearReleaseCache,
+} from '../paths';
+import { fetchTags, fetchRelease } from '../github';
 
 // Mock the github module
 jest.mock('../github');
 const mockFetchTags = fetchTags as jest.MockedFunction<typeof fetchTags>;
+const mockFetchRelease = fetchRelease as jest.MockedFunction<typeof fetchRelease>;
 
 // Mock the logger
 jest.mock('../logger', () => ({
@@ -79,6 +86,15 @@ describe('paths', () => {
       ];
 
       expect(findLatestVersion(versions)).toBe('book--v1.0.0-rc.2');
+    });
+
+    it('should order numeric pre-release segments numerically (rc.10 after rc.2)', () => {
+      const versions = [
+        { name: 'book--v1.0.0-rc.2', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v1.0.0-rc.10', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v1.0.0-rc.10');
     });
   });
 
@@ -194,6 +210,38 @@ describe('paths', () => {
       expect(result1).toHaveLength(2);
       expect(result2).toHaveLength(1);
       expect(result3).toHaveLength(2);
+    });
+  });
+
+  describe('getReleaseForVersion', () => {
+    const mockRelease = {
+      id: 1,
+      tag_name: 'book--v1.0.0',
+      name: 'v1.0.0',
+      body: '',
+      published_at: '2024-01-01',
+      assets: [],
+    };
+
+    it('should cache successful release fetches', async () => {
+      mockFetchRelease.mockResolvedValue(mockRelease);
+
+      await getReleaseForVersion('book--v1.0.0');
+      await getReleaseForVersion('book--v1.0.0');
+
+      expect(mockFetchRelease).toHaveBeenCalledTimes(1);
+      expect(mockFetchRelease).toHaveBeenCalledWith('book--v1.0.0');
+    });
+
+    it('should not cache null results so later calls can retry', async () => {
+      mockFetchRelease.mockResolvedValueOnce(null).mockResolvedValueOnce(mockRelease);
+
+      const first = await getReleaseForVersion('book--v1.0.0');
+      const second = await getReleaseForVersion('book--v1.0.0');
+
+      expect(first).toBeNull();
+      expect(second).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(2);
     });
   });
 });

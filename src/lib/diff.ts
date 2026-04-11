@@ -79,12 +79,18 @@ export function generateDiff(originalText: string, modernizedText: string): Diff
     context: 3,
   });
 
+  // Unified diff file headers are `+++ path` / `--- path` (marker + whitespace).
+  // Content can begin with `++` or `--` after the +/- prefix, e.g. `+++hello` or
+  // `---stuff`, which must not be treated as headers.
+  const unifiedDiffPlusFileHeader = /^\+\+\+\s/;
+  const unifiedDiffMinusFileHeader = /^---\s/;
+
   let additions = 0;
   let removals = 0;
   for (const line of diff.split('\n')) {
-    if (line.startsWith('+') && !line.startsWith('+++')) {
+    if (line.startsWith('+') && !unifiedDiffPlusFileHeader.test(line)) {
       additions++;
-    } else if (line.startsWith('-') && !line.startsWith('---')) {
+    } else if (line.startsWith('-') && !unifiedDiffMinusFileHeader.test(line)) {
       removals++;
     }
   }

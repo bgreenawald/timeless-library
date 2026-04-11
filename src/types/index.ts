@@ -1,6 +1,6 @@
 import type { BookMetadata, ProcessingPhase } from '../lib/metadata';
 import { z } from 'astro:content';
-import { bookSchema } from '../content/config';
+import { bookSchema } from '../content.config';
 
 /**
  * Interface representing the data structure of a book from the content collection.
