@@ -98,7 +98,12 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
         {books.map((book) => {
           const miniCoverUrl = getMiniCoverUrl(book.data.cover_image);
           return (
-            <a href={`/books/${book.slug}`} class="book-item" data-genres={book.data.genres.join(',')} data-tags={book.data.tags?.join(',') || ''}>
+            <a
+              href={`/books/${book.slug}`}
+              class="book-item"
+              data-genres={JSON.stringify(book.data.genres)}
+              data-tags={JSON.stringify(book.data.tags ?? [])}
+            >
               <div class="book-card">
                 <div class="book-cover" style={miniCoverUrl ? `background-image: url('${miniCoverUrl}')` : undefined}>
                   <div class="book-title">{book.data.title}</div>

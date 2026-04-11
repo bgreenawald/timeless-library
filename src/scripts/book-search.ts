@@ -1,5 +1,16 @@
 // src/scripts/book-search.ts
 
+/** Parses JSON array strings from data-genres / data-tags (robust to commas in values). */
+export function parseJsonDatasetArray(value: string | undefined): string[] {
+  if (value == null || value === '') return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
 // Track initialization state and event handlers to prevent double-binding
 let isInitialized = false;
 let eventHandlers: {
@@ -91,8 +102,8 @@ export function initializeBookSearch() {
       const title = bookItem.querySelector('.book-title')?.textContent?.toLowerCase() || '';
       const author = bookItem.querySelector('.book-author')?.textContent?.toLowerCase() || '';
       const description = bookItem.querySelector('.book-summary')?.textContent?.toLowerCase() || '';
-      const genres = bookItem.dataset.genres?.split(',') || [];
-      const tags = bookItem.dataset.tags ? bookItem.dataset.tags.split(',') : [];
+      const genres = parseJsonDatasetArray(bookItem.dataset.genres);
+      const tags = parseJsonDatasetArray(bookItem.dataset.tags);
 
       // Check search term
       const matchesSearch =

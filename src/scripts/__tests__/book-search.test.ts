@@ -34,6 +34,25 @@ describe('book-search', () => {
     jest.clearAllMocks();
   });
 
+  describe('parseJsonDatasetArray', () => {
+    it('returns empty array for undefined or empty string', async () => {
+      const { parseJsonDatasetArray } = await import('../book-search');
+      expect(parseJsonDatasetArray(undefined)).toEqual([]);
+      expect(parseJsonDatasetArray('')).toEqual([]);
+    });
+
+    it('parses JSON string arrays including values that contain commas', async () => {
+      const { parseJsonDatasetArray } = await import('../book-search');
+      const withCommaTag = '["fiction","tag-with,comma"]';
+      expect(parseJsonDatasetArray(withCommaTag)).toEqual(['fiction', 'tag-with,comma']);
+    });
+
+    it('returns empty array for invalid JSON', async () => {
+      const { parseJsonDatasetArray } = await import('../book-search');
+      expect(parseJsonDatasetArray('not json')).toEqual([]);
+    });
+  });
+
   describe('initializeBookSearch', () => {
     it('should return early when required DOM elements are missing', async () => {
       // Mock missing elements
