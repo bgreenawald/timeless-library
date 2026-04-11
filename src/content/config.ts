@@ -11,8 +11,11 @@ export const bookSchema = z.object({
     z.enum(['Economics', 'Philosophy', 'History', 'Political Science', 'Theology', 'Sociology'])
   ),
   tags: z.array(z.string()).optional(),
-  is_featured: z.boolean().optional(),
   cover_image: z.string().optional(), // Path to cover image in public/covers/
+});
+
+const featuredSchema = z.object({
+  slugs: z.array(z.string()),
 });
 
 const booksCollection = defineCollection({
@@ -20,6 +23,12 @@ const booksCollection = defineCollection({
   schema: bookSchema,
 });
 
+const featuredCollection = defineCollection({
+  type: 'data',
+  schema: featuredSchema,
+});
+
 export const collections = {
   books: booksCollection,
+  featured: featuredCollection,
 };
