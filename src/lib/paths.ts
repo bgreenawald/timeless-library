@@ -63,13 +63,24 @@ export function clearReleaseCache(): void {
 }
 
 /**
+ * Returns the version segment after the mapped slug (text after the final `--`).
+ * Tags use `bookSlug--semver`; only that suffix should be checked for prerelease markers.
+ */
+function versionSuffixForPrereleaseFilter(tagName: string): string {
+  const idx = tagName.lastIndexOf('--');
+  return idx === -1 ? tagName : tagName.slice(idx + 2);
+}
+
+/**
  * Filters versions to exclude alpha and beta tags in non-development environments
  */
 function filterVersions(versions: GithubTag[]): GithubTag[] {
   if (!isDevMode()) {
-    return versions.filter(
-      tag => !tag.name.toLowerCase().includes('alpha') && !tag.name.toLowerCase().includes('beta')
-    );
+    return versions.filter(tag => {
+      const suffix = versionSuffixForPrereleaseFilter(tag.name);
+      const lower = suffix.toLowerCase();
+      return !lower.includes('alpha') && !lower.includes('beta');
+    });
   }
   return versions;
 }
@@ -170,11 +181,20 @@ export async function getReleaseForVersion(versionName: string): Promise<GithubR
   const cached = releaseCache.get(versionName);
   if (cached) return cached;
 
-  const result = await fetchRelease(versionName);
-  if (result !== null) {
-    releaseCache.set(versionName, Promise.resolve(result));
-  }
-  return result;
+  const p = fetchRelease(versionName).then(
+    result => {
+      if (result === null) {
+        releaseCache.delete(versionName);
+      }
+      return result;
+    },
+    error => {
+      releaseCache.delete(versionName);
+      throw error;
+    }
+  );
+  releaseCache.set(versionName, p);
+  return p;
 }
 
 /**

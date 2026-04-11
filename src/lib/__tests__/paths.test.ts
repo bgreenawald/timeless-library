@@ -140,6 +140,29 @@ describe('paths', () => {
       process.env.DEV = originalDev;
     });
 
+    it('should not drop stable tags whose slug contains alpha/beta as a substring', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      const originalDev = process.env.DEV;
+      process.env.NODE_ENV = 'production';
+      process.env.DEV = 'false';
+
+      const mockTags = [
+        { name: 'alphabet-book--v1.0.0', commit: { sha: 'abc', url: 'url' } },
+        { name: 'new-beta--v1.0.0', commit: { sha: 'def', url: 'url' } },
+      ];
+
+      mockFetchTags.mockResolvedValue(mockTags);
+
+      const alphabetResult = await getBookVersions('alphabet-book');
+      const betaSlugResult = await getBookVersions('new-beta');
+
+      expect(alphabetResult.map(v => v.name)).toEqual(['alphabet-book--v1.0.0']);
+      expect(betaSlugResult.map(v => v.name)).toEqual(['new-beta--v1.0.0']);
+
+      process.env.NODE_ENV = originalEnv;
+      process.env.DEV = originalDev;
+    });
+
     it('should include alpha/beta versions in development', async () => {
       // Mock development environment - set DEV to true which should be sufficient
       const originalDev = process.env.DEV;
@@ -240,6 +263,35 @@ describe('paths', () => {
       const second = await getReleaseForVersion('book--v1.0.0');
 
       expect(first).toBeNull();
+      expect(second).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it('should dedupe concurrent in-flight fetches for the same version', async () => {
+      let resolveRelease!: (value: typeof mockRelease) => void;
+      const deferred = new Promise<typeof mockRelease>(resolve => {
+        resolveRelease = resolve;
+      });
+      mockFetchRelease.mockReturnValueOnce(deferred);
+
+      const p1 = getReleaseForVersion('book--v1.0.0');
+      const p2 = getReleaseForVersion('book--v1.0.0');
+      resolveRelease(mockRelease);
+      const [a, b] = await Promise.all([p1, p2]);
+
+      expect(a).toEqual(mockRelease);
+      expect(b).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(1);
+    });
+
+    it('should evict cache on rejection so later calls can retry', async () => {
+      mockFetchRelease
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce(mockRelease);
+
+      await expect(getReleaseForVersion('book--v1.0.0')).rejects.toThrow('network');
+      const second = await getReleaseForVersion('book--v1.0.0');
+
       expect(second).toEqual(mockRelease);
       expect(mockFetchRelease).toHaveBeenCalledTimes(2);
     });
