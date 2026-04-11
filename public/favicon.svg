@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Timeless Library">
+  <rect width="64" height="64" rx="12" fill="#f6f1e7" />
+  <path
+    d="M14 18c0-2.2 1.8-4 4-4h18c2.2 0 4 1.8 4 4v28c0-2.2-1.8-4-4-4H18c-2.2 0-4 1.8-4 4V18z"
+    fill="#9b6b2f"
+  />
+  <path
+    d="M32 18c0-2.2 1.8-4 4-4h10c2.2 0 4 1.8 4 4v28c0-2.2-1.8-4-4-4H36c-2.2 0-4 1.8-4 4V18z"
+    fill="#c08a3d"
+  />
+  <path d="M20 24h14M20 30h14M20 36h14" stroke="#f6f1e7" stroke-width="2" stroke-linecap="round" />
+  <path d="M38 24h8M38 30h8M38 36h8" stroke="#f6f1e7" stroke-width="2" stroke-linecap="round" />
+</svg>

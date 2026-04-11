@@ -15,6 +15,5 @@ description:
   particularly Karl Marx and Friedrich Engels.'
 genres: ['Philosophy', 'Theology']
 tags: ['atheism', 'humanism', 'materialism', 'german idealism', 'anthropology']
-is_featured: True
 cover_image: '/covers/the-essence-of-christianity/cover.webp'
 ---

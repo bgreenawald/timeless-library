@@ -49,13 +49,83 @@ describe('github', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockTags,
-      } as Response);
+        headers: {
+          get: jest.fn().mockReturnValue(null),
+        },
+      } as unknown as Response);
 
       const result = await fetchTags();
 
       expect(result).toEqual(mockTags);
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.github.com/repos/test-owner/test-repo/tags',
+        'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100',
+        { headers: { Authorization: 'token test-token' } }
+      );
+    });
+
+    it('should handle pagination and fetch all pages', async () => {
+      const mockTagsPage1 = [
+        {
+          name: 'v1.0.0',
+          commit: {
+            sha: 'abc123',
+            url: 'https://api.github.com/repos/test/test/commits/abc123',
+          },
+        },
+      ];
+
+      const mockTagsPage2 = [
+        {
+          name: 'v2.0.0',
+          commit: {
+            sha: 'def456',
+            url: 'https://api.github.com/repos/test/test/commits/def456',
+          },
+        },
+      ];
+
+      const mockHeaders1 = {
+        get: jest.fn((name: string) => {
+          if (name === 'Link') {
+            return '<https://api.github.com/repos/test-owner/test-repo/tags?per_page=100&page=2>; rel="next"';
+          }
+          return null;
+        }),
+      };
+
+      const mockHeaders2 = {
+        get: jest.fn((name: string) => {
+          if (name === 'Link') {
+            return null;
+          }
+          return null;
+        }),
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockTagsPage1,
+          headers: mockHeaders1,
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockTagsPage2,
+          headers: mockHeaders2,
+        } as unknown as Response);
+
+      const result = await fetchTags();
+
+      expect(result).toEqual([...mockTagsPage1, ...mockTagsPage2]);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100',
+        { headers: { Authorization: 'token test-token' } }
+      );
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100&page=2',
         { headers: { Authorization: 'token test-token' } }
       );
     });
@@ -90,6 +160,44 @@ describe('github', () => {
       const result = await fetchTags();
 
       expect(result).toEqual([]);
+    });
+
+    it('should stop pagination on error in subsequent pages', async () => {
+      const mockTagsPage1 = [
+        {
+          name: 'v1.0.0',
+          commit: {
+            sha: 'abc123',
+            url: 'https://api.github.com/repos/test/test/commits/abc123',
+          },
+        },
+      ];
+
+      const mockHeaders1 = {
+        get: jest.fn((name: string) => {
+          if (name === 'Link') {
+            return '<https://api.github.com/repos/test-owner/test-repo/tags?per_page=100&page=2>; rel="next"';
+          }
+          return null;
+        }),
+      };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockTagsPage1,
+          headers: mockHeaders1,
+        } as unknown as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+        } as Response);
+
+      const result = await fetchTags();
+
+      expect(result).toEqual(mockTagsPage1);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -4,6 +4,55 @@ import { logger } from './logger';
 import { isDev, getEnvVar } from './env';
 
 /**
+ * Module-level cache for GitHub tags to avoid redundant API calls
+ * This cache persists across multiple calls to getBookVersions() during static path generation
+ */
+let cachedTags: GithubTag[] | null = null;
+let tagsFetchPromise: Promise<GithubTag[]> | null = null;
+
+/**
+ * Gets cached tags, fetching them once if not already cached
+ * This ensures fetchTags() is only called once per build, even when
+ * generateBookPaths(), generateVersionPaths(), and generateDiffPaths()
+ * all call getBookVersions() for each book
+ */
+async function getCachedTags(): Promise<GithubTag[]> {
+  // If tags are already cached, return them immediately
+  if (cachedTags !== null) {
+    return cachedTags;
+  }
+
+  // If a fetch is already in progress, wait for it instead of starting a new one
+  if (tagsFetchPromise !== null) {
+    return tagsFetchPromise;
+  }
+
+  // Start fetching tags and cache the promise
+  tagsFetchPromise = fetchTags()
+    .then(tags => {
+      cachedTags = tags;
+      tagsFetchPromise = null; // Clear the promise after completion
+      return tags;
+    })
+    .catch(error => {
+      logger.error('Failed to fetch tags for caching:', error);
+      tagsFetchPromise = null; // Clear the promise on error
+      return []; // Return empty array as fallback
+    });
+
+  return tagsFetchPromise;
+}
+
+/**
+ * Clears the cached tags (primarily for testing purposes)
+ * @internal
+ */
+export function clearTagsCache(): void {
+  cachedTags = null;
+  tagsFetchPromise = null;
+}
+
+/**
  * Filters versions to exclude alpha and beta tags in non-development environments
  */
 function filterVersions(versions: GithubTag[]): GithubTag[] {
@@ -17,10 +66,11 @@ function filterVersions(versions: GithubTag[]): GithubTag[] {
 
 /**
  * Gets all versions for a book, filtered appropriately for the environment
+ * Uses cached tags to avoid redundant API calls
  */
 export async function getBookVersions(bookSlug: string): Promise<GithubTag[]> {
   try {
-    const tags = await fetchTags();
+    const tags = await getCachedTags();
     // Use double delimiter (--) to ensure exact slug matching
     // This prevents prefix matching issues (e.g., "war" matching "war-and-peace")
     const versions = tags.filter(tag => tag.name.startsWith(`${bookSlug}--`));

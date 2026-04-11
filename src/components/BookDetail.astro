@@ -52,9 +52,11 @@ const { book } = Astro.props;
   document.addEventListener('astro:page-load', () => {
     const img = document.querySelector('.book-detail-cover img') as HTMLImageElement;
     if (img) {
+      // Store handler reference to properly remove it later
+      const handler = () => handleImageError(img);
       // Remove previous listener if any (though new page load usually clears DOM)
-      img.removeEventListener('error', () => handleImageError(img));
-      img.addEventListener('error', () => handleImageError(img));
+      img.removeEventListener('error', handler);
+      img.addEventListener('error', handler);
     }
   });
 </script> 

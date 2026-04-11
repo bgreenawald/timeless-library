@@ -69,11 +69,65 @@ async function fetchFromGithub<T>(url: string, schema: z.ZodSchema<T>): Promise<
   }
 }
 
+/**
+ * Parses the GitHub API Link header to extract the next page URL
+ *
+ * @param linkHeader - The Link header value from the response
+ * @returns The next page URL if found, null otherwise
+ */
+function parseNextPageUrl(linkHeader: string | null): string | null {
+  if (!linkHeader) {
+    return null;
+  }
+
+  const links = linkHeader.split(',');
+  for (const link of links) {
+    const match = link.match(/<([^>]+)>;\s*rel="next"/);
+    if (match) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
 export async function fetchTags(): Promise<GithubTag[]> {
   try {
-    const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/tags`;
-    const tags = await fetchFromGithub(url, z.array(tagSchema));
-    return tags || [];
+    const allTags: GithubTag[] = [];
+    let url: string | null =
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/tags?per_page=100`;
+    const headers: Record<string, string> = {};
+
+    if (GITHUB_TOKEN) {
+      headers.Authorization = `token ${GITHUB_TOKEN}`;
+    }
+
+    // Fetch all pages of tags
+    while (url) {
+      try {
+        const response = await fetch(url, { headers });
+        if (!response.ok) {
+          if (response.status === 403) {
+            logger.error(`GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.`);
+          } else {
+            logger.error(`Failed to fetch tags from ${url}: ${response.statusText}`);
+          }
+          break;
+        }
+
+        const data = await response.json();
+        const tags = z.array(tagSchema).parse(data);
+        allTags.push(...tags);
+
+        // Check for next page
+        const linkHeader = response.headers.get('Link');
+        url = parseNextPageUrl(linkHeader);
+      } catch (error) {
+        logger.error(`Error fetching tags from ${url}:`, error);
+        break;
+      }
+    }
+
+    return allTags;
   } catch (error) {
     logger.error('Failed to fetch tags from GitHub API:', error);
     return []; // Return empty array as fallback

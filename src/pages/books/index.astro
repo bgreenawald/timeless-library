@@ -146,8 +146,8 @@ const allTags = [...new Set(books.flatMap(book => book.data.tags || []))].sort()
 
   <script>
     import { initializeBookSearch } from '../../scripts/book-search';
-    document.addEventListener('DOMContentLoaded', initializeBookSearch);
-    // Re-initialize on Astro view transitions
+    // Use only astro:page-load - it fires on initial load and on view transitions
+    // This prevents double-binding that would occur with both DOMContentLoaded and astro:page-load
     document.addEventListener('astro:page-load', initializeBookSearch);
   </script>
 </Layout>
