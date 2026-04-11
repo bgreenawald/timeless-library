@@ -17,6 +17,5 @@ description:
   and Russia as competing global powers."
 genres: ['Philosophy', 'Political Science', 'History', 'Sociology']
 tags: ['democracy', 'equality', 'liberalism', 'american politics', 'federalism']
-is_featured: True
 cover_image: '/covers/democracy-in-america/cover.webp'
 ---
