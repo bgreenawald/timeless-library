@@ -1,7 +1,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { fetchTags, fetchRelease, type GithubTag, type GithubRelease } from './github';
 import { logger } from './logger';
-import { isDev, getEnvVar } from './env';
+import { isDevMode } from './runtime-env';
 
 /**
  * Module-level cache for GitHub tags to avoid redundant API calls
@@ -52,14 +52,35 @@ export function clearTagsCache(): void {
   tagsFetchPromise = null;
 }
 
+const releaseCache = new Map<string, Promise<GithubRelease | null>>();
+
+/**
+ * Clears cached release fetches (primarily for testing purposes)
+ * @internal
+ */
+export function clearReleaseCache(): void {
+  releaseCache.clear();
+}
+
+/**
+ * Returns the version segment after the mapped slug (text after the final `--`).
+ * Tags use `bookSlug--semver`; only that suffix should be checked for prerelease markers.
+ */
+function versionSuffixForPrereleaseFilter(tagName: string): string {
+  const idx = tagName.lastIndexOf('--');
+  return idx === -1 ? tagName : tagName.slice(idx + 2);
+}
+
 /**
  * Filters versions to exclude alpha and beta tags in non-development environments
  */
 function filterVersions(versions: GithubTag[]): GithubTag[] {
-  if (!isDev()) {
-    return versions.filter(
-      tag => !tag.name.toLowerCase().includes('alpha') && !tag.name.toLowerCase().includes('beta')
-    );
+  if (!isDevMode()) {
+    return versions.filter(tag => {
+      const suffix = versionSuffixForPrereleaseFilter(tag.name);
+      const lower = suffix.toLowerCase();
+      return !lower.includes('alpha') && !lower.includes('beta');
+    });
   }
   return versions;
 }
@@ -82,28 +103,98 @@ export async function getBookVersions(bookSlug: string): Promise<GithubTag[]> {
 }
 
 /**
+ * Parses the semver-like segment after `bookSlug--` for ordering (pre-releases sort before release).
+ */
+function parseVersionSegment(tagName: string): { nums: number[]; pre: string } {
+  const afterBook = tagName.includes('--') ? tagName.split('--').slice(1).join('--') : tagName;
+  const stripped = afterBook.replace(/^v/i, '');
+  const hyphenIdx = stripped.indexOf('-');
+  const core = hyphenIdx === -1 ? stripped : stripped.slice(0, hyphenIdx);
+  const pre = hyphenIdx === -1 ? '' : stripped.slice(hyphenIdx + 1);
+  const nums = core.split('.').map(n => parseInt(n, 10) || 0);
+  return { nums, pre };
+}
+
+function isNumericPrereleaseIdentifier(id: string): boolean {
+  return /^\d+$/.test(id);
+}
+
+/**
+ * Semver-style pre-release comparison: split on '.', compare identifiers;
+ * numeric-only identifiers compare as integers; numeric sorts before non-numeric;
+ * shorter identifier list is lower when prefixes match.
+ */
+function comparePrereleaseIdentifiers(a: string, b: string): number {
+  const paParts = a === '' ? [] : a.split('.');
+  const pbParts = b === '' ? [] : b.split('.');
+  const maxLen = Math.max(paParts.length, pbParts.length);
+  for (let i = 0; i < maxLen; i++) {
+    const segA = paParts[i];
+    const segB = pbParts[i];
+    if (segA === undefined) return -1;
+    if (segB === undefined) return 1;
+    const numA = isNumericPrereleaseIdentifier(segA);
+    const numB = isNumericPrereleaseIdentifier(segB);
+    if (numA && numB) {
+      const diff = parseInt(segA, 10) - parseInt(segB, 10);
+      if (diff !== 0) return diff;
+    } else if (numA && !numB) {
+      return -1;
+    } else if (!numA && numB) {
+      return 1;
+    } else {
+      const diff = segA.localeCompare(segB);
+      if (diff !== 0) return diff;
+    }
+  }
+  return 0;
+}
+
+function compareVersionTags(a: string, b: string): number {
+  const pa = parseVersionSegment(a);
+  const pb = parseVersionSegment(b);
+  const len = Math.max(pa.nums.length, pb.nums.length);
+  for (let i = 0; i < len; i++) {
+    const diff = (pa.nums[i] ?? 0) - (pb.nums[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  if (pa.pre === '' && pb.pre !== '') return 1;
+  if (pa.pre !== '' && pb.pre === '') return -1;
+  return comparePrereleaseIdentifiers(pa.pre, pb.pre);
+}
+
+/**
  * Finds the latest version from a list of version tags
  */
 export function findLatestVersion(versions: GithubTag[]): string | null {
   if (versions.length === 0) return null;
 
-  const sortedVersions = versions
-    .map(tag => tag.name)
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const sortedVersions = [...versions.map(tag => tag.name)].sort(compareVersionTags);
 
   return sortedVersions[sortedVersions.length - 1];
 }
 
 /**
- * Gets the release for a specific version
+ * Gets the release for a specific version (cached per version name for the build)
  */
 export async function getReleaseForVersion(versionName: string): Promise<GithubRelease | null> {
-  try {
-    return await fetchRelease(versionName);
-  } catch (error) {
-    logger.error(`Failed to fetch release for ${versionName}:`, error);
-    return null;
-  }
+  const cached = releaseCache.get(versionName);
+  if (cached) return cached;
+
+  const p = fetchRelease(versionName).then(
+    result => {
+      if (result === null) {
+        releaseCache.delete(versionName);
+      }
+      return result;
+    },
+    error => {
+      releaseCache.delete(versionName);
+      throw error;
+    }
+  );
+  releaseCache.set(versionName, p);
+  return p;
 }
 
 /**

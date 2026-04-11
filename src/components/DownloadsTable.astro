@@ -1,22 +1,36 @@
 ---
 import { extractVersionFromTag } from '../lib/utils';
-import type { GitHubRelease } from '../types';
+import type { GithubRelease } from '../lib/github';
 import { getAssetLabelAndColor, getAssetSortPriority } from '../lib/download-helpers';
 
 interface Props {
-  release: GitHubRelease;
+  release: GithubRelease;
   version: string | null;
+  /** Plain-text heading prefix */
   title: string;
+  /** Optional segment rendered in italics (e.g. version label) */
+  emphasize?: string;
+  /** Plain text after the emphasized segment (e.g. " Downloads") */
+  suffix?: string;
 }
 
-const { release, version, title } = Astro.props;
+const { release, version, title, emphasize, suffix } = Astro.props;
 
 // Extract the display version from the full version tag
 const displayVersion = version ? extractVersionFromTag(version) : 'Unknown';
 ---
 
 <section class="max-w-6xl mx-auto mb-24">
-  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12" set:html={title}></h2>
+  <h2 class="text-pane text-3xl md:text-4xl text-center mb-12">
+    {title}
+    {emphasize && (
+      <>
+        {' '}
+        <em>{emphasize}</em>
+      </>
+    )}
+    {suffix}
+  </h2>
   <div class="bg-white bg-opacity-50 rounded-lg p-6 shadow-lg">
     <div class="text-center mb-6">
       <p class="text-lg font-medium">Version: {displayVersion}</p>

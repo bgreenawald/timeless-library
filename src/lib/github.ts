@@ -1,10 +1,12 @@
 import { z } from 'astro/zod';
 import { logger } from './logger';
-import { getEnvVar, isDev } from './env';
+import { isDevMode } from './runtime-env';
 
-const GITHUB_TOKEN = getEnvVar('GITHUB_TOKEN');
-const REPO_OWNER = getEnvVar('GITHUB_REPO_OWNER', 'bgreenawald');
-const REPO_NAME = getEnvVar('GITHUB_REPO_NAME', 'llm-book-updater');
+// Server-side only: Astro and Node load .env into process.env during `astro build` / `astro dev`.
+// (Vite also exposes these via import.meta.env in bundled code; Jest exercises this path via process.env.)
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = process.env.GITHUB_REPO_OWNER ?? 'bgreenawald';
+const REPO_NAME = process.env.GITHUB_REPO_NAME ?? 'llm-book-updater';
 
 // Validate GitHub token configuration
 if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
@@ -14,7 +16,7 @@ if (!GITHUB_TOKEN || GITHUB_TOKEN.trim() === '') {
   logger.error('   You can create a token at: https://github.com/settings/tokens');
 
   // In development, we can continue but warn about potential issues
-  if (isDev()) {
+  if (isDevMode()) {
     logger.warn(
       '⚠️  Running in development mode without GitHub token - API calls may be rate limited.'
     );
@@ -36,31 +38,53 @@ const tagSchema = z.object({
   }),
 });
 
+const releaseAssetSchema = z.object({
+  name: z.string(),
+  browser_download_url: z.string(),
+  size: z.number().optional(),
+  content_type: z.string().optional(),
+  download_count: z.number().optional(),
+});
+
 const releaseSchema = z.object({
-  assets: z.array(z.object({ name: z.string(), browser_download_url: z.string() })),
+  assets: z.array(releaseAssetSchema),
   tag_name: z.string(),
 });
 
 export type GithubTag = z.infer<typeof tagSchema>;
 export type GithubRelease = z.infer<typeof releaseSchema>;
 
-async function fetchFromGithub<T>(url: string, schema: z.ZodSchema<T>): Promise<T | null> {
-  const headers: Record<string, string> = {};
-
+/**
+ * Low-level GitHub REST fetch with JSON Accept header and auth.
+ */
+async function githubFetch(url: string): Promise<Response | null> {
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
   if (GITHUB_TOKEN) {
     headers.Authorization = `token ${GITHUB_TOKEN}`;
   }
-
   try {
     const response = await fetch(url, { headers });
     if (!response.ok) {
       if (response.status === 403) {
-        logger.error(`GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.`);
+        logger.error('GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.');
       } else {
         logger.error(`Failed to fetch from ${url}: ${response.statusText}`);
       }
       return null;
     }
+    return response;
+  } catch (error) {
+    logger.error(`Error fetching from ${url}:`, error);
+    return null;
+  }
+}
+
+async function fetchFromGithub<T>(url: string, schema: z.ZodSchema<T>): Promise<T | null> {
+  const response = await githubFetch(url);
+  if (!response) {
+    return null;
+  }
+  try {
     const data = await response.json();
     return schema.parse(data);
   } catch (error) {
@@ -95,30 +119,18 @@ export async function fetchTags(): Promise<GithubTag[]> {
     const allTags: GithubTag[] = [];
     let url: string | null =
       `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/tags?per_page=100`;
-    const headers: Record<string, string> = {};
 
-    if (GITHUB_TOKEN) {
-      headers.Authorization = `token ${GITHUB_TOKEN}`;
-    }
-
-    // Fetch all pages of tags
     while (url) {
-      try {
-        const response = await fetch(url, { headers });
-        if (!response.ok) {
-          if (response.status === 403) {
-            logger.error(`GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.`);
-          } else {
-            logger.error(`Failed to fetch tags from ${url}: ${response.statusText}`);
-          }
-          break;
-        }
+      const response = await githubFetch(url);
+      if (!response) {
+        break;
+      }
 
+      try {
         const data = await response.json();
         const tags = z.array(tagSchema).parse(data);
         allTags.push(...tags);
 
-        // Check for next page
         const linkHeader = response.headers.get('Link');
         url = parseNextPageUrl(linkHeader);
       } catch (error) {
@@ -159,7 +171,7 @@ export async function fetchRawFile(commitSha: string, filePath: string): Promise
     const response = await fetch(url, { headers });
     if (!response.ok) {
       if (response.status === 403) {
-        logger.error(`GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.`);
+        logger.error('GitHub API rate limit exceeded. Consider adding GITHUB_TOKEN.');
       } else {
         logger.error(`Failed to fetch raw file from ${url}: ${response.statusText}`);
       }

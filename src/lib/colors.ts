@@ -27,24 +27,3 @@ export const themeColors = [
 export function getThemeColor(index: number): string {
   return themeColors[index % themeColors.length];
 }
-
-/**
- * Gets a color from the theme palette based on a string (like book title or author).
- * Creates consistent colors for the same input.
- *
- * @param input - The string to generate a color for
- * @returns A theme-appropriate color string
- */
-export function getColorForString(input: string): string {
-  // Simple hash function to convert string to number
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-
-  // Use absolute value and modulo to get index
-  const index = Math.abs(hash) % themeColors.length;
-  return themeColors[index];
-}

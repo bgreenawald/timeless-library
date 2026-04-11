@@ -48,15 +48,19 @@ const { book } = Astro.props;
 <script>
   import { handleImageError } from '../scripts/book-detail';
 
+  function onImageError(ev: Event) {
+    const target = ev.currentTarget;
+    if (target instanceof HTMLImageElement) {
+      handleImageError(target);
+    }
+  }
+
   // Re-bind on view transitions (fires on initial load too)
   document.addEventListener('astro:page-load', () => {
-    const img = document.querySelector('.book-detail-cover img') as HTMLImageElement;
+    const img = document.querySelector<HTMLImageElement>('.book-detail-cover img');
     if (img) {
-      // Store handler reference to properly remove it later
-      const handler = () => handleImageError(img);
-      // Remove previous listener if any (though new page load usually clears DOM)
-      img.removeEventListener('error', handler);
-      img.addEventListener('error', handler);
+      img.removeEventListener('error', onImageError);
+      img.addEventListener('error', onImageError, { once: true });
     }
   });
 </script> 

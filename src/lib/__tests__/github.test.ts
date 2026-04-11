@@ -1,19 +1,5 @@
 import { jest } from '@jest/globals';
 
-// Mock import.meta.env before importing modules that use it
-Object.defineProperty(globalThis, 'import', {
-  value: {
-    meta: {
-      env: {
-        GITHUB_TOKEN: 'test-token',
-        GITHUB_REPO_OWNER: 'test-owner',
-        GITHUB_REPO_NAME: 'test-repo',
-        DEV: false,
-      },
-    },
-  },
-});
-
 import { fetchTags, fetchRelease, fetchRawFile } from '../github';
 
 // Mock the logger
@@ -59,7 +45,12 @@ describe('github', () => {
       expect(result).toEqual(mockTags);
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100',
-        { headers: { Authorization: 'token test-token' } }
+        {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'token test-token',
+          },
+        }
       );
     });
 
@@ -121,12 +112,22 @@ describe('github', () => {
       expect(mockFetch).toHaveBeenNthCalledWith(
         1,
         'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100',
-        { headers: { Authorization: 'token test-token' } }
+        {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'token test-token',
+          },
+        }
       );
       expect(mockFetch).toHaveBeenNthCalledWith(
         2,
         'https://api.github.com/repos/test-owner/test-repo/tags?per_page=100&page=2',
-        { headers: { Authorization: 'token test-token' } }
+        {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'token test-token',
+          },
+        }
       );
     });
 
@@ -224,7 +225,12 @@ describe('github', () => {
       expect(result).toEqual(mockRelease);
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.github.com/repos/test-owner/test-repo/releases/tags/v1.0.0',
-        { headers: { Authorization: 'token test-token' } }
+        {
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: 'token test-token',
+          },
+        }
       );
     });
 

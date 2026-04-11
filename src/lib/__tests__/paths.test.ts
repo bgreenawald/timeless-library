@@ -1,25 +1,18 @@
 import { jest } from '@jest/globals';
 
-// Mock import.meta.env before importing modules that use it
-Object.defineProperty(globalThis, 'import', {
-  value: {
-    meta: {
-      env: {
-        GITHUB_TOKEN: 'test-token',
-        GITHUB_REPO_OWNER: 'test-owner',
-        GITHUB_REPO_NAME: 'test-repo',
-        DEV: false,
-      },
-    },
-  },
-});
-
-import { findLatestVersion, getBookVersions, clearTagsCache } from '../paths';
-import { fetchTags } from '../github';
+import {
+  findLatestVersion,
+  getBookVersions,
+  getReleaseForVersion,
+  clearTagsCache,
+  clearReleaseCache,
+} from '../paths';
+import { fetchTags, fetchRelease } from '../github';
 
 // Mock the github module
 jest.mock('../github');
 const mockFetchTags = fetchTags as jest.MockedFunction<typeof fetchTags>;
+const mockFetchRelease = fetchRelease as jest.MockedFunction<typeof fetchRelease>;
 
 // Mock the logger
 jest.mock('../logger', () => ({
@@ -35,6 +28,7 @@ describe('paths', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     clearTagsCache(); // Clear cache between tests to ensure isolation
+    clearReleaseCache();
   });
 
   describe('findLatestVersion', () => {
@@ -64,7 +58,7 @@ describe('paths', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle alpha/beta versions correctly', () => {
+    it('should rank release above pre-releases', () => {
       const versions = [
         { name: 'book--v1.0.0-alpha', commit: { sha: 'abc', url: 'url' } },
         { name: 'book--v1.0.0-beta', commit: { sha: 'def', url: 'url' } },
@@ -73,9 +67,34 @@ describe('paths', () => {
 
       const result = findLatestVersion(versions);
 
-      // findLatestVersion doesn't filter - it just finds the latest by name sorting
-      // The filtering happens in filterVersions which is called by getBookVersions
-      expect(result).toBe('book--v1.0.0-beta');
+      expect(result).toBe('book--v1.0.0');
+    });
+
+    it('should order numeric segments correctly', () => {
+      const versions = [
+        { name: 'book--v0.2.0', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v0.10.0', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v0.10.0');
+    });
+
+    it('should compare pre-release labels lexically when core matches', () => {
+      const versions = [
+        { name: 'book--v1.0.0-rc.1', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v1.0.0-rc.2', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v1.0.0-rc.2');
+    });
+
+    it('should order numeric pre-release segments numerically (rc.10 after rc.2)', () => {
+      const versions = [
+        { name: 'book--v1.0.0-rc.2', commit: { sha: 'a', url: 'url' } },
+        { name: 'book--v1.0.0-rc.10', commit: { sha: 'b', url: 'url' } },
+      ];
+
+      expect(findLatestVersion(versions)).toBe('book--v1.0.0-rc.10');
     });
   });
 
@@ -117,6 +136,29 @@ describe('paths', () => {
       expect(result[0].name).toBe('book--v1.0.0');
 
       // Restore original environment
+      process.env.NODE_ENV = originalEnv;
+      process.env.DEV = originalDev;
+    });
+
+    it('should not drop stable tags whose slug contains alpha/beta as a substring', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      const originalDev = process.env.DEV;
+      process.env.NODE_ENV = 'production';
+      process.env.DEV = 'false';
+
+      const mockTags = [
+        { name: 'alphabet-book--v1.0.0', commit: { sha: 'abc', url: 'url' } },
+        { name: 'new-beta--v1.0.0', commit: { sha: 'def', url: 'url' } },
+      ];
+
+      mockFetchTags.mockResolvedValue(mockTags);
+
+      const alphabetResult = await getBookVersions('alphabet-book');
+      const betaSlugResult = await getBookVersions('new-beta');
+
+      expect(alphabetResult.map(v => v.name)).toEqual(['alphabet-book--v1.0.0']);
+      expect(betaSlugResult.map(v => v.name)).toEqual(['new-beta--v1.0.0']);
+
       process.env.NODE_ENV = originalEnv;
       process.env.DEV = originalDev;
     });
@@ -191,6 +233,67 @@ describe('paths', () => {
       expect(result1).toHaveLength(2);
       expect(result2).toHaveLength(1);
       expect(result3).toHaveLength(2);
+    });
+  });
+
+  describe('getReleaseForVersion', () => {
+    const mockRelease = {
+      id: 1,
+      tag_name: 'book--v1.0.0',
+      name: 'v1.0.0',
+      body: '',
+      published_at: '2024-01-01',
+      assets: [],
+    };
+
+    it('should cache successful release fetches', async () => {
+      mockFetchRelease.mockResolvedValue(mockRelease);
+
+      await getReleaseForVersion('book--v1.0.0');
+      await getReleaseForVersion('book--v1.0.0');
+
+      expect(mockFetchRelease).toHaveBeenCalledTimes(1);
+      expect(mockFetchRelease).toHaveBeenCalledWith('book--v1.0.0');
+    });
+
+    it('should not cache null results so later calls can retry', async () => {
+      mockFetchRelease.mockResolvedValueOnce(null).mockResolvedValueOnce(mockRelease);
+
+      const first = await getReleaseForVersion('book--v1.0.0');
+      const second = await getReleaseForVersion('book--v1.0.0');
+
+      expect(first).toBeNull();
+      expect(second).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it('should dedupe concurrent in-flight fetches for the same version', async () => {
+      let resolveRelease!: (value: typeof mockRelease) => void;
+      const deferred = new Promise<typeof mockRelease>(resolve => {
+        resolveRelease = resolve;
+      });
+      mockFetchRelease.mockReturnValueOnce(deferred);
+
+      const p1 = getReleaseForVersion('book--v1.0.0');
+      const p2 = getReleaseForVersion('book--v1.0.0');
+      resolveRelease(mockRelease);
+      const [a, b] = await Promise.all([p1, p2]);
+
+      expect(a).toEqual(mockRelease);
+      expect(b).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(1);
+    });
+
+    it('should evict cache on rejection so later calls can retry', async () => {
+      mockFetchRelease
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce(mockRelease);
+
+      await expect(getReleaseForVersion('book--v1.0.0')).rejects.toThrow('network');
+      const second = await getReleaseForVersion('book--v1.0.0');
+
+      expect(second).toEqual(mockRelease);
+      expect(mockFetchRelease).toHaveBeenCalledTimes(2);
     });
   });
 });

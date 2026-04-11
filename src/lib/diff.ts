@@ -11,6 +11,29 @@ export interface DiffResult {
   diff: string;
   hasChanges: boolean;
   changeCount: number;
+  additions: number;
+  removals: number;
+}
+
+async function fetchAssetText(asset: { name: string; browser_download_url: string }) {
+  try {
+    const response = await fetch(asset.browser_download_url);
+    if (!response.ok) {
+      logger.error(`Asset fetch failed`, {
+        asset: asset.name,
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return null;
+    }
+    return await response.text();
+  } catch (error) {
+    logger.error(`Asset fetch errored`, {
+      asset: asset.name,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }
 
 /**
@@ -22,106 +45,24 @@ export interface DiffResult {
  * @returns Promise resolving to the original and modernized text content
  */
 export async function fetchVersionTexts(
-  version: GithubTag,
-  bookSlug: string,
+  _version: GithubTag,
+  _bookSlug: string,
   release: GithubRelease
 ): Promise<{
   originalText: string | null;
   modernizedText: string | null;
 }> {
-  // Find the original and modernized files by their endings
   const originalAsset = release.assets.find(asset => asset.name.endsWith('-original.md'));
   const modernizedAsset = release.assets.find(asset => asset.name.endsWith('-modernized.md'));
 
-  // Debug logging
-  logger.debug('Diff Debug - Available assets:');
-  release.assets.forEach(asset => {
-    logger.debug(`  - ${asset.name}`);
-  });
-  logger.debug('Diff Debug - Found assets:');
-  logger.debug(`  Original: ${originalAsset?.name || 'NOT FOUND'}`);
-  logger.debug(`  Modernized: ${modernizedAsset?.name || 'NOT FOUND'}`);
-
   if (!originalAsset || !modernizedAsset) {
-    logger.debug('Diff Debug - Missing assets, returning null');
     return { originalText: null, modernizedText: null };
   }
 
-  logger.debug('Diff Debug - Downloading files:');
-  logger.debug(`  Original URL: ${originalAsset.browser_download_url}`);
-  logger.debug(`  Modernized URL: ${modernizedAsset.browser_download_url}`);
-
-  // Download the files directly from the release assets with proper error handling
   const [originalText, modernizedText] = await Promise.all([
-    fetch(originalAsset.browser_download_url)
-      .then(async response => {
-        if (!response.ok) {
-          logger.error(`Diff Debug - Original file fetch failed:`, {
-            url: originalAsset.browser_download_url,
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries()),
-          });
-          return null;
-        }
-        try {
-          const text = await response.text();
-          logger.debug(
-            `Diff Debug - Original file downloaded successfully, length: ${text.length}`
-          );
-          return text;
-        } catch (error) {
-          logger.error(`Diff Debug - Original file text parsing failed:`, {
-            url: originalAsset.browser_download_url,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return null;
-        }
-      })
-      .catch(error => {
-        logger.error(`Diff Debug - Original file network error:`, {
-          url: originalAsset.browser_download_url,
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return null;
-      }),
-    fetch(modernizedAsset.browser_download_url)
-      .then(async response => {
-        if (!response.ok) {
-          logger.error(`Diff Debug - Modernized file fetch failed:`, {
-            url: modernizedAsset.browser_download_url,
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries()),
-          });
-          return null;
-        }
-        try {
-          const text = await response.text();
-          logger.debug(
-            `Diff Debug - Modernized file downloaded successfully, length: ${text.length}`
-          );
-          return text;
-        } catch (error) {
-          logger.error(`Diff Debug - Modernized file text parsing failed:`, {
-            url: modernizedAsset.browser_download_url,
-            error: error instanceof Error ? error.message : String(error),
-          });
-          return null;
-        }
-      })
-      .catch(error => {
-        logger.error(`Diff Debug - Modernized file network error:`, {
-          url: modernizedAsset.browser_download_url,
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return null;
-      }),
+    fetchAssetText(originalAsset),
+    fetchAssetText(modernizedAsset),
   ]);
-
-  logger.debug('Diff Debug - Download results:');
-  logger.debug(`  Original text length: ${originalText?.length || 0}`);
-  logger.debug(`  Modernized text length: ${modernizedText?.length || 0}`);
 
   return { originalText, modernizedText };
 }
@@ -134,19 +75,27 @@ export async function fetchVersionTexts(
  * @returns DiffResult object containing the diff and metadata
  */
 export function generateDiff(originalText: string, modernizedText: string): DiffResult {
-  // Generate unified diff format
   const diff = createPatch('original.md', originalText, modernizedText, 'original', 'modernized', {
     context: 3,
   });
 
-  // Count changes (lines starting with + or -), excluding diff headers
-  const changeCount = diff
-    .split('\n')
-    .filter(
-      line =>
-        (line.startsWith('+') && !line.startsWith('+++')) ||
-        (line.startsWith('-') && !line.startsWith('---'))
-    ).length;
+  // Unified diff file headers are `+++ path` / `--- path` (marker + whitespace).
+  // Content can begin with `++` or `--` after the +/- prefix, e.g. `+++hello` or
+  // `---stuff`, which must not be treated as headers.
+  const unifiedDiffPlusFileHeader = /^\+\+\+\s/;
+  const unifiedDiffMinusFileHeader = /^---\s/;
+
+  let additions = 0;
+  let removals = 0;
+  for (const line of diff.split('\n')) {
+    if (line.startsWith('+') && !unifiedDiffPlusFileHeader.test(line)) {
+      additions++;
+    } else if (line.startsWith('-') && !unifiedDiffMinusFileHeader.test(line)) {
+      removals++;
+    }
+  }
+
+  const changeCount = additions + removals;
 
   return {
     originalText,
@@ -154,6 +103,8 @@ export function generateDiff(originalText: string, modernizedText: string): Diff
     diff,
     hasChanges: changeCount > 0,
     changeCount,
+    additions,
+    removals,
   };
 }
 
@@ -199,7 +150,6 @@ export function parseDiffToLines(diffText: string): Array<{
     let oldLineNum = '';
     let newLineNum = '';
     let isHunk = false;
-    const isHeader = false;
 
     if (line.startsWith('@@')) {
       type = 'hunk';

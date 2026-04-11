@@ -25,19 +25,23 @@ const metadata = release ? await loadBookMetadataFromRelease(book.slug, release)
     <BookDetail book={book} />
 
     <!-- Version Downloads -->
-    <DownloadsTable 
-      release={release} 
-      version={version} 
-      title={`Version <em>${displayVersion}</em> Downloads`} 
+    <DownloadsTable
+      release={release}
+      version={version}
+      title="Version"
+      emphasize={displayVersion}
+      suffix=" Downloads"
     />
 
     <!-- Book Metadata -->
-    <BookMetadata 
-      metadata={metadata} 
-      bookSlug={book.slug} 
-      version={version}
-      title={`How This Version Was Made`}
-    />
+    {metadata && (
+      <BookMetadata
+        metadata={metadata}
+        bookSlug={book.slug}
+        version={version}
+        title="How This Version Was Made"
+      />
+    )}
     <!-- Show Diff Link -->
     {release.assets.some(asset => asset.name.endsWith('-modernized.md')) && (
       <section class="max-w-6xl mx-auto text-center mb-12">
