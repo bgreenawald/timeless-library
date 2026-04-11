@@ -1,10 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import { SITE_CONFIG } from '../lib/config';
 import { getMiniCoverUrl } from '../lib/coverUtils';
 
-const books = await getCollection('books', ({ data }) => data.is_featured);
+const featuredEntry = await getEntry('featured', 'featured');
+const featuredSlugs = featuredEntry?.data.slugs ?? [];
+const books = (
+  await Promise.all(featuredSlugs.map((slug) => getEntry('books', slug)))
+).filter((book): book is import('astro:content').CollectionEntry<'books'> => Boolean(book));
 ---
 
 <Layout title={SITE_CONFIG.name}>
