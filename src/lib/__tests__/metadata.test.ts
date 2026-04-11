@@ -225,9 +225,11 @@ describe('metadata', () => {
       expect(result).toEqual(validMetadataV1WithTwoStagePhase);
       expect(result.metadata_version).toBe('1.0');
       const phase = result.phases[0];
-      if (phase.phase_type === 'FINAL_TWO_STAGE') {
-        expect((phase as any).identify_model).toBeDefined();
-        expect((phase as any).implement_model).toBeDefined();
+      expect(phase.phase_type).toBe('FINAL_TWO_STAGE');
+      expect('identify_model' in phase && 'implement_model' in phase).toBe(true);
+      if (phase.phase_type === 'FINAL_TWO_STAGE' && 'identify_model' in phase) {
+        expect(phase.identify_model.name).toBe('gemini-3-flash-preview');
+        expect(phase.implement_model.name).toBe('gemini-3-flash-preview');
       }
     });
 

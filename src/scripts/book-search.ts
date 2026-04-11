@@ -6,8 +6,7 @@ let eventHandlers: {
   searchInput?: (e: Event) => void;
   genreFilter?: () => void;
   tagFilter?: () => void;
-  clearFilters?: () => void;
-  resetSearch?: () => void;
+  clearAll?: () => void;
 } = {};
 
 export function initializeBookSearch() {
@@ -48,11 +47,11 @@ export function initializeBookSearch() {
     if (eventHandlers.tagFilter && tagFilter) {
       tagFilter.removeEventListener('change', eventHandlers.tagFilter);
     }
-    if (eventHandlers.clearFilters && clearFiltersBtn) {
-      clearFiltersBtn.removeEventListener('click', eventHandlers.clearFilters);
+    if (eventHandlers.clearAll && clearFiltersBtn) {
+      clearFiltersBtn.removeEventListener('click', eventHandlers.clearAll);
     }
-    if (eventHandlers.resetSearch && resetSearchBtn) {
-      resetSearchBtn.removeEventListener('click', eventHandlers.resetSearch);
+    if (eventHandlers.clearAll && resetSearchBtn) {
+      resetSearchBtn.removeEventListener('click', eventHandlers.clearAll);
     }
     // Reset handlers
     eventHandlers = {};
@@ -132,14 +131,7 @@ export function initializeBookSearch() {
   const debouncedFilterBooks = debounce(filterBooks, 300);
 
   // Create named handler functions so we can remove them later
-  const handleClearFilters = function () {
-    searchInputElement.value = '';
-    genreFilterElement.value = '';
-    tagFilterElement.value = '';
-    filterBooks();
-  };
-
-  const handleResetSearch = function () {
+  const handleClearAll = function () {
     searchInputElement.value = '';
     genreFilterElement.value = '';
     tagFilterElement.value = '';
@@ -150,15 +142,14 @@ export function initializeBookSearch() {
   eventHandlers.searchInput = debouncedFilterBooks;
   eventHandlers.genreFilter = filterBooks;
   eventHandlers.tagFilter = filterBooks;
-  eventHandlers.clearFilters = handleClearFilters;
-  eventHandlers.resetSearch = handleResetSearch;
+  eventHandlers.clearAll = handleClearAll;
 
   // Event listeners
   searchInputElement.addEventListener('input', eventHandlers.searchInput);
   genreFilterElement.addEventListener('change', eventHandlers.genreFilter);
   tagFilterElement.addEventListener('change', eventHandlers.tagFilter);
-  clearFiltersBtnElement.addEventListener('click', eventHandlers.clearFilters);
-  resetSearchBtnElement.addEventListener('click', eventHandlers.resetSearch);
+  clearFiltersBtnElement.addEventListener('click', eventHandlers.clearAll);
+  resetSearchBtnElement.addEventListener('click', eventHandlers.clearAll);
 
   isInitialized = true;
 }

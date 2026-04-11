@@ -93,8 +93,9 @@ describe('BookMetadata Component', () => {
     });
 
     expect(result).toContain('aria-controls="metadata-content"');
-    expect(result).toContain('data-metadata');
-    expect(result).toContain('data-prompt');
+    expect(result).toContain('data-metadata-id="raw-metadata-json"');
+    expect(result).toContain('data-prompt-id="prompt-1"');
+    expect(result).toContain('type="application/json"');
     expect(result).toContain('aria-expanded="false"');
   });
 

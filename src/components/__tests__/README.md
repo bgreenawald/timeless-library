@@ -57,16 +57,6 @@ Tests the `DownloadsTable.astro` component:
 - Generates correct download links
 - Labels assets correctly (Annotated, Modernized, Original, Metadata)
 
-### ErrorBoundary.test.ts
-
-Tests the `ErrorBoundary.astro` component:
-
-- Renders default and custom error messages
-- Shows/hides error details based on props
-- Handles missing error objects gracefully
-- Includes reload functionality
-- Applies correct CSS classes
-
 ### VersionsGrid.test.ts
 
 Tests the `VersionsGrid.astro` component:

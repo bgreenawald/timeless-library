@@ -1,10 +1,10 @@
 ---
 import { extractVersionFromTag } from '../lib/utils';
-import type { GitHubRelease } from '../types';
+import type { GithubRelease } from '../lib/github';
 import { getAssetLabelAndColor, getAssetSortPriority } from '../lib/download-helpers';
 
 interface Props {
-  release: GitHubRelease;
+  release: GithubRelease;
   version: string | null;
   /** Plain-text heading prefix */
   title: string;

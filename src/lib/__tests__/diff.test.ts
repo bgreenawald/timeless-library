@@ -12,6 +12,9 @@ describe('diff', () => {
       expect(result.modernizedText).toBe(modernizedText);
       expect(result.hasChanges).toBe(true);
       expect(result.changeCount).toBeGreaterThan(0);
+      expect(result.additions).toBeGreaterThan(0);
+      expect(result.removals).toBeGreaterThan(0);
+      expect(result.additions + result.removals).toBe(result.changeCount);
       expect(result.diff).toContain('This is a test');
       expect(result.diff).toContain('This is a modern test');
     });
@@ -23,6 +26,8 @@ describe('diff', () => {
 
       expect(result.hasChanges).toBe(false);
       expect(result.changeCount).toBe(0);
+      expect(result.additions).toBe(0);
+      expect(result.removals).toBe(0);
     });
 
     it('should handle empty texts', () => {

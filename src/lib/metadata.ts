@@ -35,12 +35,11 @@ const ProcessingPhaseV0Schema = z.object({
 });
 
 /**
- * Zod schema for a regular processing phase in metadata v1.0.
+ * Shared fields for all v1.0 processing phases (regular and two-stage).
  */
-const ProcessingPhaseV1RegularSchema = z.object({
+const ProcessingPhaseBaseV1 = z.object({
   phase_name: z.string(),
   phase_index: z.number(),
-  phase_type: z.string(),
   enabled: z.boolean(),
   post_processors: z.array(z.string()),
   post_processor_count: z.number(),
@@ -48,8 +47,6 @@ const ProcessingPhaseV1RegularSchema = z.object({
   book_id: z.string(),
   book_name: z.string(),
   author_name: z.string(),
-  model_type: z.string(),
-  model: ModelSchema,
   max_workers: z.number(),
   input_file: z.string(),
   output_file: z.string(),
@@ -60,19 +57,19 @@ const ProcessingPhaseV1RegularSchema = z.object({
 });
 
 /**
+ * Zod schema for a regular processing phase in metadata v1.0.
+ */
+const ProcessingPhaseV1RegularSchema = ProcessingPhaseBaseV1.extend({
+  phase_type: z.string(),
+  model_type: z.string(),
+  model: ModelSchema,
+});
+
+/**
  * Zod schema for a two-stage final processing phase in metadata v1.0.
  */
-const ProcessingPhaseV1TwoStageSchema = z.object({
-  phase_name: z.string(),
-  phase_index: z.number(),
+const ProcessingPhaseV1TwoStageSchema = ProcessingPhaseBaseV1.extend({
   phase_type: z.literal('FINAL_TWO_STAGE'),
-  enabled: z.boolean(),
-  post_processors: z.array(z.string()),
-  post_processor_count: z.number(),
-  completed: z.boolean(),
-  book_id: z.string(),
-  book_name: z.string(),
-  author_name: z.string(),
   identify_model_type: z.string(),
   identify_provider: z.string(),
   identify_provider_model_name: z.string(),
@@ -81,17 +78,10 @@ const ProcessingPhaseV1TwoStageSchema = z.object({
   implement_provider: z.string(),
   implement_provider_model_name: z.string(),
   implement_model: ModelSchema,
-  max_workers: z.number(),
-  input_file: z.string(),
-  output_file: z.string(),
-  system_prompt_path: z.string().nullable(),
-  user_prompt_path: z.string().nullable(),
-  fully_rendered_system_prompt: z.string(),
-  output_exists: z.boolean(),
 });
 
 /**
- * Zod schema for a processing phase in metadata v1.0 (union of regular and two-stage).
+ * Two-stage schema is listed first so `phase_type: FINAL_TWO_STAGE` does not match the regular branch.
  */
 const ProcessingPhaseV1Schema = z.union([
   ProcessingPhaseV1TwoStageSchema,
@@ -99,19 +89,25 @@ const ProcessingPhaseV1Schema = z.union([
 ]);
 
 /**
+ * Fields shared by book metadata v0.0 and v1.0 (excluding version-specific keys).
+ */
+const bookMetadataBodySchema = z.object({
+  run_timestamp: z.string(),
+  book_name: z.string(),
+  author_name: z.string(),
+  input_file: z.string(),
+  original_file: z.string(),
+  output_directory: z.string(),
+  book_version: z.string(),
+});
+
+/**
  * Zod schema for metadata version 0.0 with custom validation.
  */
-const BookMetadataV0Schema = z
-  .object({
+const BookMetadataV0Schema = bookMetadataBodySchema
+  .extend({
     metadata_version: z.literal('0.0'),
-    run_timestamp: z.string(),
-    book_name: z.string(),
-    author_name: z.string(),
-    input_file: z.string(),
-    original_file: z.string(),
-    output_directory: z.string(),
     phases: z.array(ProcessingPhaseV0Schema).min(1, "'phases' array cannot be empty"),
-    book_version: z.string(),
   })
   .refine(data => data.phases.every((phase, index) => phase.phase_index === index), {
     message: "Phase 'phase_index' must match array index",
@@ -120,18 +116,11 @@ const BookMetadataV0Schema = z
 /**
  * Zod schema for metadata version 1.0 with custom validation.
  */
-const BookMetadataV1Schema = z
-  .object({
+const BookMetadataV1Schema = bookMetadataBodySchema
+  .extend({
     metadata_version: z.literal('1.0'),
-    run_timestamp: z.string(),
     book_id: z.string(),
-    book_name: z.string(),
-    author_name: z.string(),
-    input_file: z.string(),
-    original_file: z.string(),
-    output_directory: z.string(),
     phases: z.array(ProcessingPhaseV1Schema).min(1, "'phases' array cannot be empty"),
-    book_version: z.string(),
   })
   .refine(data => data.phases.every((phase, index) => phase.phase_index === index), {
     message: "Phase 'phase_index' must match array index",
@@ -142,6 +131,8 @@ const BookMetadataV1Schema = z
  */
 export type Model = z.infer<typeof ModelSchema>;
 export type ProcessingPhaseV0 = z.infer<typeof ProcessingPhaseV0Schema>;
+export type ProcessingPhaseV1TwoStage = z.infer<typeof ProcessingPhaseV1TwoStageSchema>;
+export type ProcessingPhaseV1Regular = z.infer<typeof ProcessingPhaseV1RegularSchema>;
 export type ProcessingPhaseV1 = z.infer<typeof ProcessingPhaseV1Schema>;
 export type ProcessingPhase = ProcessingPhaseV0 | ProcessingPhaseV1;
 export type BookMetadataV0 = z.infer<typeof BookMetadataV0Schema>;
@@ -151,7 +142,7 @@ export type BookMetadata = BookMetadataV0 | BookMetadataV1;
 /**
  * Supported metadata versions and their Zod schemas.
  */
-const METADATA_SCHEMAS: Record<string, z.ZodSchema<any>> = {
+const METADATA_SCHEMAS: Record<string, z.ZodSchema<BookMetadata>> = {
   '0.0': BookMetadataV0Schema,
   '1.0': BookMetadataV1Schema,
 };
