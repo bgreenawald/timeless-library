@@ -25,7 +25,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "astro": "^5.16.6",
+    "astro": "^6.4.6",
     "diff": "^8.0.3",
     "dompurify": "^3.3.1",
     "markdown-it": "^14.1.1",
