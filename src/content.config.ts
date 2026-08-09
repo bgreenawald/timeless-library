@@ -1,4 +1,5 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 // Export the schema so it can be used to derive TypeScript types
 export const bookSchema = z.object({
@@ -19,12 +20,12 @@ const featuredSchema = z.object({
 });
 
 const booksCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/books' }),
   schema: bookSchema,
 });
 
 const featuredCollection = defineCollection({
-  type: 'data',
+  loader: glob({ pattern: '**/*.{yaml,yml}', base: './src/content/featured' }),
   schema: featuredSchema,
 });
 

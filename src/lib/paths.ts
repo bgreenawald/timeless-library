@@ -207,12 +207,12 @@ export async function generateBookPaths() {
     const paths = await Promise.all(
       books.map(async (book: CollectionEntry<'books'>) => {
         try {
-          const versions = await getBookVersions(book.slug);
+          const versions = await getBookVersions(book.id);
           const latestVersion = findLatestVersion(versions);
           const latestRelease = latestVersion ? await getReleaseForVersion(latestVersion) : null;
 
           return {
-            params: { book: book.slug },
+            params: { book: book.id },
             props: {
               book,
               versions,
@@ -222,10 +222,10 @@ export async function generateBookPaths() {
             },
           };
         } catch (error) {
-          logger.error(`Failed to generate path for book ${book.slug}:`, error);
+          logger.error(`Failed to generate path for book ${book.id}:`, error);
           // Return basic path without version data as fallback
           return {
-            params: { book: book.slug },
+            params: { book: book.id },
             props: {
               book,
               versions: [],
@@ -255,7 +255,7 @@ export async function generateVersionPaths() {
     const paths = await Promise.all(
       books.map(async (book: CollectionEntry<'books'>) => {
         try {
-          const versions = await getBookVersions(book.slug);
+          const versions = await getBookVersions(book.id);
 
           // Generate paths for each version
           const versionPaths = await Promise.all(
@@ -268,7 +268,7 @@ export async function generateVersionPaths() {
                 }
 
                 return {
-                  params: { book: book.slug, version: version.name },
+                  params: { book: book.id, version: version.name },
                   props: {
                     book,
                     release,
@@ -277,7 +277,7 @@ export async function generateVersionPaths() {
                 };
               } catch (error) {
                 logger.error(
-                  `Failed to generate version path for ${book.slug}/${version.name}:`,
+                  `Failed to generate version path for ${book.id}/${version.name}:`,
                   error
                 );
                 return null;
@@ -287,7 +287,7 @@ export async function generateVersionPaths() {
 
           return versionPaths.filter(path => path !== null);
         } catch (error) {
-          logger.error(`Failed to generate version paths for book ${book.slug}:`, error);
+          logger.error(`Failed to generate version paths for book ${book.id}:`, error);
           return [];
         }
       })
@@ -311,7 +311,7 @@ export async function generateDiffPaths() {
     const paths = await Promise.all(
       books.map(async (book: CollectionEntry<'books'>) => {
         try {
-          const versions = await getBookVersions(book.slug);
+          const versions = await getBookVersions(book.id);
 
           // Generate paths for each version that has modernized content
           const diffPaths = await Promise.all(
@@ -333,7 +333,7 @@ export async function generateDiffPaths() {
                 }
 
                 return {
-                  params: { book: book.slug, version: version.name },
+                  params: { book: book.id, version: version.name },
                   props: {
                     book,
                     release,
@@ -342,10 +342,7 @@ export async function generateDiffPaths() {
                   },
                 };
               } catch (error) {
-                logger.error(
-                  `Failed to generate diff path for ${book.slug}/${version.name}:`,
-                  error
-                );
+                logger.error(`Failed to generate diff path for ${book.id}/${version.name}:`, error);
                 return null;
               }
             })
@@ -353,7 +350,7 @@ export async function generateDiffPaths() {
 
           return diffPaths.filter(path => path !== null);
         } catch (error) {
-          logger.error(`Failed to generate diff paths for book ${book.slug}:`, error);
+          logger.error(`Failed to generate diff paths for book ${book.id}:`, error);
           return [];
         }
       })

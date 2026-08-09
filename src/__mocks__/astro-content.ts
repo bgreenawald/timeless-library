@@ -1,7 +1,7 @@
 // Mock for astro:content module used in tests
 
 export interface BookEntry {
-  slug: string;
+  id: string;
   data: {
     title: string;
     author: string;
@@ -15,7 +15,7 @@ export const getCollection = async (collectionName: string): Promise<BookEntry[]
     // Return mock books data
     return [
       {
-        slug: 'test-book',
+        id: 'test-book',
         data: {
           title: 'Test Book',
           author: 'Test Author',
@@ -23,7 +23,7 @@ export const getCollection = async (collectionName: string): Promise<BookEntry[]
         },
       },
       {
-        slug: 'another-book',
+        id: 'another-book',
         data: {
           title: 'Another Book',
           author: 'Another Author',

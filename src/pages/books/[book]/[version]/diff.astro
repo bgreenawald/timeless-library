@@ -16,7 +16,7 @@ const { book, release, version, versionTag } = Astro.props;
 const displayVersion = extractVersionFromTag(version);
 
 // Fetch the original and modernized texts
-const { originalText, modernizedText } = await fetchVersionTexts(versionTag, book.slug, release);
+const { originalText, modernizedText } = await fetchVersionTexts(versionTag, book.id, release);
 
 // Generate the diff if both texts are available
 let diffResult = null;
@@ -155,7 +155,6 @@ if (originalText && modernizedText) {
             }
           </p>
           {import.meta.env.DEV && (
-            <!-- Debug: List all asset names for troubleshooting -->
             <details style="margin-top:2em;">
               <summary style="cursor:pointer;">Show release asset names (debug)</summary>
               <ul style="text-align:left;display:inline-block;">
@@ -172,10 +171,10 @@ if (originalText && modernizedText) {
     <!-- Navigation -->
     <section class="max-w-6xl mx-auto text-center mt-12">
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href={`/books/${book.slug}/${version}`} class="cta-button">
+        <a href={`/books/${book.id}/${version}`} class="cta-button">
           Back to Version {displayVersion}
         </a>
-        <a href={`/books/${book.slug}`} class="cta-button">
+        <a href={`/books/${book.id}`} class="cta-button">
           Back to {book.data.title}
         </a>
       </div>

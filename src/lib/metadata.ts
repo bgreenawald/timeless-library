@@ -184,7 +184,14 @@ export function parseMetadata(metadataContent: string): BookMetadata {
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issues = error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ');
+      const issues = error.issues
+        .map(issue => {
+          const message = /^Invalid input: expected .+, received undefined$/.test(issue.message)
+            ? 'Required'
+            : issue.message;
+          return `${issue.path.join('.')}: ${message}`;
+        })
+        .join('; ');
       throw new Error(`Failed to parse metadata version ${version}: ${issues}`);
     }
     throw error;

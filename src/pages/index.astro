@@ -31,7 +31,7 @@ const books = (
         {books.map((book) => {
           const miniCoverUrl = getMiniCoverUrl(book.data.cover_image);
           return (
-            <a href={`/books/${book.slug}`}>
+            <a href={`/books/${book.id}`}>
             <div class="book-card">
               <div class="book-cover" style={miniCoverUrl ? `background-image: url('${miniCoverUrl}')` : undefined}>
                 <div class="book-title">{book.data.title}</div>
