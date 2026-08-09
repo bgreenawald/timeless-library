@@ -81,9 +81,7 @@ describe('MyComponent', () => {
     const container = await AstroContainer.create();
 
     const result = await container.renderToString(MyComponent, {
-      props: {
-        /* your props */
-      },
+      props: {/* your props */},
     });
 
     expect(result).toContain('expected content');

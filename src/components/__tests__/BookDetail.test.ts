@@ -9,7 +9,6 @@ describe('BookDetail Component', () => {
 
     const mockBook = {
       id: 'test-book',
-      slug: 'test-book',
       body: '',
       collection: 'books',
       data: {
@@ -41,7 +40,6 @@ describe('BookDetail Component', () => {
 
     const mockBook = {
       id: 'test-book',
-      slug: 'test-book',
       body: '',
       collection: 'books',
       data: {
@@ -70,7 +68,6 @@ describe('BookDetail Component', () => {
 
     const mockBook = {
       id: 'test-book',
-      slug: 'test-book',
       body: '',
       collection: 'books',
       data: {
