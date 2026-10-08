@@ -27,7 +27,7 @@
   "dependencies": {
     "astro": "^7.1.1",
     "diff": "^8.0.3",
-    "dompurify": "^3.4.13",
+    "dompurify": "^3.4.16",
     "markdown-it": "^14.3.0",
     "tailwindcss": "^4.3.3",
     "winston": "^3.19.0"
